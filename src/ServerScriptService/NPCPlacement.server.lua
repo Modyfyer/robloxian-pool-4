@@ -1,6 +1,8 @@
 pl = game.Players
 us = game:GetService("UserService")
 
+--emma mom
+
 for _, v in pairs(Workspace.NPCSpots:GetChildren()) do
 	if v:IsA("BasePart") then
 		spawn(function()
