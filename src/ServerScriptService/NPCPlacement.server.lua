@@ -1,14 +1,14 @@
 pl = game.Players
 us = game:GetService("UserService")
 
-for _, v in pairs(Workspace.NPCSpots:GetChildren()) do
+for _, v in pairs(workspace.NPCSpots:GetChildren()) do
 	if v:IsA("BasePart") then
 		spawn(function()
 			local id = v.UserId.Value
 			local desc = pl:GetHumanoidDescriptionFromUserId(id)
 			local inf = us:GetUserInfosByUserIdsAsync({ id })
 			local md = pl:CreateHumanoidModelFromDescription(desc, Enum.HumanoidRigType.R15)
-			md.Parent = Workspace.NPCs
+			md.Parent = workspace.NPCs
 
 			md.Name = inf[1].DisplayName .. " (@" .. inf[1].Username .. ")"
 			local ani = game.ServerStorage.NPCStuff.Animate:Clone()
