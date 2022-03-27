@@ -1,5 +1,4 @@
 player = game.Players.LocalPlayer
-print("Loaded sprint")
 
 if not player.Character then 
 	player.CharacterAdded:Wait()

@@ -9,7 +9,7 @@ hum = char:WaitForChild("Humanoid")
 hrp = char:WaitForChild("HumanoidRootPart")
 ts = game:GetService("TweenService")
 
-wait(5) -- waiting for server to populate NPCs
+task.wait(5) -- waiting for server to populate NPCs
 
 local tweenInfo = TweenInfo.new(
 	.5, -- Time
@@ -43,7 +43,7 @@ function interactWith(npc)
 		npc.ProximityPrompt.Enabled = false
 		focus:Play()
 		game:GetService("Chat"):Chat(npc.TalkPart, pickDialog(npc))
-		wait(5)
+		task.wait(5)
 		interactionCoolDown = false
 		npc.HumanoidRootPart.CFrame = currentNPCPos
 		npc.ProximityPrompt.Enabled = true

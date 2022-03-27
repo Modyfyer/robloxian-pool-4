@@ -5,6 +5,8 @@ sound = curt.Effect
 orgSize = curt.Size
 orgPos = curt.CFrame
 
+-- test
+
 open = true
 
 deb = false

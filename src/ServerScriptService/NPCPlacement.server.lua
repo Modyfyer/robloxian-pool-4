@@ -25,7 +25,7 @@ for _, v in pairs(Workspace.NPCSpots:GetChildren()) do
 			prmpt.Parent = md
 			dia.Parent = md
 			md.HumanoidRootPart.CFrame = v.CFrame + Vector3.new(0, 3.2, 0)
-			wait(2)
+			task.wait(2)
 			md.HumanoidRootPart.Anchored = true
 
 			local talkPart = Instance.new("Part", md)
