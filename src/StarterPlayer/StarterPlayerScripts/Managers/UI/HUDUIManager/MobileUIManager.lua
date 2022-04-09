@@ -1,9 +1,12 @@
 local Players = game:GetService("Players")
--- local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 -- local StarterGui = game:GetService("StarterGui")
 -- local TweenService = game:GetService("TweenService")
 
 local LocalPlayer = Players.LocalPlayer
+
+local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
+local UIHelpers = require(LocalPlayer.PlayerScripts.UIHelpers)
 
 -- local screenGui = LocalPlayer.PlayerGui:WaitForChild("HUDGui")
 -- local desktopFrame = screenGui:WaitForChild("Desktop")
