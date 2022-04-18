@@ -1,4 +1,6 @@
 player = game.Players.LocalPlayer
+char = player.Character
+hum = char:WaitForChild("Humanoid")
 oxygenBar = script.Parent.Desktop.OxygenMeter.OxygenLevelBG.OxygenLevel
 oxygenVal = player.Character:WaitForChild("Oxygen")
 waterBar = script.Parent.Desktop.WaterMeter.WaterLevelBG.WaterLevel
@@ -26,10 +28,12 @@ oxygenVal.Changed:connect(function()
 	if oxLev <= 0 then
 		drownFrame.Visible = true
 		drownAnimA:Play()
+		hum.WalkSpeed = 0
 		wait(4)
 		drownAnimB:Play()
 		wait(3)
 		drownFrame.Visible = false
+		hum.WalkSpeed = 16
 	end
 end)
 

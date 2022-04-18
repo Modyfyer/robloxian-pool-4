@@ -34,6 +34,7 @@ function drown(pl)
 	local drownSpot = getNearestBrick(pl)
 	pl.Character:MoveTo(drownSpot.Position)
 	pl.Character.Oxygen.Value = 100
+	pl.Character.Humanoid.WalkSpeed = 16
 end
 
 function doOxygen(pl)
@@ -41,7 +42,9 @@ function doOxygen(pl)
 		local oxy = pl.Character:WaitForChild("Oxygen")
 		oxy.Changed:connect(function()
 			if oxy.Value <= 0 then
-				wait(3)
+				local hum = pl.Character:FindFirstChild("Humanoid")
+				hum.WalkSpeed = 0
+				task.wait(3)
 				drown(pl)
 			end
 		end)
