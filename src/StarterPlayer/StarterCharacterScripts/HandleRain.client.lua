@@ -1,23 +1,23 @@
-local pl = game.Players.LocalPlayer
-local ch = pl.Character
+pl = game.Players.LocalPlayer
+ch = pl.Character
 
-local snd = script:WaitForChild("Rain")
+snd = script:WaitForChild("Rain")
 
-local hum = ch:WaitForChild("Humanoid")
---local hrp = ch:WaitForChild("HumanoidRootPart")
+hum = ch:WaitForChild("Humanoid")
+hrp = ch:WaitForChild("HumanoidRootPart")
 
-local cam = workspace.CurrentCamera
+cam = workspace.CurrentCamera
 
-local rainPart = game:GetService("ReplicatedStorage"):WaitForChild("RainPart"):Clone()
+rainPart = game:GetService("ReplicatedStorage"):WaitForChild("RainPart"):Clone()
 rainPart.Parent = cam
 
-local isRaining = game:GetService("ReplicatedStorage"):WaitForChild("IsRaining")
+isRaining = game:GetService("ReplicatedStorage"):WaitForChild("IsRaining")
 
 function renderRain()
 	rainPart.CFrame = CFrame.new(cam.CFrame.Position) + Vector3.new(0, 80, 0)
 
 	local raycastResult = nil
-	local raycastParams = nil
+	local raycastParms = nil
 
 	if isRaining.Value == true then
 		raycastParams = RaycastParams.new()
@@ -41,10 +41,10 @@ function renderRain()
 	end
 end
 
-local renderConnect = game:GetService("RunService").RenderStepped:Connect(renderRain)
+renderConnect = game:GetService("RunService").RenderStepped:connect(renderRain)
 
 hum.Died:connect(function()
-	renderConnect:Disconnect()
+	renderConnect:disconnect()
 	rainPart:Destroy()
 	snd:Stop()
 end)

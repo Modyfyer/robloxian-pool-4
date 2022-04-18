@@ -19,18 +19,6 @@ local userPlayEmoteByIdAnimTrackReturn do
 	userPlayEmoteByIdAnimTrackReturn = success and value
 end
 
-local animateScriptEmoteHookFlagExists, animateScriptEmoteHookFlagEnabled = pcall(function()
-	return UserSettings():IsUserFeatureEnabled("UserAnimateScriptEmoteHook")
-end)
-local FFlagAnimateScriptEmoteHook = animateScriptEmoteHookFlagExists and animateScriptEmoteHookFlagEnabled
-
-local FFlagUserFixLoadAnimationError do
-	local success, result = pcall(function()
-		return UserSettings():IsUserFeatureEnabled("UserFixLoadAnimationError")
-	end)
-	FFlagUserFixLoadAnimationError = success and result
-end
-
 local AnimationSpeedDampeningObject = script:FindFirstChild("ScaleDampeningPercent")
 local HumanoidHipHeight = 2
 
@@ -281,6 +269,17 @@ end
 script.ChildAdded:connect(scriptChildModified)
 script.ChildRemoved:connect(scriptChildModified)
 
+-- Clear any existing animation tracks
+-- Fixes issue with characters that are moved in and out of the Workspace accumulating tracks
+local animator = if Humanoid then Humanoid:FindFirstChildOfClass("Animator") else nil
+if animator then
+	local animTracks = animator:GetPlayingAnimationTracks()
+	for i,track in ipairs(animTracks) do
+		track:Stop(0)
+		track:Destroy()
+	end
+end
+
 
 for name, fileList in pairs(animNames) do 
 	configureAnimationSet(name, fileList)
@@ -310,7 +309,7 @@ function stopAllAnimations()
 		oldAnim = "idle"
 	end
 
-	if FFlagAnimateScriptEmoteHook and currentlyPlayingEmote then
+	if currentlyPlayingEmote then
 		oldAnim = "idle"
 		currentlyPlayingEmote = false
 	end
@@ -426,7 +425,7 @@ function keyFrameReachedFunc(frameName)
 				repeatAnim = "idle"
 			end
 
-			if FFlagAnimateScriptEmoteHook and currentlyPlayingEmote then
+			if currentlyPlayingEmote then
 				if currentAnimTrack.Looped then
 					-- Allow the emote to loop
 					return
@@ -747,54 +746,40 @@ Humanoid.Seated:connect(onSeated)
 Humanoid.PlatformStanding:connect(onPlatformStanding)
 Humanoid.Swimming:connect(onSwimming)
 
--- setup emote chat hook
---[[game:GetService("Players").LocalPlayer.Chatted:connect(function(msg)
-	local emote = ""
-	if (string.sub(msg, 1, 3) == "/e ") then
-		emote = string.sub(msg, 4)
-	elseif (string.sub(msg, 1, 7) == "/emote ") then
-		emote = string.sub(msg, 8)
-	end
 
-	if (pose == "Standing" and emoteNames[emote] ~= nil) then
-		playAnimation(emote, EMOTE_TRANSITION_TIME, Humanoid)
-	end
-end)
-]]
+
 -- emote bindable hook
-if FFlagAnimateScriptEmoteHook then
-	script:WaitForChild("PlayEmote").OnInvoke = function(emote)
-		-- Only play emotes when idling
-		if pose ~= "Standing" then
-			return
-		end
-
-		if emoteNames[emote] ~= nil then
-			-- Default emotes
-			playAnimation(emote, EMOTE_TRANSITION_TIME, Humanoid)
-
-			if userPlayEmoteByIdAnimTrackReturn then
-				return true, currentAnimTrack
-			else
-				return true
-			end
-		elseif typeof(emote) == "Instance" and emote:IsA("Animation") then
-			-- Non-default emotes
-			playEmote(emote, EMOTE_TRANSITION_TIME, Humanoid)
-
-			if userPlayEmoteByIdAnimTrackReturn then
-				return true, currentAnimTrack
-			else
-				return true
-			end
-		end
-
-		-- Return false to indicate that the emote could not be played
-		return false
+script:WaitForChild("PlayEmote").OnInvoke = function(emote)
+	-- Only play emotes when idling
+	if pose ~= "Standing" then
+		return
 	end
+
+	if emoteNames[emote] ~= nil then
+		-- Default emotes
+		playAnimation(emote, EMOTE_TRANSITION_TIME, Humanoid)
+
+		if userPlayEmoteByIdAnimTrackReturn then
+			return true, currentAnimTrack
+		else
+			return true
+		end
+	elseif typeof(emote) == "Instance" and emote:IsA("Animation") then
+		-- Non-default emotes
+		playEmote(emote, EMOTE_TRANSITION_TIME, Humanoid)
+
+		if userPlayEmoteByIdAnimTrackReturn then
+			return true, currentAnimTrack
+		else
+			return true
+		end
+	end
+
+	-- Return false to indicate that the emote could not be played
+	return false
 end
 
-if (not FFlagUserFixLoadAnimationError) or Character.Parent ~= nil then
+if Character.Parent ~= nil then
 	-- initialize to idle
 	playAnimation("idle", 0.1, Humanoid)
 	pose = "Standing"
@@ -807,7 +792,6 @@ spawn(function()
 		stepAnimate(currentGameTime)
 	end
 end)
-
 
 animactions = {"point", "laugh", "wave", "cheer"}
 
