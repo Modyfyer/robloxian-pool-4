@@ -1,16 +1,17 @@
--- local Players = game:GetService("Players")
--- --local StarterGui = game:GetService("StarterGui")
+local Players = game:GetService("Players")
 
--- local LocalPlayer = Players.LocalPlayer
+--Dependency group 0
+local LocalPlayer = Players.LocalPlayer
 
--- --Dependency group 0
--- local managersFolder = LocalPlayer.PlayerScripts
+-- Dependency group 1
+local managersFolder = LocalPlayer.PlayerScripts:WaitForChild("Managers")
 
--- --Dependency group 1
--- local uiFolder = managersFolder.UI
--- local platformDetectionManager = require(managersFolder:WaitForChild("PlatformDetectionManager"))
+--Dependency group 2
+local uiFolder = managersFolder.UI
+local platformDetectionManager = require(managersFolder:WaitForChild("PlatformDetectionManager"))
+platformDetectionManager = platformDetectionManager.new()
 
--- --Dependency group 2
--- local hudUIManager = require(uiFolder:WaitForChild("HUDUIManager"))
--- hudUIManager.new(platformDetectionManager)
+--Dependency group 3
+local hudUIManager = require(uiFolder.HUDUIManager)
+hudUIManager.new(platformDetectionManager)
 

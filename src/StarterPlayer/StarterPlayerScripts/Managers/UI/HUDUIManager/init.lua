@@ -13,6 +13,8 @@ local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
 --local Event = require(ReplicatedStorage.Event)
 local PlatformType = require(LocalPlayer.PlayerScripts.Managers.PlatformDetectionManager.PlatformType)
 
+local UI_NAME = "HUDGui"
+
 local HUDUIManager = {}
 HUDUIManager.__index = HUDUIManager
 
@@ -28,7 +30,7 @@ function new(platformDetectionManager)
 
 	-- Dependency group 0
 	local connectionManager = ConnectionManager.new()
-	local screenGui = LocalPlayer.PlayerGui:WaitForChild("MainGui")
+	local screenGui = LocalPlayer.PlayerGui:WaitForChild(UI_NAME)
 
 	-- Dependency group 1
 	local platformSpecificUIManagers = {}

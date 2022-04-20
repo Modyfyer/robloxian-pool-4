@@ -11,7 +11,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
-local Event = require(ReplicatedStorage.Library.Classes.Event)
+local Event = require(ReplicatedStorage.Utils.Event)
 local PlatformType = require(script.PlatformType)
 
 local _USER_INPUT_TYPES_BY_PLATFORM_TYPE = {
