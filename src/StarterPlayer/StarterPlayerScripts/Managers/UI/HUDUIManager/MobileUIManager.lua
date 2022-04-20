@@ -34,19 +34,19 @@ function UIManager:OpenMenu()
 	
 end
 
-function _connectHandlers(_)
-	-- self._actionsMenu.ButtonClose.MouseButton1Click:Connect(function()
-	-- 	self._actionsMenu.MenuOpen.Visible = false
-	-- 	self._actionsMenu.MenuClosed.Visible = true
-	-- 	self._actionsMenu.ButtonOpen.Visible = true
-	-- 	self._actionsMenu.ButtonClose.Visible = false
-	-- end)
-	-- self._actionsMenu.ButtonOpen.MouseButton1Click:Connect(function()
-	-- 	self._actionsMenu.MenuOpen.Visible = true
-	-- 	self._actionsMenu.MenuClosed.Visible = false
-	-- 	self._actionsMenu.ButtonOpen.Visible = false
-	-- 	self._actionsMenu.ButtonClose.Visible = true
-	-- end)
+function _connectHandlers(self)
+	self._actionsMenu.ButtonClose.MouseButton1Click:Connect(function()
+		self._actionsMenu.MenuOpen.Visible = false
+		self._actionsMenu.MenuClosed.Visible = true
+		self._actionsMenu.ButtonOpen.Visible = true
+		self._actionsMenu.ButtonClose.Visible = false
+	end)
+	self._actionsMenu.ButtonOpen.MouseButton1Click:Connect(function()
+		self._actionsMenu.MenuOpen.Visible = true
+		self._actionsMenu.MenuClosed.Visible = false
+		self._actionsMenu.ButtonOpen.Visible = false
+		self._actionsMenu.ButtonClose.Visible = true
+	end)
 end
 
 return {

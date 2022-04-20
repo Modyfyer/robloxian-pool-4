@@ -27,6 +27,7 @@ function new(screenGui)
 	self._connectionManager = ConnectionManager.new()
 
 	self._mainFrame = screenGui:WaitForChild("Desktop")
+	self._actionsMenu = self._mainFrame:WaitForChild("ActionsMenu")
 
 	_connectHandlers(self)
 
@@ -61,7 +62,19 @@ end
 
 --[[ Private functions ]]--
 
-function _connectHandlers(_)
+function _connectHandlers(self)
+	self._actionsMenu.ButtonClose.MouseButton1Click:Connect(function()
+		self._actionsMenu.MenuOpen.Visible = false
+		self._actionsMenu.MenuClosed.Visible = true
+		self._actionsMenu.ButtonOpen.Visible = true
+		self._actionsMenu.ButtonClose.Visible = false
+	end)
+	self._actionsMenu.ButtonOpen.MouseButton1Click:Connect(function()
+		self._actionsMenu.MenuOpen.Visible = true
+		self._actionsMenu.MenuClosed.Visible = false
+		self._actionsMenu.ButtonOpen.Visible = false
+		self._actionsMenu.ButtonClose.Visible = true
+	end)
 	-- local function onReturnToHubButtonPressed()
 	-- 	UIHelpers.PlaySoundByName("MenuOpen", _SOUNDS_FOLDER)
 	-- end
