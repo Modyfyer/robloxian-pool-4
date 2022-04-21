@@ -1,17 +1,25 @@
---[[--<<---------------------------------------------------->>--
-Module purpose:Handles desktop HUD UI
-
-Initialized by: HUDUIManager
---]]--<<---------------------------------------------------->>--
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
 
 local LocalPlayer = Players.LocalPlayer
+local LocalChar = LocalPlayer.Character
 
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
-local UIHelpers = require(LocalPlayer.PlayerScripts.UIHelpers)
+--local UIHelpers = require(LocalPlayer.PlayerScripts.UIHelpers)
 
---local _SOUNDS_FOLDER = LocalPlayer.PlayerScripts:WaitForChild("Resources"):WaitForChild("Results"):WaitForChild("Sounds")
+local DEFAULT_WALKSPEED = 16
+local OXYGEN_SCALE = (70 / 100)
+local WATER_SCALE = (180 / 100)
+
+local drownTweenInfo = TweenInfo.new(
+	3, -- Time
+	Enum.EasingStyle.Linear, -- EasingStyle
+	Enum.EasingDirection.Out, -- EasingDirection
+	0, -- RepeatCount (when less than zero the tween will loop indefinitely)
+	false, -- Reverses (tween will reverse once reaching it's goal)
+	0 -- DelayTime
+)
 
 local UIManager = {}
 UIManager.__index = UIManager
@@ -23,23 +31,36 @@ UIManager.__index = UIManager
 **--]]
 function new(screenGui)
 	local self = setmetatable({}, UIManager)
+	
+	self._mainFrame = screenGui:WaitForChild("Desktop")
+	self._localCharacterHumanoid = LocalChar:WaitForChild("Humanoid")
 
 	self._connectionManager = ConnectionManager.new()
 
-	self._mainFrame = screenGui:WaitForChild("Desktop")
 	self._actionsMenu = self._mainFrame:WaitForChild("ActionsMenu")
 
-	_connectHandlers(self)
+	self._oxygenBar = self._mainFrame:WaitForChild("OxygenMeter"):WaitForChild("OxygenLevelBG"):WaitForChild("OxygenLevel")
+	self._oxygenVal = LocalChar:WaitForChild("Oxygen")
 
+	self._waterBar = self._mainFrame:WaitForChild("WaterMeter"):WaitForChild("WaterLevelBG"):WaitForChild("WaterLevel")
+	self._waterVal = LocalChar:WaitForChild("Water")
+
+	self._drownFrame = self._mainFrame:WaitForChild("DrownAnim")
+
+	self._drownAnimA = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 0})
+	self._drownAnimB = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 1})
+
+	
+	_connectHandlers(self)
+	
 	return self
 end
-
 
 --[[**
 	Hides UI
 **--]]
 function UIManager:Hide()
-    self._connectionManager:DisconnectAll()
+	self._connectionManager:DisconnectAll()
 	self._mainFrame.Visible = false
 end
 
@@ -50,17 +71,6 @@ function UIManager:Show()
 	self._connectionManager:ConnectAll()
 	self._mainFrame.Visible = true
 end
-
---[[**
-	Clears UI and object values
-**--]]
-function UIManager:Clear()
-
-end
-
-
-
---[[ Private functions ]]--
 
 function _connectHandlers(self)
 	self._actionsMenu.ButtonClose.MouseButton1Click:Connect(function()
@@ -75,20 +85,33 @@ function _connectHandlers(self)
 		self._actionsMenu.ButtonOpen.Visible = false
 		self._actionsMenu.ButtonClose.Visible = true
 	end)
-	-- local function onReturnToHubButtonPressed()
-	-- 	UIHelpers.PlaySoundByName("MenuOpen", _SOUNDS_FOLDER)
-	-- end
 
-	-- --Button mouse over
-	-- local function onButtonMouseOver()
-	-- 	UIHelpers.PlaySoundByName("ButtonMouseOver", _SOUNDS_FOLDER)
-	-- end
+	local function onOxygenValueChanged()
+		local oxLev = self._oxygenVal.Value
+		self._oxygenBar.Size = UDim2.new(1, 0, 0, ((OXYGEN_SCALE) * oxLev))
+		self._oxygenBar.Position = UDim2.new(0, 0, 1, ((OXYGEN_SCALE * oxLev) * -1))
+	
+		if oxLev <= 0 then
+			self._drownFrame.Visible = true
+			self._drownAnimA:Play()
+			self._localCharacterHumanoid.WalkSpeed = 0
+			task.wait(4)
+			self._drownAnimB:Play()
+			task.wait(3)
+			self._drownFrame.Visible = false
+			self._localCharacterHumanoid.WalkSpeed.WalkSpeed = DEFAULT_WALKSPEED
+		end
+	end
 
-	-- self._connectionManager:ConnectToEvent(self._mainFrame.HubButton.MouseButton1Click, onReturnToHubButtonPressed)
-	-- self._connectionManager:ConnectToEvent(self._mainFrame.HubButton.MouseEnter, onButtonMouseOver)
+	local function onWaterValueChanged()
+		local waterLev = self._waterVal.Value
+		self._waterBar.Size = UDim2.new(0, (WATER_SCALE * waterLev), 1, 0)
+	end
+
+	self._connectionManager:ConnectToEvent(self._oxygenVal.Changed, onOxygenValueChanged)
+	self._connectionManager:ConnectToEvent(self._waterVal.Changed, onWaterValueChanged)
 end
 
 return {
 	new = new
 }
-

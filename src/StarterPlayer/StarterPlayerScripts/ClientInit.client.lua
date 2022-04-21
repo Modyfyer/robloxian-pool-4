@@ -13,5 +13,5 @@ platformDetectionManager = platformDetectionManager.new()
 
 --Dependency group 3
 local hudUIManager = require(uiFolder.HUDUIManager)
-hudUIManager.new(platformDetectionManager)
+hudUIManager = hudUIManager.new(platformDetectionManager)
 
