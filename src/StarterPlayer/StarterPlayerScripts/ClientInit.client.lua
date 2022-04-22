@@ -1,3 +1,9 @@
+--[[--<<---------------------------------------------------->>--
+Purpose: Initializes high level objects
+
+Initialized by: Self
+--]]--<<---------------------------------------------------->>--
+
 local Players = game:GetService("Players")
 
 --Dependency group 0

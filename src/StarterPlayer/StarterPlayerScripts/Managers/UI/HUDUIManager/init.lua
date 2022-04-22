@@ -1,7 +1,17 @@
 --[[--<<---------------------------------------------------->>--
-Module purpose:
+Module purpose: Handles the HUD UI
 
-Initialized by: GuiManager
+Public functions:
+-Show()
+-Hide()
+
+Initialized by: ClientInit
+
+Conventions:
+ALL_CAPS = constants
+_underscoreLeadingVariable = private
+camelCaseVariable = public
+CapitalizedVariable = global to file
 --]]--<<---------------------------------------------------->>--
 
 local Players = game:GetService("Players")
@@ -9,14 +19,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local LocalPlayer = Players.LocalPlayer
 
-local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
---local Event = require(ReplicatedStorage.Event)
-local PlatformType = require(LocalPlayer.PlayerScripts.Managers.PlatformDetectionManager.PlatformType)
+local ConnectionManager = require(ReplicatedStorage.ConnectionManager) --This is an easy way to have all connections in one place so you can disconnect everything and not leak memory
+local PlatformType = require(LocalPlayer.PlayerScripts.Managers.PlatformDetectionManager.PlatformType) --This is effectively an Enum
 
 local UI_NAME = "HUDGui"
 
-local HUDUIManager = {}
-HUDUIManager.__index = HUDUIManager
+local HUDUIManager = {} --creates the table "object"
+HUDUIManager.__index = HUDUIManager --called a "metamethod" - protects you if you try to access a field of the table HUDUIManager that isn't there
 
 --[[**
 	Creates a new instance
@@ -26,13 +35,14 @@ HUDUIManager.__index = HUDUIManager
 	@returns The new instance
 **--]]
 function new(platformDetectionManager)
-	local self = setmetatable({}, HUDUIManager)
+	local self = setmetatable({}, HUDUIManager) --metatables are complicated, but self refers to the instance of the object (like "this" in C#/Java/etc.)
 
 	-- Dependency group 0
-	local connectionManager = ConnectionManager.new()
+	local connectionManager = ConnectionManager.new() --creates a new instance of the ConnectionManager object
 	local screenGui = LocalPlayer.PlayerGui:WaitForChild(UI_NAME)
 
 	-- Dependency group 1
+	-- This finds each platform UI manager (desktop, mobile, console) and instances them
 	local platformSpecificUIManagers = {}
 	for i = 1, #PlatformType do
 		local platformTypeName = PlatformType[i]
@@ -54,7 +64,7 @@ function new(platformDetectionManager)
 end
 
 --[[**
-	Hides the inventory UI
+	Hides the HUD UI
 **--]]
 function HUDUIManager:Hide()
 	self._screenGui.Enabled = false
@@ -65,7 +75,7 @@ function HUDUIManager:Hide()
 end
 
 --[[**
-	Shows the inventory UI
+	Shows the HUD UI
 **--]]
 function HUDUIManager:Show()
 	self._screenGui.Enabled = true
@@ -73,8 +83,9 @@ function HUDUIManager:Show()
 end
 
 --[[ Private functions ]]--
-
+--This sets up all the event handlers
 function _connectHandlers(self)
+	--When the platformDetectionManager detects a change, hide the old platform UI and show the new one
 	local function onDetectedPlatformTypeChanged(newPlatformType, oldPlatformType)
 		if self._platformSpecificUIManagers[oldPlatformType] then
 			self._platformSpecificUIManagers[oldPlatformType]:Hide()
@@ -89,12 +100,14 @@ function _connectHandlers(self)
 	self._connectionManager:ConnectToEvent(self._platformDetectionManager.DetectedPlatformTypeChanged, onDetectedPlatformTypeChanged)
 end
 
+--Helper function for applying a function to every platform specific UI manager
 function _iterateOverAllPlatformSpecificUIManagers(self, callback)
 	for platformType, platformSpecificUIManager in pairs(self._platformSpecificUIManagers) do
 		callback(platformType, platformSpecificUIManager)
 	end
 end
 
+--Initially show the correct platform's UI
 function _showAppropriatePlatformSpecificUIManager(self)
 	local currentPlatformType = self._platformDetectionManager:GetCurrentPlatformType()
 

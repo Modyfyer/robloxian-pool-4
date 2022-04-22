@@ -1,3 +1,13 @@
+--[[--<<---------------------------------------------------->>--
+Module purpose: Handles the HUD UI for desktop
+
+Public functions:
+-Show()
+-Hide()
+
+Initialized by: HUDUIManager
+--]]--<<---------------------------------------------------->>--
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")

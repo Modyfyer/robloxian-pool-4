@@ -1,7 +1,8 @@
 --[[--<<---------------------------------------------------->>--
-Module purpose:
+Module purpose: Determines what platform a player is using (console, desktop, or mobile)
 
-Functions:
+Public Functions:
+-GetCurrentPlatformType
 
 Initialized by: ClientInit
 
