@@ -3,6 +3,7 @@ left = guiMain.Left
 right = guiMain.Right
 order = guiMain.Order
 selection = guiMain.Selection.FoodImage
+orderName = guiMain.OrderName
 orderEvent = game:GetService("ReplicatedStorage"):WaitForChild("RemoteEvents"):WaitForChild("OrderFood")
 hrp = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
 orderPart = workspace:WaitForChild("FoodOrder")
@@ -28,6 +29,7 @@ right.Activated:connect(function()
 	end
 
 	selection.Image = foods[selNum].TextureId
+	orderName.Text = foods[selNum].Name
 end)
 
 order.Activated:connect(function()
@@ -35,9 +37,11 @@ order.Activated:connect(function()
 end)
 
 game:GetService("RunService").RenderStepped:connect(function()
-	if (hrp.Position - orderPart.Position).magnitude < 15 then
+	if (hrp.Position - orderPart.Position).magnitude < 12 then
 		guiMain.Visible = true
 	else
 		guiMain.Visible = false
 	end
 end)
+
+--rawr
