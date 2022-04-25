@@ -1,7 +1,7 @@
-machine = script.Parent
-spawn = machine.Spawn
-ss = game:GetService("ServerStorage")
-working = false
+local machine = script.Parent
+local spawn = machine.Spawn
+local ss = game:GetService("ServerStorage")
+local working = false
 
 function handleButton(button)
 	button.Click.MouseClick:connect(function(player)
@@ -21,7 +21,7 @@ function handleButton(button)
 			local tool = ss:WaitForChild("SodaTools")[button.SodaType.Value]:Clone()
 			tool.Parent = player.Backpack
 
-			wait(3)
+			task.wait(3)
 			button.BrickColor = BrickColor.new("Medium stone grey")
 			button.CFrame = button.CFrame * CFrame.new(0, 0, -.08)
 			button.Decal.Transparency = 0

@@ -14,8 +14,7 @@ local managersFolder = LocalPlayer.PlayerScripts:WaitForChild("Managers")
 
 --Dependency group 2
 local uiFolder = managersFolder.UI
-local platformDetectionManager = require(managersFolder:WaitForChild("PlatformDetectionManager"))
-platformDetectionManager = platformDetectionManager.new()
+local platformDetectionManager = require(managersFolder:WaitForChild("PlatformDetectionManager")).new()
 
 --Dependency group 3
 local hudUIManager = require(uiFolder.HUDUIManager)

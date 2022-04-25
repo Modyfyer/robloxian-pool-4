@@ -1,13 +1,14 @@
-trees = game.ServerStorage.Trees:GetChildren()
-treeSpots = Workspace.TreeSpots
+local trees = game.ServerStorage.Trees:GetChildren()
+local treeSpots = workspace.TreeSpots
 
 function placeTrees()
-	if Workspace:FindFirstChild("Trees") then
-		Workspace.Trees:Destroy()
+	if workspace:FindFirstChild("Trees") then
+		workspace.Trees:Destroy()
 	end
 
-	local treeModel = Instance.new("Model", Workspace)
+	local treeModel = Instance.new("Model")
 	treeModel.Name = "Trees"
+	treeModel.Parent = workspace
 
 	for _, v in pairs(treeSpots:GetChildren()) do
 		v.Transparency = 1
