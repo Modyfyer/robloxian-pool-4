@@ -1,11 +1,17 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local RemoteEventsFolder = ReplicatedStorage:WaitForChild("RemoteEvents")
+
 function equipStats(pl)
-	local oxygenValue = Instance.new("NumberValue", pl.Character)
+	local oxygenValue = Instance.new("NumberValue")
 	oxygenValue.Name = "Oxygen"
 	oxygenValue.Value = 100
+	oxygenValue.Parent = pl.Character
 
-	local waterValue = Instance.new("NumberValue", pl.Character)
+	local waterValue = Instance.new("NumberValue")
 	waterValue.Name = "Water"
 	waterValue.Value = 100
+	waterValue.Parent = pl.Character
 end
 
 function getNearestBrick(pl)
@@ -38,7 +44,7 @@ function drown(pl)
 end
 
 function doOxygen(pl)
-	spawn(function()
+	task.spawn(function()
 		local oxy = pl.Character:WaitForChild("Oxygen")
 		oxy.Changed:connect(function()
 			if oxy.Value <= 0 then
@@ -53,14 +59,14 @@ end
 
 game.Players.PlayerAdded:connect(function(pl)
 	pl.CharacterAdded:connect(function()
-		local hrp = pl.Character:WaitForChild("HumanoidRootPart")
+		--local hrp = pl.Character:WaitForChild("HumanoidRootPart")
 		equipStats(pl)
 		doOxygen(pl)
 	end)
 end)
 
-oxygenEvent = game:GetService("ReplicatedStorage"):WaitForChild("RemoteEvents"):WaitForChild("OxygenChange")
-waterEvent = game:GetService("ReplicatedStorage"):WaitForChild("RemoteEvents"):WaitForChild("WaterChange")
+local oxygenEvent = RemoteEventsFolder:WaitForChild("OxygenChange")
+local waterEvent = RemoteEventsFolder:WaitForChild("WaterChange")
 
 oxygenEvent.OnServerEvent:connect(function(pl, amt)
 	local plOxy = pl.Character:FindFirstChild("Oxygen")
