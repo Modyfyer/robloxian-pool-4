@@ -49,8 +49,10 @@ function new(screenGui)
 
 	self._actionsMenu = self._mainFrame:WaitForChild("ActionsMenu")
 	self._avatarButton = self._mainFrame:WaitForChild("AvatarButton")
+	self._drownFrame = self._mainFrame:WaitForChild("DrownAnim")
 	self._emotesButton = self._mainFrame:WaitForChild("EmotesButton")
 	self._settingsButton = self._mainFrame:WaitForChild("SettingsButton")
+	self._shopsButton = self._mainFrame:WaitForChild("ShopsButton")
 	self._tooltip = self._mainFrame:WaitForChild("ButtonTooltip")
 
 	self._oxygenBar = self._mainFrame:WaitForChild("OxygenMeter"):WaitForChild("OxygenLevelBG"):WaitForChild("OxygenLevel")
@@ -59,11 +61,8 @@ function new(screenGui)
 	self._waterBar = self._mainFrame:WaitForChild("WaterMeter"):WaitForChild("WaterLevelBG"):WaitForChild("WaterLevel")
 	self._waterVal = LocalChar:WaitForChild("Water")
 
-	self._drownFrame = self._mainFrame:WaitForChild("DrownAnim")
-
 	self._drownAnimA = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 0})
 	self._drownAnimB = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 1})
-
 	
 	_connectHandlers(self)
 	
@@ -87,19 +86,6 @@ function UIManager:Show()
 end
 
 function _connectHandlers(self)
-	self._actionsMenu.ButtonClose.MouseButton1Click:Connect(function()
-		self._actionsMenu.MenuOpen.Visible = false
-		self._actionsMenu.MenuClosed.Visible = true
-		self._actionsMenu.ButtonOpen.Visible = true
-		self._actionsMenu.ButtonClose.Visible = false
-	end)
-	self._actionsMenu.ButtonOpen.MouseButton1Click:Connect(function()
-		self._actionsMenu.MenuOpen.Visible = true
-		self._actionsMenu.MenuClosed.Visible = false
-		self._actionsMenu.ButtonOpen.Visible = false
-		self._actionsMenu.ButtonClose.Visible = true
-	end)
-
 	local function onOxygenValueChanged()
 		local oxLev = self._oxygenVal.Value
 		self._oxygenBar.Size = UDim2.new(1, 0, 0, ((OXYGEN_SCALE) * oxLev))
@@ -122,28 +108,61 @@ function _connectHandlers(self)
 		self._waterBar.Size = UDim2.new(0, (WATER_SCALE * waterLev), 1, 0)
 	end
 
-	local function onMouseEnter(x, y)
-		self._tooltip.Position = UDim2.new(0, x, 0, y)
+	local function onMouseEnter(x, y, text)
+		local OFFSET = 50
+		self._tooltip.Position = UDim2.new(0, x + OFFSET, 0, y + OFFSET)
 		self._tooltip.Visible = true
-		self._tooltip.Tooltip.Text = "Hi"
+		self._tooltip.Tooltip.Text = text
 	end
 
 	local function onMouseMoved(x, y)
 		self._tooltip.Position = UDim2.new(0, x, 0, y)
 	end
 
-	local function onMouseLeave(x, y)
+	local function onMouseLeave()
 		self._tooltip.Position = UDim2.new(0.5,0,0.5,0)
+		self._tooltip.Tooltip.Text = ""
 		self._tooltip.Visible = false
 	end
 
+	local function onActionsMenuOpened()
+		self._actionsMenu.MenuOpen.Visible = true
+		self._actionsMenu.MenuClosed.Visible = false
+	end
+
+	local function onActionsMenuClosed()
+		self._actionsMenu.MenuOpen.Visible = false
+		self._actionsMenu.MenuClosed.Visible = true
+	end
+
+	self._connectionManager:ConnectToEvent(self._actionsMenu.MenuOpen.ButtonClose.MouseButton1Click, onActionsMenuClosed)
+	self._connectionManager:ConnectToEvent(self._actionsMenu.MenuClosed.ButtonOpen.MouseButton1Click, onActionsMenuOpened)
+
 	self._connectionManager:ConnectToEvent(self._oxygenVal.Changed, onOxygenValueChanged)
 	self._connectionManager:ConnectToEvent(self._waterVal.Changed, onWaterValueChanged)
-	self._connectionManager:ConnectToEvent(self._avatarButton.MouseEnter, onMouseEnter)
+	self._connectionManager:ConnectToEvent(self._avatarButton.MouseEnter, function(x, y)
+		onMouseEnter(x, y, "Avatar")
+	end)
 	self._connectionManager:ConnectToEvent(self._avatarButton.MouseMoved, onMouseMoved)
 	self._connectionManager:ConnectToEvent(self._avatarButton.MouseLeave, onMouseLeave)
-	self._connectionManager:ConnectToEvent(self._emotesButton.MouseEnter, onMouseEnter)
+
+	self._connectionManager:ConnectToEvent(self._emotesButton.MouseEnter, function(x, y)
+		onMouseEnter(x, y, "Emotes")
+	end)
+	self._connectionManager:ConnectToEvent(self._emotesButton.MouseMoved, onMouseMoved)
 	self._connectionManager:ConnectToEvent(self._emotesButton.MouseLeave, onMouseLeave)
+
+	self._connectionManager:ConnectToEvent(self._settingsButton.MouseEnter, function(x, y)
+		onMouseEnter(x, y, "Settings")
+	end)
+	self._connectionManager:ConnectToEvent(self._settingsButton.MouseMoved, onMouseMoved)
+	self._connectionManager:ConnectToEvent(self._settingsButton.MouseLeave, onMouseLeave)
+
+	self._connectionManager:ConnectToEvent(self._shopsButton.MouseEnter, function(x, y)
+		onMouseEnter(x, y, "Shops")
+	end)
+	self._connectionManager:ConnectToEvent(self._shopsButton.MouseMoved, onMouseMoved)
+	self._connectionManager:ConnectToEvent(self._shopsButton.MouseLeave, onMouseLeave)
 
 end
 

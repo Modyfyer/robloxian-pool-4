@@ -121,7 +121,7 @@ function _connectHandlers(self)
 		self._waterBar.Size = UDim2.new(0, (WATER_SCALE * waterLev), 1, 0)
 	end
 
-	local function onMouseMoved(x, y)
+	local function onMouseMoved()
 		
 	end
 
