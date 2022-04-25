@@ -48,6 +48,10 @@ function new(screenGui)
 	self._connectionManager = ConnectionManager.new()
 
 	self._actionsMenu = self._mainFrame:WaitForChild("ActionsMenu")
+	self._avatarButton = self._mainFrame:WaitForChild("AvatarButton")
+	self._emotesButton = self._mainFrame:WaitForChild("EmotesButton")
+	self._settingsButton = self._mainFrame:WaitForChild("SettingsButton")
+	self._tooltip = self._mainFrame:WaitForChild("ButtonTooltip")
 
 	self._oxygenBar = self._mainFrame:WaitForChild("OxygenMeter"):WaitForChild("OxygenLevelBG"):WaitForChild("OxygenLevel")
 	self._oxygenVal = LocalChar:WaitForChild("Oxygen")
@@ -118,8 +122,29 @@ function _connectHandlers(self)
 		self._waterBar.Size = UDim2.new(0, (WATER_SCALE * waterLev), 1, 0)
 	end
 
+	local function onMouseEnter(x, y)
+		self._tooltip.Position = UDim2.new(0, x, 0, y)
+		self._tooltip.Visible = true
+		self._tooltip.Tooltip.Text = "Hi"
+	end
+
+	local function onMouseMoved(x, y)
+		self._tooltip.Position = UDim2.new(0, x, 0, y)
+	end
+
+	local function onMouseLeave(x, y)
+		self._tooltip.Position = UDim2.new(0.5,0,0.5,0)
+		self._tooltip.Visible = false
+	end
+
 	self._connectionManager:ConnectToEvent(self._oxygenVal.Changed, onOxygenValueChanged)
 	self._connectionManager:ConnectToEvent(self._waterVal.Changed, onWaterValueChanged)
+	self._connectionManager:ConnectToEvent(self._avatarButton.MouseEnter, onMouseEnter)
+	self._connectionManager:ConnectToEvent(self._avatarButton.MouseMoved, onMouseMoved)
+	self._connectionManager:ConnectToEvent(self._avatarButton.MouseLeave, onMouseLeave)
+	self._connectionManager:ConnectToEvent(self._emotesButton.MouseEnter, onMouseEnter)
+	self._connectionManager:ConnectToEvent(self._emotesButton.MouseLeave, onMouseLeave)
+
 end
 
 return {

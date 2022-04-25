@@ -48,6 +48,9 @@ function new(screenGui)
 	self._connectionManager = ConnectionManager.new()
 
 	self._actionsMenu = self._mainFrame:WaitForChild("ActionsMenu")
+	self._avatarButton = self._mainFrame:WaitForChild("AvatarButton")
+	self._emotesButton = self._mainFrame:WaitForChild("EmotesButton")
+	self._settingsButton = self._mainFrame:WaitForChild("SettingsButton")
 
 	self._oxygenBar = self._mainFrame:WaitForChild("OxygenMeter"):WaitForChild("OxygenLevelBG"):WaitForChild("OxygenLevel")
 	self._oxygenVal = LocalChar:WaitForChild("Oxygen")
@@ -118,8 +121,14 @@ function _connectHandlers(self)
 		self._waterBar.Size = UDim2.new(0, (WATER_SCALE * waterLev), 1, 0)
 	end
 
+	local function onMouseMoved(x, y)
+		
+	end
+
 	self._connectionManager:ConnectToEvent(self._oxygenVal.Changed, onOxygenValueChanged)
 	self._connectionManager:ConnectToEvent(self._waterVal.Changed, onWaterValueChanged)
+
+	self._connectionManager:ConnectToEvent(self._avatarButton.MouseMoved, onMouseMoved)
 end
 
 return {
