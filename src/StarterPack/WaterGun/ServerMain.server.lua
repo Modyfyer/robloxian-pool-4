@@ -2,6 +2,19 @@ tool = script.Parent
 shootEvent = tool:WaitForChild("ShootBeam")
 sound = tool:WaitForChild("Handle"):WaitForChild("Sound")
 
+function getPlayerFromPart(part)
+	local player = nil
+
+	if part.Parent.ClassName == "Accessory" or part.Parent.ClassName == "Hat" then
+		if part.Parent.Parent ~= workspace then
+			player = game.Players:GetPlayerFromCharacter(part.Parent.Parent)
+		end
+	elseif part.Parent.ClassName == "Model" and game.Players:GetPlayerFromCharacter(part.Parent) then
+		player = game.Players:GetPlayerFromCharacter(part.Parent)
+	end
+	return player
+end
+
 shootEvent.OnServerEvent:connect(function(pl, part, loc)
 	local atA = tool.Handle:WaitForChild("Attachment")
 	local atB = Instance.new("Attachment", part)
@@ -13,8 +26,8 @@ shootEvent.OnServerEvent:connect(function(pl, part, loc)
 	sound:Play()
 	watLev.Value = watLev.Value - 5
 
-	if game.Players:GetPlayerFromCharacter(part.Parent) then
-		local dedPlayer = game.Players:GetPlayerFromCharacter(part.Parent)
+	if getPlayerFromPart(part) ~= nil then
+		local dedPlayer = getPlayerFromPart(part)
 		local oxy = dedPlayer.Character:FindFirstChild("Oxygen")
 
 		if oxy ~= nil then
