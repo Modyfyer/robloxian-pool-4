@@ -1,6 +1,8 @@
-waterLevel = 28
+local Players = game:GetService("Players")
 
-terr = workspace.Terrain
+local WATER_LEVEL = 28
+
+local terr = workspace.Terrain
 
 function canSplash(hrp, pos)
 	local min = hrp.Position - (4 * hrp.Size)
@@ -9,7 +11,7 @@ function canSplash(hrp, pos)
 	local material = terr:ReadVoxels(region, 4)[1][1][1] 
 
 	if material == Enum.Material.Water then
-		local particlePart = Instance.new("Part", hrp.Parent)
+		local particlePart = Instance.new("Part")
 		local particle = script.SplashParticle:Clone()
 
 		particlePart.Anchored = true
@@ -17,6 +19,7 @@ function canSplash(hrp, pos)
 		particlePart.CanCollide = false
 		particlePart.Size = Vector3.new(3, 1, 3)
 		particlePart.CFrame = pos
+		particlePart.Parent = hrp.Parent
 
 		particle.Parent = particlePart
 		particle:Emit(50)
@@ -27,22 +30,21 @@ end
 
 function setSplash(player)
 	local hrp = player.Character:WaitForChild("HumanoidRootPart")
-	local hum = player.Character:WaitForChild("Humanoid")
 
-	terr.Touched:connect(function(part)
+	terr.Touched:Connect(function(part)
 		local velocity = math.abs(part.Velocity.Y)
 		if part == hrp and velocity > 15 then
-			canSplash(hrp, CFrame.new(hrp.Position.X, waterLevel, hrp.Position.Z))
+			canSplash(hrp, CFrame.new(hrp.Position.X, WATER_LEVEL, hrp.Position.Z))
 		end
 	end)
 end
 
-game:GetService("Players").PlayerAdded:connect(function(pl)
-	pl.CharacterAdded:connect(function(character)
+Players.PlayerAdded:Connect(function(pl)
+	pl.CharacterAdded:Connect(function(character)
 		local hum = character:WaitForChild("Humanoid")
 		local connection = setSplash(pl)
 
-		hum.Died:connect(function()
+		hum.Died:Connect(function()
 			connection:Disconnect()
 		end)
 	end)
