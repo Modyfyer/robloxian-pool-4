@@ -13,3 +13,5 @@ end
 for _, v in pairs(slides:GetChildren()) do
 	handleSlide(v)
 end
+
+handleSlide(workspace:WaitForChild("KiddiePlayground"):WaitForChild("SitTrigger"))
