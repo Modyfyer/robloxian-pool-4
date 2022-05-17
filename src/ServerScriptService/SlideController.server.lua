@@ -14,4 +14,12 @@ for _, v in pairs(slides:GetChildren()) do
 	handleSlide(v)
 end
 
-handleSlide(workspace:WaitForChild("KiddiePlayground"):WaitForChild("SitTrigger"))
+kpg = workspace:WaitForChild("KiddiePlayground")
+
+handleSlide(kpg)
+
+for _, v in pairs(kpg:WaitForChild("Velocity"):GetChildren()) do
+	if v.Name == "VelocityPart" then
+		v.Velocity = v.CFrame.lookVector * 50
+	end
+end

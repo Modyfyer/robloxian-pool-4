@@ -1,4 +1,4 @@
-bucketModel = workspace:WaitForChild("KiddiePlayground"):WaitForChild("FillBucket")
+bucketModel = workspace:WaitForChild("KiddiePlayground"):WaitForChild("Bucket"):WaitForChild("FillBucket")
 bucket = bucketModel:WaitForChild("Bucket")
 water = bucketModel:WaitForChild("BucketWater")
 particle = bucket:WaitForChild("Att"):WaitForChild("Particle")
