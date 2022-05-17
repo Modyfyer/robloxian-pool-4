@@ -27,7 +27,7 @@ function doCannon()
 				return
 			end
 
-			if mouse.Target ~= nil and (hrp.Position - mouse.Hit.Position).magnitude < 45 and canFire.Value == true then
+			if mouse.Target ~= nil and (hrp.Position - mouse.Hit.Position).magnitude < 70 and canFire.Value == true then
 				event:FireServer(mouse.Target, mouse.Hit)
 			end
 		end)

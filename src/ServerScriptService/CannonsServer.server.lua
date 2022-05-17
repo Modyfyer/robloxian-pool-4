@@ -1,6 +1,19 @@
 maxAngle = 30
 minAngle = -30
 
+function getPlayerFromPart(part)
+	local player = nil
+
+	if part.Parent.ClassName == "Accessory" or part.Parent.ClassName == "Hat" then
+		if part.Parent.Parent ~= workspace then
+			player = game.Players:GetPlayerFromCharacter(part.Parent.Parent)
+		end
+	elseif part.Parent.ClassName == "Model" and game.Players:GetPlayerFromCharacter(part.Parent) then
+		player = game.Players:GetPlayerFromCharacter(part.Parent)
+	end
+	return player
+end
+
 function doCannon(can)
 	local model = can
 	local seat = model:WaitForChild("Seat")
@@ -22,8 +35,8 @@ function doCannon(can)
 
 			game:GetService("Debris"):AddItem(attB, 1.5)
 
-			if game.Players:GetPlayerFromCharacter(part.Parent) then
-				local dedPlayer = game.Players:GetPlayerFromCharacter(part.Parent)
+			if getPlayerFromPart(part) ~= nil then
+				local dedPlayer = getPlayerFromPart(part)
 				local oxy = dedPlayer.Character:FindFirstChild("Oxygen")
 
 				if oxy ~= nil then
@@ -42,7 +55,7 @@ function doCannon(can)
 
 	seat.ChildAdded:connect(function(w)
 		if w.Name == "SeatWeld" then
-			w.C0 = w.C0 + Vector3.new(0, 1.5, 0)
+			w.C0 = w.C0 + Vector3.new(0, 1, 0)
 		end
 	end)
 

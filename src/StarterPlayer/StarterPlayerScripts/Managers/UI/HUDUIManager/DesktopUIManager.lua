@@ -31,6 +31,15 @@ local drownTweenInfo = TweenInfo.new(
 	0 -- DelayTime
 )
 
+local hoverTweenInfo = TweenInfo.new(
+	1.5,
+	Enum.EasingStyle.Linear,
+	Enum.EasingDirection.Out,
+	0,
+	false,
+	0
+)
+
 local UIManager = {}
 UIManager.__index = UIManager
 
