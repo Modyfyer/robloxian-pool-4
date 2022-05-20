@@ -4,5 +4,7 @@ local GenerateEnumTable = require(ReplicatedStorage.Utils.GenerateEnumTable)
 return GenerateEnumTable({
 	OnOff = 1,
 	Dropdown = 2,
-	ArrowSelection = 3
+	ArrowSelection = 3,
+	TextEntry = 4,
+	Slider = 5
 })
