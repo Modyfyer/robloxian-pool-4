@@ -7,7 +7,7 @@ sound = bucket:WaitForChild("Splash")
 
 ts = game:GetService("TweenService")
 
-eventTime = 10 --15 * 60
+eventTime = 15 * 60
 startPos = bucket.CFrame - Vector3.new(0, 8.8, 0)
 endPos = startPos + Vector3.new(0, 17, 0)
 startSize = Vector3.new(14.6, .01, 14.6)
