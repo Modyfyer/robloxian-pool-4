@@ -1,12 +1,13 @@
 bucketModel = workspace:WaitForChild("KiddiePlayground"):WaitForChild("Bucket"):WaitForChild("FillBucket")
 bucket = bucketModel:WaitForChild("Bucket")
+bell = bucketModel.Parent:WaitForChild("Bell")
 water = bucketModel:WaitForChild("BucketWater")
 particle = bucket:WaitForChild("Att"):WaitForChild("Particle")
 sound = bucket:WaitForChild("Splash")
 
 ts = game:GetService("TweenService")
 
-eventTime = 15 * 60
+eventTime = 10 --15 * 60
 startPos = bucket.CFrame - Vector3.new(0, 8.8, 0)
 endPos = startPos + Vector3.new(0, 17, 0)
 startSize = Vector3.new(14.6, .01, 14.6)
@@ -30,30 +31,58 @@ function togglePipes(toggle)
 	end
 end
 
+function ringBell()
+	local bellBlock = bell:WaitForChild("Bell")
+	local bellSound = bellBlock:WaitForChild("BellSound")
+	local orgPos = bell:GetPrimaryPartCFrame()
+
+	bellSound:Play()
+
+	for e = 1, 5 do
+		for i = 0, 22.5, .5 do
+			task.wait()
+			bell:SetPrimaryPartCFrame(orgPos * CFrame.Angles(math.rad(i), 0, 0))
+		end
+	
+		for i = 22.5, 0, -.5 do
+			task.wait()
+			bell:SetPrimaryPartCFrame(orgPos * CFrame.Angles(math.rad(i), 0, 0))
+		end
+	end
+
+	bell:SetPrimaryPartCFrame(orgPos)
+	bellSound:Stop()
+end
+
 function tipBucket()
 	local bucketOrg = bucketModel:GetPrimaryPartCFrame()
+
+	togglePipes(false)
+	ringBell()
+
 	for i = 0, 112, 8 do
-		wait()
+		task.wait()
 		bucketModel:SetPrimaryPartCFrame(bucketOrg * CFrame.Angles(0, 0, math.rad(i)))
 	end
 
 	particle.Enabled = true
 	sound:Play()
-	wait(5)
+	task.wait(5)
 	particle.Enabled = false
 
 	for i = 112, 0, -8 do
-		wait()
+		task.wait()
 		bucketModel:SetPrimaryPartCFrame(bucketOrg * CFrame.Angles(0, 0, math.rad(i)))
 	end
+
 	bucketModel:SetPrimaryPartCFrame(bucketOrg)
+	togglePipes(true)
 end
 
 while true do
-	togglePipes(true)
 	fillBucket:Play()
 	task.wait(eventTime)
-	togglePipes(false)
+
 	tipBucket()
 	water.Size = startSize
 	water.CFrame = startPos
