@@ -11,7 +11,7 @@ local LocalPlayer = Players.LocalPlayer
 
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
 local CabanaSettingsByName = require(ReplicatedStorage.Data.CabanaSettingsByName)
-local CabanaSettingType = require(ReplicatedStorage.Enums.CabanaSettingType)
+local SettingType = require(ReplicatedStorage.Enums.SettingType)
 --local UIHelpers = require(LocalPlayer.PlayerScripts.HelperFunctions.UIHelpers)
 
 --local _SOUNDS_FOLDER = LocalPlayer.PlayerScripts:WaitForChild("Resources"):WaitForChild("Hub"):WaitForChild("Sounds")

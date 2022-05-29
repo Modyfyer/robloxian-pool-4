@@ -5,14 +5,14 @@ Initialized by: CabanaUIManager
 --]]--<<---------------------------------------------------->>--
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
+--local TweenService = game:GetService("TweenService")
 
 local LocalPlayer = Players.LocalPlayer
 
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
 local CabanaSettingsByName = require(ReplicatedStorage.Data.CabanaSettingsByName)
-local CabanaSettingType = require(ReplicatedStorage.Enums.CabanaSettingType)
---local UIHelpers = require(LocalPlayer.PlayerScripts.HelperFunctions.UIHelpers)
+local SettingType = require(ReplicatedStorage.Enums.SettingType)
+local UIHelpers = require(LocalPlayer.PlayerScripts.UIHelpers)
 
 local _SOUNDS_FOLDER
 
@@ -33,7 +33,15 @@ function new(screenGui)
 
 	self._mainFrame = screenGui:WaitForChild("Desktop")
 
+	self._sliderEffectOffTweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, 0, false, 0)
+	self._sliderEffectOnTweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false, 0)
+	self._arrowEffectLeftTweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false, 0)
+	self._arrowEffectRightTweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false, 0)
+
+	self._settings = {}
+
 	_connectHandlers(self)
+	_initSettings(self)
 
 	return self
 end
@@ -58,6 +66,7 @@ end
 	Clears UI and object values
 **--]]
 function UIManager:Clear()
+	self._settings = {}
 end
 
 --TODO: Implement this
@@ -85,11 +94,26 @@ end
 --[[ Private functions ]]--
 
 function _connectHandlers(_)
-	--Button mouse over
 	-- local function onButtonMouseOver()
 	-- 	UIHelpers.PlaySoundByName("ButtonMouseOver", _SOUNDS_FOLDER)
 	-- end
 end
+
+function _initSettings(self)
+	for _, v in pairs(CabanaSettingsByName) do
+		for __, setting in pairs(v) do
+			print(setting["displayName"])
+			-- if setting["displayName"].SettingType == SettingType.TextEntry then
+			-- 	--local newSetting --= self._mainFrame.SettingsListFrame.SliderSetting:Clone()
+			-- -- 		newSetting.Name = setting.displayName
+			-- -- 		newSetting.SettingName.Text = setting.displayName
+			-- -- 		newSetting.Visible = true
+			-- -- 		newSetting.Parent = self._mainFrame.SettingsListFrame
+			-- end
+		end
+	end
+end
+
 return {
 	new = new
 }

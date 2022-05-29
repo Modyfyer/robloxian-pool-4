@@ -20,3 +20,6 @@ local platformDetectionManager = require(managersFolder:WaitForChild("PlatformDe
 local hudUIManager = require(uiFolder.HUDUIManager)
 hudUIManager = hudUIManager.new(platformDetectionManager)
 
+local cabanaUIManager = require(uiFolder.CabanaUIManager)
+cabanaUIManager = cabanaUIManager.new(platformDetectionManager)
+

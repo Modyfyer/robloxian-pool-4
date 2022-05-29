@@ -25,7 +25,7 @@ function new(platformDetectionManager)
 
 	-- Dependency group 0
 	local connectionManager = ConnectionManager.new()
-	local screenGui = LocalPlayer.PlayerGui:WaitForChild("SettingsGui")
+	local screenGui = LocalPlayer.PlayerGui:WaitForChild("CabanaGui")
 
 	-- Dependency group 1
 	local platformSpecificUIManagers = {}
