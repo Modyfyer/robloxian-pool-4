@@ -67,7 +67,7 @@ function new(screenGui)
 	self._oxygenBar = self._mainFrame:WaitForChild("OxygenMeter"):WaitForChild("OxygenLevelBG"):WaitForChild("OxygenLevel")
 	self._oxygenVal = LocalChar:WaitForChild("Oxygen")
 
-	self._waterBar = self._mainFrame:WaitForChild("WaterMeter"):WaitForChild("WaterLevelBG"):WaitForChild("WaterLevel")
+	self._waterBar = self._mainFrame:WaitForChild("WaterMeter"):WaitForChild("WaterLevel")
 	self._waterVal = LocalChar:WaitForChild("Water")
 
 	self._drownAnimA = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 0})
@@ -114,7 +114,7 @@ function _connectHandlers(self)
 
 	local function onWaterValueChanged()
 		local waterLev = self._waterVal.Value
-		self._waterBar.Size = UDim2.new(0, (WATER_SCALE * waterLev), 1, 0)
+		self._waterBar.Size = UDim2.new(1, 0, 0, (WATER_SCALE * waterLev))
 	end
 
 	local function onMouseEnter(x, y, text)
