@@ -1,13 +1,14 @@
-statScreens = workspace:WaitForChild("Buildings"):WaitForChild("EntranceBuilding"):WaitForChild("StatScreens")
-timeStat = statScreens:WaitForChild("TimeStat")
+local statScreens = workspace:WaitForChild("Buildings"):WaitForChild("EntranceBuilding"):WaitForChild("StatScreens")
+local timeStat = statScreens:WaitForChild("TimeStat")
 
-timeGuiMain = timeStat:WaitForChild("Screen"):WaitForChild("TimeStat")
-timeRow = timeGuiMain:WaitForChild("Row")
+local timeGuiMain = timeStat:WaitForChild("Screen"):WaitForChild("TimeStat")
+local timeRow = timeGuiMain:WaitForChild("Row")
 
 function addRow(gui, player, stat, place)
 	local row = timeRow:Clone()
 	row.PlayerName.TextLabel.Text = player
 	row.PlayerValue.TextLabel.Text = stat
+	row.Place.TextLabel.Text = place
 	
 	for _, v in pairs(row:GetChildren()) do
 		v.Parent = gui
@@ -41,7 +42,7 @@ function updateTimeStat()
 	end
 end
 
-game.Players.PlayerAdded:connect(function(player)
+game.Players.PlayerAdded:Connect(function(player)
 	local timeValue = Instance.new("NumberValue", player)
 	timeValue.Name = "TimeSpent"
 	
