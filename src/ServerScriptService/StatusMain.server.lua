@@ -57,11 +57,22 @@ function doOxygen(pl)
 	end)
 end
 
+function handleJump(char)
+	local hum = char:WaitForChild("Humanoid")
+	hum.Jumping:connect(function()
+		local check = Instance.new("BoolValue")
+		check.Name = "JustJumped"
+		check.Parent = hum
+		game:GetService("Debris"):AddItem(check, 5)
+	end)
+end
+
 game.Players.PlayerAdded:connect(function(pl)
-	pl.CharacterAdded:connect(function()
+	pl.CharacterAdded:connect(function(char)
 		--local hrp = pl.Character:WaitForChild("HumanoidRootPart")
 		equipStats(pl)
 		doOxygen(pl)
+		handleJump(char)
 	end)
 end)
 

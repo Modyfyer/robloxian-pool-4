@@ -43,8 +43,9 @@ function updateTimeStat()
 end
 
 game.Players.PlayerAdded:Connect(function(player)
-	local timeValue = Instance.new("NumberValue", player)
+	local timeValue = Instance.new("NumberValue")
 	timeValue.Name = "TimeSpent"
+	timeValue.Parent = player
 	
 	pcall(function()
 		while task.wait(60) do
