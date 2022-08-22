@@ -18,12 +18,13 @@ function handleDBoard(model)
 				local player = game.Players:GetPlayerFromCharacter(part.Parent)
 				local char = player.Character
 				local hum = char:WaitForChild("Humanoid")
+				local state = hum:GetState()
 
-				if hum:FindFirstChild("JustJumped") then
+				if state == Enum.HumanoidStateType.Jumping or state == Enum.HumanoidStateType.Freefall then
 					deb = true
 					loadedAnim:Play()
 					sound:Play()
-					wait(3)
+					task.wait(3)
 					deb = false
 				end
 			end
