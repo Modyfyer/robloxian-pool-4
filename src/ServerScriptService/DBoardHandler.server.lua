@@ -24,7 +24,7 @@ function handleDBoard(model)
 					deb = true
 					loadedAnim:Play()
 					sound:Play()
-					task.wait(3)
+					task.wait(1.5)
 					deb = false
 				end
 			end
