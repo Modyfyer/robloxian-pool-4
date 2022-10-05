@@ -7,5 +7,5 @@ function doTrash(can)
 end
 
 for _, v in pairs(workspace:WaitForChild("TrashCans"):GetChildren()) do
-	doTrash(v)
+	doTrash(v.CanCollision)
 end
