@@ -36,17 +36,28 @@ function toggleFlames(p, state)
 	end
 end
 
+function toggleLightCones(p, state)
+	for _, v in pairs(p:GetChildren()) do
+		if v:IsA("Beam") and v.Name == "LightCone" then
+			v.Enabled = state
+		end
+		toggleLightCones(v, state)
+	end
+end
+
 while wait(waitTime) do
 	lighting.ClockTime += .005
 	if (lighting.ClockTime >= dayEnd) then
 		toggleLights(workspace, true)
 		toggleBulbs(workspace, true)
 		toggleFlames(workspace, true)
+		toggleLightCones(workspace, true)
 		waitTime = .001
 	elseif (lighting.ClockTime > dayStart) and (lighting.ClockTime < dayEnd) then
 		toggleLights(workspace, false)
 		toggleBulbs(workspace, false)
 		toggleFlames(workspace, false)
+		toggleLightCones(workspace, false)
 		waitTime = .25
 	end
 end
