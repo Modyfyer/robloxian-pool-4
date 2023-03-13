@@ -28,7 +28,7 @@ local drownTweenInfo = TweenInfo.new(
 	Enum.EasingStyle.Linear, -- EasingStyle
 	Enum.EasingDirection.Out, -- EasingDirection
 	0, -- RepeatCount (when less than zero the tween will loop indefinitely)
-	false, -- Reverses (tween will reverse once reaching it's goal)
+	false, -- Reverses (tween will reverse once reaching its goal)
 	0 -- DelayTime
 )
 
@@ -79,6 +79,13 @@ function new(screenGui)
 	self._drownAnimA = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 0})
 	self._drownAnimB = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 1})
 
+	self._states = {
+		actionsMenu = false,
+		avatarButton = false,
+		emotesButton = false,
+		settingsButton = false
+	}
+
 	self._selectedAction = false
 
 	_connectHandlers(self)
@@ -95,12 +102,30 @@ function UIManager:Hide()
 end
 
 --[[**
+	Resets UI
+**--]]
+function UIManager:Reset()
+	self._connectionManager:DisconnectAll()
+	self._mainFrame.Visible = false
+	self._selectedAction = false
+
+	self._states = {
+		actionsMenu = false,
+		avatarButton = false,
+		emotesButton = false,
+		settingsButton = false
+	}
+end
+
+--[[**
 	Shows UI
 **--]]
 function UIManager:Show()
 	self._connectionManager:ConnectAll()
 	self._mainFrame.Visible = true
 end
+
+
 
 function _connectHandlers(self)
 	local character = LocalPlayer.Character
@@ -188,11 +213,11 @@ function _connectHandlers(self)
 			local actionKey = action:GetAttribute("Keybind")
 			if actionKey == keycode.Name then
 				if action.UIStroke.Enabled then
-					self.selectedAction = false
+					self._selectedAction = false
 					action.UIStroke.Enabled = false
 					return
 				end
-				if not self.selectedAction then
+				if not self._selectedAction then
 					for _, anim in pairs(self._actionsAnimations:GetChildren()) do
 						local keybind = anim:GetAttribute("Keybind")
 						if keybind == keycode.Name then
@@ -200,7 +225,7 @@ function _connectHandlers(self)
 						end
 					end
 					action.UIStroke.Enabled = true
-					self.selectedAction = true
+					self._selectedAction = true
 				end
 				break
 			end
@@ -239,6 +264,11 @@ function _connectHandlers(self)
 	end)
 	self._connectionManager:ConnectToEvent(self._shopsButton.MouseMoved, onMouseMoved)
 	self._connectionManager:ConnectToEvent(self._shopsButton.MouseLeave, onMouseLeave)
+	self._connectionManager:ConnectToEvent(Players.PlayerRemoving, function(player)
+		if player == LocalPlayer then
+			self:Reset()
+		end
+	end)
 
 end
 

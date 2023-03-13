@@ -41,7 +41,7 @@ UIManager.__index = UIManager
 **--]]
 function new(screenGui)
 	local self = setmetatable({}, UIManager)
-	
+
 	self._mainFrame = screenGui:WaitForChild("Mobile")
 	self._localCharacterHumanoid = LocalChar:WaitForChild("Humanoid")
 
@@ -63,9 +63,15 @@ function new(screenGui)
 	self._drownAnimA = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 0})
 	self._drownAnimB = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 1})
 
-	
+	self._states = {
+		actionsMenu = false,
+		avatarButton = false,
+		emotesButton = false,
+		settingsButton = false
+	}
+
 	_connectHandlers(self)
-	
+
 	return self
 end
 
@@ -103,7 +109,7 @@ function _connectHandlers(self)
 		local oxLev = self._oxygenVal.Value
 		self._oxygenBar.Size = UDim2.new(1, 0, 0, ((OXYGEN_SCALE) * oxLev))
 		self._oxygenBar.Position = UDim2.new(0, 0, 1, ((OXYGEN_SCALE * oxLev) * -1))
-	
+
 		if oxLev <= 0 then
 			self._drownFrame.Visible = true
 			self._drownAnimA:Play()
@@ -122,7 +128,7 @@ function _connectHandlers(self)
 	end
 
 	local function onMouseMoved()
-		
+
 	end
 
 	self._connectionManager:ConnectToEvent(self._oxygenVal.Changed, onOxygenValueChanged)
