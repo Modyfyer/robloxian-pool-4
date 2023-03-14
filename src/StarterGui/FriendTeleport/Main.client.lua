@@ -1,4 +1,4 @@
-wait(3)
+task.wait(3)
 local guiMain = script.Parent
 
 local player = game.Players.LocalPlayer
