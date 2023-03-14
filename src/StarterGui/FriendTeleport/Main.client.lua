@@ -55,5 +55,3 @@ end
 game.Players.PlayerAdded:Connect(function(addedPlr)
 	handlePlr(addedPlr)
 end)
-
---juan carlos
