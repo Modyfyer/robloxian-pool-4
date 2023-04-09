@@ -45,7 +45,9 @@ Players.PlayerAdded:Connect(function(pl)
 		local connection = setSplash(pl)
 
 		hum.Died:Connect(function()
-			connection:Disconnect()
+			if connection then
+				connection:Disconnect()
+			end
 		end)
 	end)
 end)
