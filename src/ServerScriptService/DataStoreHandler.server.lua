@@ -12,7 +12,7 @@ function savePoolPoints(player, poolPoints)
   playerDataStore:SetAsync(playerKey, {PoolPoints = poolPoints})
 end
 
-function getPoolPoints(player)
+function getPoolPoints(player: Player)
   local playerKey = tostring(player.UserId)
   local success, playerData = pcall(function()
     return playerDataStore:GetAsync(playerKey)
@@ -56,6 +56,6 @@ Players.PlayerRemoving:Connect(function(player)
   end
 end)
 
--- ReplicatedStorage.RemoteEvents.getPoolPoints.OnServerInvoke:Connect(function(player: Player)
---   return getPoolPoints(player)
--- end)
+ReplicatedStorage.RemoteEvents.getPoolPoints.OnServerEvent:Connect(function(player)
+  return getPoolPoints(player)
+end)
