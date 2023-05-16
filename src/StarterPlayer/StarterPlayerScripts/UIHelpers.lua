@@ -8,12 +8,12 @@ local Helpers = {}
 function Helpers.DisplayErrorMessage(displayTime, message, alertsScreen)
 	local errorUI = alertsScreen.ErrorAlert
 
-	spawn(function()
+	task.spawn(function()
 		alertsScreen.Visible = true
 		errorUI.Description.Text = message
 		errorUI.Visible = true
 
-		wait(displayTime)
+		task.wait(displayTime)
 
 		alertsScreen.Visible = false
 		errorUI.Visible = false
@@ -47,6 +47,46 @@ function Helpers.StopSoundByName(soundName, soundsFolder)
 	assert(soundInstance, string.format("No sound found by the name %s", soundName))
 
 	soundInstance:Stop()
+end
+
+function Helpers:SetupViewport(viewportFrame : ViewportFrame, item: Instance)
+	local rootPart = nil
+	if item:IsA("BasePart") then
+		rootPart = item
+	elseif item:IsA("Model") and item.PrimaryPart ~= nil then
+		rootPart = item.PrimaryPart
+	elseif item:FindFirstChild("Handle") then
+		rootPart = item:FindFirstChild("Handle")
+	else
+		rootPart = item:FindFirstChildWhichIsA("BasePart")
+	end
+
+	if not rootPart then
+		rootPart = {CFrame = CFrame.new(), Size = Vector3.new()}
+	end
+
+	local cam = viewportFrame:FindFirstChildOfClass("Camera") or Instance.new("Camera")
+	cam.CameraType = Enum.CameraType.Scriptable
+
+	local _, modelSize = if item:IsA("Model") then item:GetBoundingBox() else nil, rootPart.Size
+	local cameraCFrame = rootPart.CFrame * CFrame.new(Vector3.new(-0.5, 0.4, -0.5).Unit * Helpers:GetCameraOffset(cam.FieldOfView, modelSize), Vector3.zero)
+
+	local thumbnailConfig = item:FindFirstChild("ThumbnailConfiguration")
+	if thumbnailConfig then
+		rootPart = thumbnailConfig.ThumbnailCameraTarget.Value
+		cameraCFrame = rootPart.CFrame * thumbnailConfig.ThumbnailCameraValue.Value
+	end
+	cam.CFrame = cameraCFrame
+	cam.Parent = viewportFrame
+	viewportFrame.CurrentCamera = cam
+end
+
+function Helpers:GetCameraOffset(fov, targetSize)
+	local x, y, z = targetSize.x, targetSize.y, targetSize.Z
+	local maxSize = math.sqrt(x^2 + y^2 + z^2)
+	local fac = math.tan(math.rad(fov)/2)
+	local depth = 0.5 * maxSize/fac
+	return depth + maxSize/2
 end
 
 local function _formatTime(currentTime, isRacing)

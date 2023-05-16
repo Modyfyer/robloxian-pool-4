@@ -43,7 +43,7 @@ function new(platformDetectionManager)
 	self._platformSpecificUIManagers = platformSpecificUIManagers
 	self._screenGui = screenGui
 
-	self._screenGui.Enabled = false
+	self._screenGui.Enabled = true
 
 	_connectHandlers(self)
 

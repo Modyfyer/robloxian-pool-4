@@ -4,8 +4,9 @@ Module purpose: Handles the cabana rental and management interface
 Initialized by: CabanaUIManager
 --]]--<<---------------------------------------------------->>--
 local Players = game:GetService("Players")
+local ProximityPromptService = game:GetService("ProximityPromptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
---local TweenService = game:GetService("TweenService")
+local TweenService = game:GetService("TweenService")
 
 local LocalPlayer = Players.LocalPlayer
 
@@ -33,11 +34,17 @@ function new(screenGui)
 
 	self._mainFrame = screenGui:WaitForChild("Desktop")
 
+	self._purchasePrompt = self._mainFrame:WaitForChild("PurchasePrompt")
+	self._settingsFrame = self._mainFrame:WaitForChild("Settings")
+
 	self._sliderEffectOffTweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, 0, false, 0)
 	self._sliderEffectOnTweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false, 0)
 	self._arrowEffectLeftTweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false, 0)
 	self._arrowEffectRightTweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false, 0)
+	self._purchasePromptCloseTweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out, 0, false, 0)
+	self._purchasePromptOpenTweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false, 0)
 
+	self.Cabana = workspace:WaitForChild("Cabana")
 	self._settings = {}
 
 	_connectHandlers(self)
@@ -69,34 +76,47 @@ function UIManager:Clear()
 	self._settings = {}
 end
 
---TODO: Implement this
 --[[**
-	Updates a single setting
-
-	@param [t:number] newValue The new value of the setting
-	@param [t:string] setting The name of the setting
-
-	@returns [t:bool] If the setting saved successfully
+	Clears UI and object values
 **--]]
--- function UIManager:ChangeSetting(newValue, setting)
--- 	return false
--- end
-
---[[**
-	Gets the server settings for the LocalPlayer
-
-	@returns [t:table] A table of the LocalPlayer's saved settings states
-**--]]
-function UIManager:GetServerSettings()
-	--return ReplicatedStorage.Remotes.Functions.Settings.Get:InvokeServer(LocalPlayer)
+function UIManager:PromptPurchase()
+	UIHelpers:SetupViewport(self._purchasePrompt.PreviewFrame.ViewportFrame, self.Cabana)
 end
 
 --[[ Private functions ]]--
 
-function _connectHandlers(_)
-	-- local function onButtonMouseOver()
-	-- 	UIHelpers.PlaySoundByName("ButtonMouseOver", _SOUNDS_FOLDER)
-	-- end
+function _connectHandlers(self)
+	local function closePrompt()
+		local tween = TweenService:Create(self._purchasePrompt.UIScale, self._purchasePromptCloseTweenInfo, {Scale = 0})
+		tween:Play()
+		self._purchasePrompt.Visible = false
+	end
+
+	local function openPrompt()
+		self._purchasePrompt.Visible = true
+		local tween = TweenService:Create(self._purchasePrompt.UIScale, self._purchasePromptOpenTweenInfo, {Scale = 1})
+		tween:Play()
+	end
+
+	local function onProximityPromptTriggered(promptObject, player)
+		if player ~= LocalPlayer then
+			return
+		end
+
+		local cabana = promptObject.Parent.Parent
+
+		if cabana.Name == "Cabana" then
+			self:Show()
+			self.Cabana = cabana
+			openPrompt()
+		end
+	end
+
+	self._connectionManager:ConnectToEvent(self._purchasePrompt.CloseButton.MouseButton1Click, closePrompt)
+	self._connectionManager:ConnectToEvent(self._purchasePrompt.PurchaseButton.MouseButton1Click, function()
+		self:PromptPurchase()
+	end)
+	self._connectionManager:ConnectToEvent(ProximityPromptService.PromptTriggered, onProximityPromptTriggered)
 end
 
 function _initSettings(self)
