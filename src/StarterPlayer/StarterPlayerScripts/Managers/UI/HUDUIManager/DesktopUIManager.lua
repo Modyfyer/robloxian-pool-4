@@ -11,6 +11,7 @@ Initialized by: HUDUIManager
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 
 local LocalPlayer = Players.LocalPlayer
 local LocalChar = LocalPlayer.Character
@@ -31,14 +32,16 @@ local drownTweenInfo = TweenInfo.new(
 	0 -- DelayTime
 )
 
-local hoverTweenInfo = TweenInfo.new(
-	1.5,
-	Enum.EasingStyle.Linear,
-	Enum.EasingDirection.Out,
-	0,
-	false,
-	0
-)
+-- local hoverTweenInfo = TweenInfo.new(
+-- 	1.5,
+-- 	Enum.EasingStyle.Linear,
+-- 	Enum.EasingDirection.Out,
+-- 	0,
+-- 	false,
+-- 	0
+-- )
+
+local debounce = false
 
 local UIManager = {}
 UIManager.__index = UIManager
@@ -50,7 +53,7 @@ UIManager.__index = UIManager
 **--]]
 function new(screenGui)
 	local self = setmetatable({}, UIManager)
-	
+
 	self._mainFrame = screenGui:WaitForChild("Desktop")
 	self._localCharacterHumanoid = LocalChar:WaitForChild("Humanoid")
 
@@ -67,14 +70,19 @@ function new(screenGui)
 	self._oxygenBar = self._mainFrame:WaitForChild("OxygenMeter"):WaitForChild("OxygenLevelBG"):WaitForChild("OxygenLevel")
 	self._oxygenVal = LocalChar:WaitForChild("Oxygen")
 
-	self._waterBar = self._mainFrame:WaitForChild("WaterMeter"):WaitForChild("WaterLevelBG"):WaitForChild("WaterLevel")
+	self._waterBar = self._mainFrame:WaitForChild("WaterMeter"):WaitForChild("WaterLevel")
 	self._waterVal = LocalChar:WaitForChild("Water")
+
+	self._actions = self._actionsMenu:WaitForChild("MenuOpen"):WaitForChild("Actions")
+	self._actionsAnimations = self._actionsMenu:WaitForChild("Animations")
 
 	self._drownAnimA = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 0})
 	self._drownAnimB = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 1})
-	
+
+	self._selectedAction = false
+
 	_connectHandlers(self)
-	
+
 	return self
 end
 
@@ -95,26 +103,42 @@ function UIManager:Show()
 end
 
 function _connectHandlers(self)
+	local character = LocalPlayer.Character
+	local hrp = character:WaitForChild("HumanoidRootPart")
+	local humanoid = character:WaitForChild("Humanoid")
+
 	local function onOxygenValueChanged()
-		local oxLev = self._oxygenVal.Value
+		character = LocalPlayer.Character
+		if not character then
+			return
+		end
+
+		humanoid = character:WaitForChild("Humanoid")
+		if not humanoid then
+			return
+		end
+
+		local oxLev: number = self._oxygenVal.Value
 		self._oxygenBar.Size = UDim2.new(1, 0, 0, ((OXYGEN_SCALE) * oxLev))
 		self._oxygenBar.Position = UDim2.new(0, 0, 1, ((OXYGEN_SCALE * oxLev) * -1))
-	
+
 		if oxLev <= 0 then
 			self._drownFrame.Visible = true
 			self._drownAnimA:Play()
-			self._localCharacterHumanoid.WalkSpeed = 0
+			humanoid.WalkSpeed = 0
 			task.wait(4)
 			self._drownAnimB:Play()
 			task.wait(3)
 			self._drownFrame.Visible = false
-			self._localCharacterHumanoid.WalkSpeed.WalkSpeed = DEFAULT_WALKSPEED
+			humanoid.WalkSpeed = DEFAULT_WALKSPEED
+
+			_resetActionSelections(self)
 		end
 	end
 
 	local function onWaterValueChanged()
 		local waterLev = self._waterVal.Value
-		self._waterBar.Size = UDim2.new(0, (WATER_SCALE * waterLev), 1, 0)
+		self._waterBar.Size = UDim2.new(1, 0, 0, (WATER_SCALE * waterLev))
 	end
 
 	local function onMouseEnter(x, y, text)
@@ -144,6 +168,62 @@ function _connectHandlers(self)
 		self._actionsMenu.MenuClosed.Visible = true
 	end
 
+	local function onInputBegan(input)
+		if input.UserInputType ~= Enum.UserInputType.Keyboard then
+			return
+		end
+		local keycode = input.KeyCode
+
+		local function doCannonball(anim)
+			if not debounce then
+				if humanoid.Sit == false then
+					debounce = true
+					local animTrack = humanoid:LoadAnimation(anim)
+					local force = Instance.new("VectorForce")
+
+					force.Parent = hrp
+					force.Force = Vector3.new(0, 4500, -1200)
+					force.ApplyAtCenterOfMass = true
+					force.Attachment0 = hrp:FindFirstChildWhichIsA("Attachment")
+
+					animTrack:Play()
+					humanoid.Sit = true
+					task.wait(.5)
+					force:Destroy()
+					task.wait(3)
+					debounce = false
+				end
+			end
+		end
+
+		for _, action in pairs(self._actions:GetChildren()) do
+			local actionKey = action:GetAttribute("Keybind")
+			if actionKey == keycode.Name then
+				if action.UIStroke.Enabled then
+					self.selectedAction = false
+					action.UIStroke.Enabled = false
+					return
+				end
+				if not self.selectedAction then
+					for _, anim in pairs(self._actionsAnimations:GetChildren()) do
+						local keybind = anim:GetAttribute("Keybind")
+						if keybind == keycode.Name then
+							doCannonball(anim)
+						end
+					end
+					action.UIStroke.Enabled = true
+					self.selectedAction = true
+				end
+				break
+			end
+		end
+	end
+
+	--Connections
+	self._connectionManager:ConnectToEvent(UserInputService.InputBegan, function(input)
+		onInputBegan(input)
+	end)
+
 	self._connectionManager:ConnectToEvent(self._actionsMenu.MenuOpen.ButtonClose.MouseButton1Click, onActionsMenuClosed)
 	self._connectionManager:ConnectToEvent(self._actionsMenu.MenuClosed.ButtonOpen.MouseButton1Click, onActionsMenuOpened)
 
@@ -172,7 +252,15 @@ function _connectHandlers(self)
 	end)
 	self._connectionManager:ConnectToEvent(self._shopsButton.MouseMoved, onMouseMoved)
 	self._connectionManager:ConnectToEvent(self._shopsButton.MouseLeave, onMouseLeave)
+end
 
+function _resetActionSelections(self)
+	for _, action in pairs(self._actions:GetChildren()) do
+		if action.Name ~= "UIListLayout" then
+			action.UIStroke.Enabled = false
+		end
+	end
+	self._selectedAction = false
 end
 
 return {

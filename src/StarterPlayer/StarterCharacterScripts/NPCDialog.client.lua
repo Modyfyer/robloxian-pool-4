@@ -41,12 +41,16 @@ function interactWith(npc)
 		local newPos = Vector3.new(hrp.Position.X, currentNPCPos.Position.Y, hrp.Position.Z)
 		local focus = ts:Create(npc.HumanoidRootPart, tweenInfo, {CFrame = CFrame.new(currentNPCPos.Position, newPos)})
 		npc.ProximityPrompt.Enabled = false
-		focus:Play()
 		game:GetService("Chat"):Chat(npc.TalkPart, pickDialog(npc))
-		task.wait(5)
+		if not npc:FindFirstChild("Walker") then
+			focus:Play()
+			task.wait(5)
+			
+			npc.HumanoidRootPart.CFrame = currentNPCPos
+			npc.ProximityPrompt.Enabled = true
+		end
+
 		interactionCoolDown = false
-		npc.HumanoidRootPart.CFrame = currentNPCPos
-		npc.ProximityPrompt.Enabled = true
 	end	
 end
 

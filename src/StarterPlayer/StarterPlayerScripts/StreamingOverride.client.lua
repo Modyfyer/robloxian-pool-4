@@ -1,0 +1,1 @@
+game.ReplicatedStorage.Mountains:Clone().Parent = workspace

@@ -46,7 +46,7 @@ end
 function doOxygen(pl)
 	task.spawn(function()
 		local oxy = pl.Character:WaitForChild("Oxygen")
-		oxy.Changed:connect(function()
+		oxy.Changed:Connect(function()
 			if oxy.Value <= 0 then
 				local hum = pl.Character:FindFirstChild("Humanoid")
 				hum.WalkSpeed = 0
@@ -57,8 +57,9 @@ function doOxygen(pl)
 	end)
 end
 
-game.Players.PlayerAdded:connect(function(pl)
-	pl.CharacterAdded:connect(function()
+
+game.Players.PlayerAdded:Connect(function(pl)
+	pl.CharacterAdded:Connect(function()
 		--local hrp = pl.Character:WaitForChild("HumanoidRootPart")
 		equipStats(pl)
 		doOxygen(pl)
@@ -68,7 +69,7 @@ end)
 local oxygenEvent = RemoteEventsFolder:WaitForChild("OxygenChange")
 local waterEvent = RemoteEventsFolder:WaitForChild("WaterChange")
 
-oxygenEvent.OnServerEvent:connect(function(pl, amt)
+oxygenEvent.OnServerEvent:Connect(function(pl, amt)
 	local plOxy = pl.Character:FindFirstChild("Oxygen")
 
 	if plOxy ~= nil then
@@ -81,7 +82,7 @@ oxygenEvent.OnServerEvent:connect(function(pl, amt)
 	end
 end)
 
-waterEvent.OnServerEvent:connect(function(pl, amt)
+waterEvent.OnServerEvent:Connect(function(pl, amt)
 	local plWat = pl.Character:FindFirstChild("Water")
 
 	if plWat ~= nil then
