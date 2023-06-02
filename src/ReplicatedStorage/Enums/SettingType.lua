@@ -6,5 +6,5 @@ return GenerateEnumTable({
 	Dropdown = 2,
 	ArrowSelection = 3,
 	TextEntry = 4,
-	Slider = 5
+	Slider = 5,
 })

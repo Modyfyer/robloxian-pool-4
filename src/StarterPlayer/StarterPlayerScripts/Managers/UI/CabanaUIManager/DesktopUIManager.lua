@@ -11,7 +11,7 @@ local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
-local CabanaSettingsByName = require(ReplicatedStorage.Data.CabanaSettingsByName)
+--local CabanaSettingsByName = require(ReplicatedStorage.Data.CabanaSettingsByName)
 local SettingType = require(ReplicatedStorage.Enums.SettingType)
 local UIHelpers = require(LocalPlayer.PlayerScripts.UIHelpers)
 
@@ -36,6 +36,8 @@ function new(screenGui)
 
 	self._purchasePrompt = self._mainFrame:WaitForChild("PurchasePrompt")
 	self._settingsFrame = self._mainFrame:WaitForChild("Settings")
+
+	self._settingsListFrame = self._settingsFrame:WaitForChild("Frame"):WaitForChild("SettingsFrame")
 
 	self._sliderEffectOffTweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, 0, false, 0)
 	self._sliderEffectOnTweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false, 0)
@@ -112,6 +114,22 @@ function _connectHandlers(self)
 		end
 	end
 
+	local function closeSettings()
+		local tween = TweenService:Create(self._settingsFrame.UIScale, TweenInfo.new(0.3, Enum.EasingStyle.Quint) {Scale = 0})
+		tween:Play()
+	end
+
+	local function openSettings()
+		local tween = TweenService:Create(self._settingsFrame.UIScale, TweenInfo.new(0.3, Enum.EasingStyle.Quint) {Scale = 1})
+		tween:Play()
+	end
+
+	self._connectionManager:ConnectToEvent(self._settingsFrame.CloseButton.MouseButton1Click, closeSettings)
+	self._connectionManager:ConnectToEvent(self._settingsFrame.SaveButton.MouseButton1Click, function()
+		_saveSettings(self)
+		closeSettings()
+	end)
+
 	self._connectionManager:ConnectToEvent(self._purchasePrompt.CloseButton.MouseButton1Click, closePrompt)
 	self._connectionManager:ConnectToEvent(self._purchasePrompt.PurchaseButton.MouseButton1Click, function()
 		self:PromptPurchase()
@@ -119,19 +137,50 @@ function _connectHandlers(self)
 	self._connectionManager:ConnectToEvent(ProximityPromptService.PromptTriggered, onProximityPromptTriggered)
 end
 
+function _createDropdownSetting(self, settingFrame: GuiObject)
+
+end
+
+function _createTextEntrySetting(self, settingFrame: GuiObject)
+
+end
+
 function _initSettings(self)
-	for _, v in pairs(CabanaSettingsByName) do
-		for __, setting in pairs(v) do
-			print(setting["displayName"])
-			-- if setting["displayName"].SettingType == SettingType.TextEntry then
-			-- 	--local newSetting --= self._mainFrame.SettingsListFrame.SliderSetting:Clone()
-			-- -- 		newSetting.Name = setting.displayName
-			-- -- 		newSetting.SettingName.Text = setting.displayName
-			-- -- 		newSetting.Visible = true
-			-- -- 		newSetting.Parent = self._mainFrame.SettingsListFrame
-			-- end
+	for _, settingFrame in pairs(self._settingsListFrame:GetChildren()) do
+		if settingFrame:GetAttribute("SettingName") == "AccentColor" then
+			for _, item in pairs(settingFrame:GetChildren()) do
+				if item:IsA("ImageLabel") then
+					local textbox = item:FindFirstChildOfClass("TextBox")
+					if textbox then
+						textbox:GetPropertyChangedSignal("Text"):Connect(function()
+							-- if textbox.Text ~= nil then
+							-- 	local val = tonumber(textbox.Text)
+							-- 	if val and typeof(val) ~= number then
+
+							-- 	end
+							-- end
+						end)
+					end
+				end
+			end
 		end
 	end
+	-- for _, v in pairs(CabanaSettingsByName) do
+	-- 	for __, setting in pairs(v) do
+	-- 		print(setting["displayName"])
+	-- 		-- if setting["displayName"].SettingType == SettingType.TextEntry then
+	-- 		-- 	--local newSetting --= self._mainFrame.SettingsListFrame.SliderSetting:Clone()
+	-- 		-- -- 		newSetting.Name = setting.displayName
+	-- 		-- -- 		newSetting.SettingName.Text = setting.displayName
+	-- 		-- -- 		newSetting.Visible = true
+	-- 		-- -- 		newSetting.Parent = self._mainFrame.SettingsListFrame
+	-- 		-- end
+	-- 	end
+	-- end
+end
+
+function _saveSettings(self)
+
 end
 
 return {
