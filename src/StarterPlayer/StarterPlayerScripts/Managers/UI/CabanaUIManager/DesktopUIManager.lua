@@ -48,6 +48,7 @@ function new(screenGui)
 
 	self.Cabana = workspace:WaitForChild("Cabana")
 	self._settings = {}
+	self.cabanaPurchased = false
 
 	_connectHandlers(self)
 	_initSettings(self)
@@ -79,24 +80,34 @@ function UIManager:Clear()
 end
 
 --[[**
-	Clears UI and object values
+	
 **--]]
-function UIManager:PromptPurchase()
-	UIHelpers:SetupViewport(self._purchasePrompt.PreviewFrame.ViewportFrame, self.Cabana)
+function UIManager:RentCabana()
+	self.cabanaPurchased = true
 end
 
 --[[ Private functions ]]--
 
 function _connectHandlers(self)
-	local function closePrompt()
+	local function closeRentalPrompt()
 		local tween = TweenService:Create(self._purchasePrompt.UIScale, self._purchasePromptCloseTweenInfo, {Scale = 0})
 		tween:Play()
 		self._purchasePrompt.Visible = false
 	end
 
-	local function openPrompt()
+	local function openRentalPrompt()
 		self._purchasePrompt.Visible = true
 		local tween = TweenService:Create(self._purchasePrompt.UIScale, self._purchasePromptOpenTweenInfo, {Scale = 1})
+		tween:Play()
+	end
+
+	local function closeSettings()
+		local tween = TweenService:Create(self._settingsFrame.UIScale, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {Scale = 0})
+		tween:Play()
+	end
+
+	local function openSettings()
+		local tween = TweenService:Create(self._settingsFrame.UIScale, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {Scale = 1})
 		tween:Play()
 	end
 
@@ -110,18 +121,14 @@ function _connectHandlers(self)
 		if cabana.Name == "Cabana" then
 			self:Show()
 			self.Cabana = cabana
-			openPrompt()
+
+			if self.cabanaPurchased then
+				openSettings()
+			else
+				UIHelpers:SetupViewport(self._purchasePrompt.PreviewFrame.ViewportFrame, self.Cabana)
+				openRentalPrompt()
+			end
 		end
-	end
-
-	local function closeSettings()
-		local tween = TweenService:Create(self._settingsFrame.UIScale, TweenInfo.new(0.3, Enum.EasingStyle.Quint) {Scale = 0})
-		tween:Play()
-	end
-
-	local function openSettings()
-		local tween = TweenService:Create(self._settingsFrame.UIScale, TweenInfo.new(0.3, Enum.EasingStyle.Quint) {Scale = 1})
-		tween:Play()
 	end
 
 	self._connectionManager:ConnectToEvent(self._settingsFrame.CloseButton.MouseButton1Click, closeSettings)
@@ -130,9 +137,10 @@ function _connectHandlers(self)
 		closeSettings()
 	end)
 
-	self._connectionManager:ConnectToEvent(self._purchasePrompt.CloseButton.MouseButton1Click, closePrompt)
+	self._connectionManager:ConnectToEvent(self._purchasePrompt.CloseButton.MouseButton1Click, closeRentalPrompt)
 	self._connectionManager:ConnectToEvent(self._purchasePrompt.PurchaseButton.MouseButton1Click, function()
-		self:PromptPurchase()
+		self:RentCabana()
+		closeRentalPrompt()
 	end)
 	self._connectionManager:ConnectToEvent(ProximityPromptService.PromptTriggered, onProximityPromptTriggered)
 end
