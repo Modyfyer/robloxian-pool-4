@@ -22,9 +22,9 @@ function canSplash(hrp, pos)
 		particlePart.Parent = hrp.Parent
 
 		particle.Parent = particlePart
-		particle:Emit(50)
+		--particle:Emit(50)
 
-		game:GetService("Debris"):AddItem(particlePart, 5)
+		game:GetService("Debris"):AddItem(particlePart, 1)
 	end
 end
 

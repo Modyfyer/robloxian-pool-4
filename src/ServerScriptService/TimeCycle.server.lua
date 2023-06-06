@@ -1,4 +1,5 @@
-lighting = game.Lighting
+lighting = game:GetService("Lighting")
+outdoorAmb = workspace:WaitForChild("AmbientSounds"):WaitForChild("Outdoor")
 
 dayStart = 6.5
 dayEnd = 17.7
@@ -45,19 +46,40 @@ function toggleLightCones(p, state)
 	end
 end
 
+function toggleOutdoorAmb(state)
+	if state == "Day" then
+		for _, v in pairs(outdoorAmb:GetChildren()) do
+			v.Night:Stop()
+			v.Day:Play()
+		end
+	elseif state == "Night" then
+		for _, v in pairs(outdoorAmb:GetChildren()) do
+			v.Night:Play()
+			v.Day:Stop()
+		end
+	end
+end
+
+toggleOutdoorAmb("Day")
+currentTime = "Day"
+
 while wait(waitTime) do
 	lighting.ClockTime += .005
-	if (lighting.ClockTime >= dayEnd) then
+	if (lighting.ClockTime >= dayEnd) and currentTime ~= "Night" then
+		currentTime = "Night"
 		toggleLights(workspace, true)
 		toggleBulbs(workspace, true)
 		toggleFlames(workspace, true)
 		toggleLightCones(workspace, true)
+		toggleOutdoorAmb("Night")
 		waitTime = .001
-	elseif (lighting.ClockTime > dayStart) and (lighting.ClockTime < dayEnd) then
+	elseif (lighting.ClockTime > dayStart) and (lighting.ClockTime < dayEnd) and currentTime ~= "Day" then
+		currentTime = "Day"
 		toggleLights(workspace, false)
 		toggleBulbs(workspace, false)
 		toggleFlames(workspace, false)
 		toggleLightCones(workspace, false)
+		toggleOutdoorAmb("Day")
 		waitTime = .25
 	end
 end

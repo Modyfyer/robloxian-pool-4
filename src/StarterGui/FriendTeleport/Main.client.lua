@@ -4,6 +4,7 @@ local guiMain = script.Parent
 local player = game.Players.LocalPlayer
 local char = player.Character
 local hrp = char:WaitForChild("HumanoidRootPart")
+local hum = char:WaitForChild("Humanoid")
 local camera = game.Workspace.CurrentCamera
 
 local exGui = guiMain:WaitForChild("FriendTele")
@@ -29,12 +30,14 @@ function tagPlayer(targetPlayer)
 		end)
 		
 		bbg.Button.MouseButton1Click:connect(function()
-			hrp.CFrame = trgHrp.CFrame
+			if hum.Sit == false then
+				hrp.CFrame = trgHrp.CFrame
+			end
 		end)
 		
 		game:GetService("RunService").RenderStepped:Connect(function()
 			if deadConnect ~= true then
-				bbg.Button.Visible = (camera.CFrame.Position - trgHrp.Position).Magnitude > 50
+				bbg.Button.Visible = (camera.CFrame.Position - trgHrp.Position).Magnitude > 70
 			end
 		end)
 	end
