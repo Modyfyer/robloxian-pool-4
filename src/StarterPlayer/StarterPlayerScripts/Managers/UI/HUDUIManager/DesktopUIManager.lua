@@ -282,6 +282,7 @@ function _connectHandlers(self)
 			self:Reset()
 		end
 	end)
+end
 
 function _resetActionSelections(self)
 	for _, action in pairs(self._actions:GetChildren()) do
