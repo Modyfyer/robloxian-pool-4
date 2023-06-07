@@ -118,7 +118,7 @@ function _connectHandlers(self)
 			self._drownAnimB:Play()
 			task.wait(3)
 			self._drownFrame.Visible = false
-			self._localCharacterHumanoid.WalkSpeed.WalkSpeed = DEFAULT_WALKSPEED
+			self._localCharacterHumanoid.WalkSpeed = DEFAULT_WALKSPEED
 		end
 	end
 

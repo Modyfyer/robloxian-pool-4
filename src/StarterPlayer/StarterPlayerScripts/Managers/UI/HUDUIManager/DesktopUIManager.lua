@@ -133,19 +133,31 @@ function _connectHandlers(self)
 	local humanoid = character:WaitForChild("Humanoid")
 
 	local function onOxygenValueChanged()
-		local oxLev = self._oxygenVal.Value
+		character = LocalPlayer.Character
+		if not character then
+			return
+		end
+
+		humanoid = character:WaitForChild("Humanoid")
+		if not humanoid then
+			return
+		end
+
+		local oxLev: number = self._oxygenVal.Value
 		self._oxygenBar.Size = UDim2.new(1, 0, 0, ((OXYGEN_SCALE) * oxLev))
 		self._oxygenBar.Position = UDim2.new(0, 0, 1, ((OXYGEN_SCALE * oxLev) * -1))
 
 		if oxLev <= 0 then
 			self._drownFrame.Visible = true
 			self._drownAnimA:Play()
-			self._localCharacterHumanoid.WalkSpeed = 0
+			humanoid.WalkSpeed = 0
 			task.wait(4)
 			self._drownAnimB:Play()
 			task.wait(3)
 			self._drownFrame.Visible = false
-			self._localCharacterHumanoid.WalkSpeed.WalkSpeed = DEFAULT_WALKSPEED
+			humanoid.WalkSpeed = DEFAULT_WALKSPEED
+
+			_resetActionSelections(self)
 		end
 	end
 
@@ -232,6 +244,7 @@ function _connectHandlers(self)
 		end
 	end
 
+	--Connections
 	self._connectionManager:ConnectToEvent(UserInputService.InputBegan, function(input)
 		onInputBegan(input)
 	end)
@@ -270,6 +283,13 @@ function _connectHandlers(self)
 		end
 	end)
 
+function _resetActionSelections(self)
+	for _, action in pairs(self._actions:GetChildren()) do
+		if action.Name ~= "UIListLayout" then
+			action.UIStroke.Enabled = false
+		end
+	end
+	self._selectedAction = false
 end
 
 return {

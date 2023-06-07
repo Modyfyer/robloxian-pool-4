@@ -12,6 +12,11 @@ function equipStats(pl)
 	waterValue.Name = "Water"
 	waterValue.Value = 100
 	waterValue.Parent = pl.Character
+	
+	local colorValue = Instance.new("Color3Value")
+	colorValue.Name = "Color"
+	colorValue.Value = Color3.new(0.835294, 0.45098, 0.239216)
+	colorValue.Parent = pl.Character
 end
 
 function getNearestBrick(pl)
@@ -68,6 +73,7 @@ end)
 
 local oxygenEvent = RemoteEventsFolder:WaitForChild("OxygenChange")
 local waterEvent = RemoteEventsFolder:WaitForChild("WaterChange")
+local colorEvent = RemoteEventsFolder:WaitForChild("UpdateColor")
 
 oxygenEvent.OnServerEvent:Connect(function(pl, amt)
 	local plOxy = pl.Character:FindFirstChild("Oxygen")
@@ -91,6 +97,26 @@ waterEvent.OnServerEvent:Connect(function(pl, amt)
 			plWat.Value = 100
 		elseif plWat.Value < 0 then
 			plWat.Value = 0
+		end
+	end
+end)
+
+colorEvent.OnServerEvent:Connect(function(pl, color)
+	local plColor = pl.Character:FindFirstChild("Color")
+	
+	if plColor ~= nil then
+		plColor.Value = color
+		
+		for _, v in pairs(pl.Backpack:GetChildren()) do
+			if v:IsA("Tool") and v:FindFirstChild("Customizable") then
+				v.Handle.Color = color
+			end
+		end
+		
+		for _, v in pairs(pl.Character:GetChildren()) do
+			if v:IsA("Tool") and v:FindFirstChild("Customizable") then
+				v.Handle.Color = color
+			end
 		end
 	end
 end)

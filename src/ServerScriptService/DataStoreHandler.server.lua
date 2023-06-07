@@ -1,12 +1,18 @@
+-- Services
 local DataStoreService = game:GetService("DataStoreService")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
 local playerDataStore = DataStoreService:GetDataStore("PlayerData")
 
+
+--Functions
 function savePoolPoints(player, poolPoints)
   local playerKey = tostring(player.UserId)
   playerDataStore:SetAsync(playerKey, {PoolPoints = poolPoints})
 end
 
-function getPoolPoints(player)
+function getPoolPoints(player: Player)
   local playerKey = tostring(player.UserId)
   local success, playerData = pcall(function()
     return playerDataStore:GetAsync(playerKey)
@@ -34,20 +40,22 @@ function deductPoolPoints(player, points)
   end
 end
 
-game.Players.PlayerAdded:Connect(function(player)
+
+--Events
+Players.PlayerAdded:Connect(function(player)
   local poolPoints = Instance.new("NumberValue")
   poolPoints.Name = "PoolPoints"
   poolPoints.Parent = player
   poolPoints.Value = getPoolPoints(player)
 end)
 
-game.Players.PlayerRemoving:Connect(function(player)
+Players.PlayerRemoving:Connect(function(player)
   local poolPoints = player:FindFirstChild("PoolPoints")
   if poolPoints then
     savePoolPoints(player, poolPoints.Value)
   end
 end)
 
-game.ReplicatedStorage.getPoolPoints.OnServerInvoke:Connect(function(player: Player)
+ReplicatedStorage.RemoteEvents.getPoolPoints.OnServerEvent:Connect(function(player)
   return getPoolPoints(player)
 end)
