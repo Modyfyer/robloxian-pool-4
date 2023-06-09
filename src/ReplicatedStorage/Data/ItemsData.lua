@@ -13,6 +13,15 @@ setmetatable(module, nullCheckMetatable)
 --Actual items data
 module.Items = {}
 
+module.Items[ItemType.InGameCurrency] = {
+    {
+        CurrencyTypeName = "Robux",
+		DeveloperProductId = 1555280575,
+		Value = 1,
+        ProductName = "CabanaRentalUnlimited"
+	},
+}
+
 module.Items[ItemType.GamePass] = {
     {
         CurrencyTypeName = "Robux",
@@ -23,12 +32,11 @@ module.Items[ItemType.GamePass] = {
 }
 
 module.Items[ItemType.Rental] = {
-    {
+
         CurrencyTypeName = "Robux",
 		DeveloperProductId = 1555280575,
 		Value = 1,
         ProductName = "CabanaRental24h"
-	},
 }
 
 -- module.Items[ItemType.Ability] = {

@@ -3,6 +3,7 @@ Module purpose: Handles the cabana rental and management interface
 
 Initialized by: CabanaUIManager
 --]]--<<---------------------------------------------------->>--
+local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ProximityPromptService = game:GetService("ProximityPromptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -12,7 +13,9 @@ local LocalPlayer = Players.LocalPlayer
 
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
 --local CabanaSettingsByName = require(ReplicatedStorage.Data.CabanaSettingsByName)
-local SettingType = require(ReplicatedStorage.Enums.SettingType)
+local ItemsData = require(ReplicatedStorage.Data.ItemsData)
+local ItemType = require(ReplicatedStorage.Enums.ItemType)
+--local SettingType = require(ReplicatedStorage.Enums.SettingType)
 local UIHelpers = require(LocalPlayer.PlayerScripts.UIHelpers)
 
 local _SOUNDS_FOLDER
@@ -46,7 +49,7 @@ function new(screenGui)
 	self._purchasePromptCloseTweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out, 0, false, 0)
 	self._purchasePromptOpenTweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false, 0)
 
-	self.Cabana = workspace:WaitForChild("Cabana")
+	self.Cabana = nil --workspace:WaitForChild("Cabana")
 	self._settings = {}
 	self.cabanaPurchased = false
 
@@ -77,13 +80,6 @@ end
 **--]]
 function UIManager:Clear()
 	self._settings = {}
-end
-
---[[**
-	
-**--]]
-function UIManager:RentCabana()
-	self.cabanaPurchased = true
 end
 
 --[[ Private functions ]]--
@@ -122,11 +118,23 @@ function _connectHandlers(self)
 			self:Show()
 			self.Cabana = cabana
 
-			if self.cabanaPurchased then
+			if self.cabanaPurchased and cabana:GetAttribute("Owner") == player.Name then
 				openSettings()
+			elseif cabana:GetAttribute("Owner") ~= "" and cabana:GetAttribute("Owner") ~= player.Name then
+				print("Someone else owns this cabana")
 			else
 				UIHelpers:SetupViewport(self._purchasePrompt.PreviewFrame.ViewportFrame, self.Cabana)
 				openRentalPrompt()
+			end
+		end
+	end
+
+	local function onProductPurchaseFinished(userID, productID, isPurchased)
+		if userID == LocalPlayer.UserId and productID == ItemsData.Items[ItemType.Rental].DeveloperProductId then
+			if isPurchased then
+				self.cabanaPurchased = true
+			else
+				warn("not purchased")
 			end
 		end
 	end
@@ -139,10 +147,11 @@ function _connectHandlers(self)
 
 	self._connectionManager:ConnectToEvent(self._purchasePrompt.CloseButton.MouseButton1Click, closeRentalPrompt)
 	self._connectionManager:ConnectToEvent(self._purchasePrompt.PurchaseButton.MouseButton1Click, function()
-		self:RentCabana()
+		MarketplaceService:PromptProductPurchase(LocalPlayer, ItemsData.Items[ItemType.Rental].DeveloperProductId, false, Enum.CurrencyType.Robux)
 		closeRentalPrompt()
 	end)
 	self._connectionManager:ConnectToEvent(ProximityPromptService.PromptTriggered, onProximityPromptTriggered)
+	self._connectionManager:ConnectToEvent(MarketplaceService.PromptProductPurchaseFinished, onProductPurchaseFinished)
 end
 
 function _createDropdownSetting(self, settingFrame: GuiObject)
