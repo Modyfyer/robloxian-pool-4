@@ -10,6 +10,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
 
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
+local Event = require(ReplicatedStorage.Utils.Event)
 local PlatformType = require(LocalPlayer.PlayerScripts.Managers.PlatformDetectionManager.PlatformType) 
 
 local CabanaUIManager = {}
@@ -42,6 +43,8 @@ function new(platformDetectionManager)
 	self._platformDetectionManager = platformDetectionManager
 	self._platformSpecificUIManagers = platformSpecificUIManagers
 	self._screenGui = screenGui
+
+	self.RentalResult= Event.new()
 
 	self._screenGui.Enabled = true
 
