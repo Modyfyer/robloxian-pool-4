@@ -4,23 +4,23 @@ Module purpose: Handles the cabana rental and management interface
 Initialized by: ClientInit
 --]]--<<---------------------------------------------------->>--
 
+--Services
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local LocalPlayer = Players.LocalPlayer
-
+--Modules
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
 local Event = require(ReplicatedStorage.Utils.Event)
-local PlatformType = require(LocalPlayer.PlayerScripts.Managers.PlatformDetectionManager.PlatformType) 
+
+--Declarations
+local LocalPlayer = Players.LocalPlayer
+
+local PlatformType = require(LocalPlayer.PlayerScripts.Managers.PlatformDetectionManager.PlatformType)
 
 local CabanaUIManager = {}
 CabanaUIManager.__index = CabanaUIManager
 
---[[**
-	Creates new instance
-
-	@param [t:PlatformDetectionManager] platformDetectionManager The platform detection manager
-**--]]
+--Creates new instance
 function new(platformDetectionManager)
 	local self = setmetatable({}, CabanaUIManager)
 
@@ -53,18 +53,7 @@ function new(platformDetectionManager)
 	return self
 end
 
---[[**
-	Shows UI
-**--]]
-function CabanaUIManager:Show()
-	self._screenGui.Enabled = true
-
-	_showAppropriatePlatformSpecificUIManager(self)
-end
-
---[[**
-	Hides UI
-**--]]
+--Hides UI
 function CabanaUIManager:Hide()
 	self._screenGui.Enabled = false
 
@@ -75,9 +64,14 @@ function CabanaUIManager:Hide()
 	game.StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, true)
 end
 
---[[**
-	Clears UI and object values
-**--]]
+--Shows UI
+function CabanaUIManager:Show()
+	self._screenGui.Enabled = true
+
+	_showAppropriatePlatformSpecificUIManager(self)
+end
+
+--Clears UI and object values
 function CabanaUIManager:Clear()
 	_iterateOverAllPlatformSpecificUIManagers(self, function (_, platformSpecificUIManager)
 		platformSpecificUIManager:Clear()
@@ -86,6 +80,7 @@ end
 
 --[[ Private functions ]]--
 
+-- Handles event connections
 function _connectHandlers(self)
 	local function onDetectedPlatformTypeChanged(newPlatformType, oldPlatformType)
 		if self._platformSpecificUIManagers[oldPlatformType] then
@@ -101,12 +96,14 @@ function _connectHandlers(self)
 	self._connectionManager:ConnectToEvent(self._platformDetectionManager.DetectedPlatformTypeChanged, onDetectedPlatformTypeChanged)
 end
 
+-- Loops through all platform specific UI managers
 function _iterateOverAllPlatformSpecificUIManagers(self, callback)
 	for platformType, platformSpecificUIManager in pairs(self._platformSpecificUIManagers) do
 		callback(platformType, platformSpecificUIManager)
 	end
 end
 
+-- Shows the correct UI for the current platform
 function _showAppropriatePlatformSpecificUIManager(self)
 	local currentPlatformType = self._platformDetectionManager:GetCurrentPlatformType()
 

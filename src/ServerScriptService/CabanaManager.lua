@@ -93,12 +93,9 @@ function _processReceipt(receiptInfo)
 				if alreadyPurchased then
 					return true
 				end
-				-- Find the player who made the purchase in the server
 
 				local player = Players:GetPlayerByUserId(receiptInfo.PlayerId)
 				if not player then
-					-- The player probably left the game
-					-- If they come back, the callback will be called again
 					return nil
 				end
 
@@ -111,6 +108,7 @@ function _processReceipt(receiptInfo)
 					error("Failed to process a product purchase for ProductId: " .. tostring(receiptInfo.ProductId) .. " Player: " .. tostring(player) .. " Error: " .. tostring(result))
 					return nil
 				end
+
 				-- Record the transcation in purchaseHistoryStore.
 				return true
 			end)
@@ -120,10 +118,8 @@ function _processReceipt(receiptInfo)
 			error("Failed to process receipt due to data store error.")
 			return Enum.ProductPurchaseDecision.NotProcessedYet
 		elseif isPurchaseRecorded == nil then
-			-- Didn't update the value in data store.
 			return Enum.ProductPurchaseDecision.NotProcessedYet
 		else
-			-- IMPORTANT: Tell Roblox that the game successfully handled the purchase
 			return Enum.ProductPurchaseDecision.PurchaseGranted
 		end
 end

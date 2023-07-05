@@ -1,64 +1,44 @@
 --[[--<<---------------------------------------------------->>--
 Module purpose: Handles the HUD UI for desktop
 
-Public functions:
--Show()
--Hide()
-
 Initialized by: HUDUIManager
 --]]--<<---------------------------------------------------->>--
 
+--Services
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
+--Modules
+local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
+
+--Declarations
 local LocalPlayer = Players.LocalPlayer
 local LocalChar = LocalPlayer.Character
-
-local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
---local UIHelpers = require(LocalPlayer.PlayerScripts.UIHelpers)
 
 local DEFAULT_WALKSPEED = 16
 local OXYGEN_SCALE = (70 / 100)
 local WATER_SCALE = (180 / 100)
 
-local drownTweenInfo = TweenInfo.new(
-	3, -- Time
-	Enum.EasingStyle.Linear, -- EasingStyle
-	Enum.EasingDirection.Out, -- EasingDirection
-	0, -- RepeatCount (when less than zero the tween will loop indefinitely)
-	false, -- Reverses (tween will reverse once reaching it's goal)
-	0 -- DelayTime
-)
-
--- local hoverTweenInfo = TweenInfo.new(
--- 	1.5,
--- 	Enum.EasingStyle.Linear,
--- 	Enum.EasingDirection.Out,
--- 	0,
--- 	false,
--- 	0
--- )
+local drownTweenInfo = TweenInfo.new(3, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
 
 local debounce = false
 
 local UIManager = {}
 UIManager.__index = UIManager
 
---[[**
-	Creates new instance
-
-	@param [t:ScreenGui] screenGui The platform specific screenGui
-**--]]
+--Creates new instance
 function new(screenGui)
 	local self = setmetatable({}, UIManager)
 
+	-- Dependency group 0
 	self._mainFrame = screenGui:WaitForChild("Desktop")
 	self._localCharacterHumanoid = LocalChar:WaitForChild("Humanoid")
 
 	self._connectionManager = ConnectionManager.new()
 
+	-- Dependency group 1
 	self._actionsMenu = self._mainFrame:WaitForChild("ActionsMenu")
 	self._avatarButton = self._mainFrame:WaitForChild("AvatarButton")
 	self._drownFrame = self._mainFrame:WaitForChild("DrownAnim")
@@ -73,6 +53,7 @@ function new(screenGui)
 	self._waterBar = self._mainFrame:WaitForChild("WaterMeter"):WaitForChild("WaterLevel")
 	self._waterVal = LocalChar:WaitForChild("Water")
 
+	-- Dependency group 2
 	self._actions = self._actionsMenu:WaitForChild("MenuOpen"):WaitForChild("Actions")
 	self._actionsAnimations = self._actionsMenu:WaitForChild("Animations")
 
@@ -94,14 +75,15 @@ function UIManager:Hide()
 	self._mainFrame.Visible = false
 end
 
---[[**
-	Shows UI
-**--]]
+--Shows UI
 function UIManager:Show()
 	self._connectionManager:ConnectAll()
 	self._mainFrame.Visible = true
 end
 
+--[[ Private functions ]]--
+
+-- Handles event connections
 function _connectHandlers(self)
 	local character = LocalPlayer.Character
 	local hrp = character:WaitForChild("HumanoidRootPart")
@@ -254,6 +236,7 @@ function _connectHandlers(self)
 	self._connectionManager:ConnectToEvent(self._shopsButton.MouseLeave, onMouseLeave)
 end
 
+-- Resets the action selections
 function _resetActionSelections(self)
 	for _, action in pairs(self._actions:GetChildren()) do
 		if action.Name ~= "UIListLayout" then
