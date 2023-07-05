@@ -1,5 +1,5 @@
-maxAngle = 30
-minAngle = -30
+local maxAngle: number = 30
+local minAngle: number = -30
 
 function getPlayerFromPart(part)
 	local player = nil
@@ -28,8 +28,9 @@ function doCannon(can)
 
 	event.OnServerEvent:connect(function(pl, part, loc)
 		if canFire.Value == true then
-			local attB = Instance.new("Attachment", part)
+			local attB = Instance.new("Attachment")
 			attB.Position = part.CFrame:ToObjectSpace(loc).Position
+			attB.Parent = part
 			beam.Attachment1 = attB
 			sound:Play()
 
@@ -44,7 +45,7 @@ function doCannon(can)
 				end
 			end
 			canFire.Value = false
-			wait(5)
+			task.wait(5)
 			canFire.Value = true
 		end
 	end)
@@ -62,7 +63,7 @@ function doCannon(can)
 	seat.Changed:connect(function(prop)
 		if prop == "Steer" then
 			repeat
-				wait(.5)
+				task.wait(.5)
 				if seat.Steer == 1 and (angle.Value > minAngle) then
 					angle.Value -= 5
 				elseif seat.Steer == -1 and (angle.Value < maxAngle) then
@@ -75,7 +76,7 @@ function doCannon(can)
 	end)
 end
 
-cannons = workspace:WaitForChild("WaterCannons")
+local cannons = workspace:WaitForChild("WaterCannons")
 
 for _, v in pairs(cannons:GetChildren()) do
 	if v.Name == "WaterCannon" then

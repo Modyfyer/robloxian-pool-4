@@ -1,10 +1,10 @@
-lighting = game:GetService("Lighting")
-outdoorAmb = workspace:WaitForChild("AmbientSounds"):WaitForChild("Outdoor")
+local lighting = game:GetService("Lighting")
+local outdoorAmb = workspace:WaitForChild("AmbientSounds"):WaitForChild("Outdoor")
 
-dayStart = 6.5
-dayEnd = 17.7
+local dayStart = 6.5
+local dayEnd = 17.7
 
-waitTime = .25
+local waitTime = .25
 
 function toggleLights(p, state)
 	for _, v in pairs(p:GetChildren()) do
@@ -61,9 +61,9 @@ function toggleOutdoorAmb(state)
 end
 
 toggleOutdoorAmb("Day")
-currentTime = "Day"
+local currentTime = "Day"
 
-while wait(waitTime) do
+while task.wait(waitTime) do
 	lighting.ClockTime += .005
 	if (lighting.ClockTime >= dayEnd) and currentTime ~= "Night" then
 		currentTime = "Night"

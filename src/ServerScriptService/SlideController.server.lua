@@ -1,4 +1,4 @@
-slides = workspace:WaitForChild("Slides")
+local slides = workspace:WaitForChild("Slides")
 
 function handleSlide(slide)
 	local trigger = slide:WaitForChild("SitTrigger")
@@ -14,7 +14,7 @@ for _, v in pairs(slides:GetChildren()) do
 	handleSlide(v)
 end
 
-kpg = workspace:WaitForChild("KiddiePlayground")
+local kpg = workspace:WaitForChild("KiddiePlayground")
 
 handleSlide(kpg)
 

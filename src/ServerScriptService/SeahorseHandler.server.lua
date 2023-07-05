@@ -52,8 +52,8 @@ function handleHorse(toy)
 	end)
 end
 
-playground = workspace:WaitForChild("KiddiePlayground")
-seahorses = playground:WaitForChild("Seahorses")
+local playground = workspace:WaitForChild("KiddiePlayground")
+local seahorses = playground:WaitForChild("Seahorses")
 
 for _, v in pairs(seahorses:GetChildren()) do
 	if v.Name == "Seahorse" then

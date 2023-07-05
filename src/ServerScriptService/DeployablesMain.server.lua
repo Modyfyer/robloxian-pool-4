@@ -1,5 +1,5 @@
-towelEvent = game.ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("PlaceTowel")
-towelModel = game.ServerStorage.TowelModels
+local towelEvent = game.ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("PlaceTowel")
+local towelModel = game.ServerStorage.TowelModels
 
 towelEvent.OnServerEvent:Connect(function(player)
 	local char = player.Character
