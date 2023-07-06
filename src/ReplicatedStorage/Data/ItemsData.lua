@@ -32,7 +32,6 @@ module.Items[ItemType.GamePass] = {
 }
 
 module.Items[ItemType.Rental] = {
-
         CurrencyTypeName = "Robux",
 		DeveloperProductId = 1555280575,
 		Value = 1,

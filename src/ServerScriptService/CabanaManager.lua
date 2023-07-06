@@ -3,13 +3,19 @@ Module purpose: Handles the cabana rental and management interface
 
 Initialized by: ServerInit
 --]]--<<---------------------------------------------------->>--
+--Services
 local DataStoreService = game:GetService("DataStoreService")
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+--Modules
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
 local ItemsData = require(ReplicatedStorage.Data.ItemsData)
+local ItemType = require(ReplicatedStorage.Enums.ItemType)
+
+--Declarations
+local RemoteEvents = ReplicatedStorage:WaitForChild("RemoteEvents")
 
 local CabanaManager = {}
 CabanaManager.__index = CabanaManager
@@ -17,22 +23,22 @@ CabanaManager.__index = CabanaManager
 --[[**
 	Creates new instance
 **--]]
-function new()
+function new(purchaseManager)
 	local self = setmetatable({}, CabanaManager)
 
 	-- Dependency group 0
-	local connectionManager = ConnectionManager.new()
-
-	-- Dependency group 1
-	self._connectionManager = connectionManager
+	self._connectionManager = ConnectionManager.new()
+	self._purchaseManager = purchaseManager
 
 	self._cabanas = {}
+	self._playersWithRentalPass = {}
 	self._productFunctions = {}
-	self._purchaseHistoryStore = DataStoreService:GetDataStore("PurchaseHistory")
 
 	self.CabanaFolder = workspace.Cabanas
 
 	self:InitializeCabanas()
+
+	_connectHandlers(self)
 
 	return self
 end
@@ -43,6 +49,25 @@ function CabanaManager:ClearAllCabanaRentals()
 		cabana:SetAttribute("Owner", "")
 		cabana:SetAttribute("Rented", false)
 		cabana:SetAttribute("Index", i)
+
+		local roof = cabana:FindFirstChild("Roof")
+		if roof then
+			local statusGui = roof:FindFirstChild("RentalStatusGui")
+			if statusGui then
+				local label = statusGui:WaitForChild("Frame"):WaitForChild("TextLabel")
+				if label then
+					label.Text = "RENT THIS CABANA"
+				end
+			end
+		end
+
+		local floor = cabana:FindFirstChild("Floor")
+		if floor then
+			local proxPrompt = floor:FindFirstChildOfClass("ProximityPrompt")
+			if proxPrompt then
+				proxPrompt.ActionText = "Rent Cabana"
+			end
+		end
 	end
 end
 
@@ -54,12 +79,22 @@ function CabanaManager:InitializeCabanas()
 	end
 end
 
-function CabanaManager:RentCabana(player: Player, cabana: Instance)
-	for _, v in pairs(self._cabanas) do
-		if v.cabanaBuilding == cabana then
-			warn(v.owner, "already rented this cabana")
-			return false
-		end
+function CabanaManager:RentCabana(player: Player, cabana: Instance): boolean
+	if not table.find(self._playersWithRentalPass, player) then
+		warn(player.Name, "does not have the cabana rental pass")
+		return false
+	end
+	-- for _, v in pairs(self._cabanas) do
+	-- 	if v.cabanaBuilding == cabana then
+	-- 		warn(v.owner, "already rented this cabana")
+	-- 		return false
+	-- 	end
+	-- end
+
+	local owner = cabana:GetAttribute("Owner")
+	if owner and owner ~= "" and owner ~= player.Name then
+		warn(owner, "already rented this cabana")
+		return false
 	end
 
 	cabana:SetAttribute("Owner", player.Name)
@@ -68,63 +103,20 @@ function CabanaManager:RentCabana(player: Player, cabana: Instance)
 	return true
 end
 
-function _processReceipt(receiptInfo)
-		-- Determine if the product was already granted by checking the data store
-		local playerProductKey = receiptInfo.PlayerId .. "_" .. receiptInfo.PurchaseId
-		local purchased = false
-
-		local success, result, errorMessage
-		success, errorMessage = pcall(function()
-			purchased = CabanaManager._purchaseHistoryStore:GetAsync(playerProductKey)
-		end)
-
-		-- If purchase was recorded, the product was already granted
-		if success and purchased then
-			return Enum.ProductPurchaseDecision.PurchaseGranted
-		elseif not success then
-			error("Data store error:" .. errorMessage)
-		end
-
-		-- Determine if the product was already granted by checking the data store
-		playerProductKey = receiptInfo.PlayerId .. "_" .. receiptInfo.PurchaseId
-
-		local _, isPurchaseRecorded = pcall(function()
-			return CabanaManager._purchaseHistoryStore:UpdateAsync(playerProductKey, function(alreadyPurchased)
-				if alreadyPurchased then
-					return true
-				end
-
-				local player = Players:GetPlayerByUserId(receiptInfo.PlayerId)
-				if not player then
-					return nil
-				end
-
-				local handler = CabanaManager._productFunctions[receiptInfo.ProductId]
-
-				success, result = pcall(handler, receiptInfo, player)
-
-				-- If granting the product failed, do NOT record the purchase in datastores.
-				if not success or not result then
-					error("Failed to process a product purchase for ProductId: " .. tostring(receiptInfo.ProductId) .. " Player: " .. tostring(player) .. " Error: " .. tostring(result))
-					return nil
-				end
-
-				-- Record the transcation in purchaseHistoryStore.
-				return true
-			end)
-		end)
-
-		if not success then
-			error("Failed to process receipt due to data store error.")
-			return Enum.ProductPurchaseDecision.NotProcessedYet
-		elseif isPurchaseRecorded == nil then
-			return Enum.ProductPurchaseDecision.NotProcessedYet
+function _connectHandlers(self)
+	self._connectionManager:ConnectToEvent(RemoteEvents.RentCabana.OnServerEvent, function(player, cabana)
+		local rentResult = self:RentCabana(player, cabana)
+		if rentResult then
+			print("rented")
 		else
-			return Enum.ProductPurchaseDecision.PurchaseGranted
+			print("not rented")
 		end
-end
+	end)
 
-MarketplaceService.ProcessReceipt = _processReceipt
+	self._connectionManager:ConnectToEvent(self._purchaseManager.CabanaRented, function(player)
+		table.insert(self._playersWithRentalPass, player)
+	end)
+end
 
 return {
 	new = new

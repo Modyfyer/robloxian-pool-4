@@ -8,4 +8,7 @@ local Players = game:GetService("Players")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 --Dependency group 0
-local CabanaManager = require(ServerScriptService:WaitForChild("CabanaManager")).new()
+local PurchaseManager = require(ServerScriptService:WaitForChild("PurchaseManager")).new()
+
+--Dependency group 1
+local CabanaManager = require(ServerScriptService:WaitForChild("CabanaManager")).new(PurchaseManager)
