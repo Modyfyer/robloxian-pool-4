@@ -38,6 +38,15 @@ function new(screenGui)
 
 	self._connectionManager = ConnectionManager.new()
 
+	self._actionKeys = {
+		Cannonball = "X",
+		Dive = "C",
+		FrontFlip = "V",
+		BackFlip = "B",
+		Whistle = "N"
+	}
+	self._actionSelected = false
+
 	-- Dependency group 1
 	self._actionsMenu = self._mainFrame:WaitForChild("ActionsMenu")
 	self._avatarButton = self._mainFrame:WaitForChild("AvatarButton")
@@ -54,13 +63,11 @@ function new(screenGui)
 	self._waterVal = LocalChar:WaitForChild("Water")
 
 	-- Dependency group 2
-	self._actions = self._actionsMenu:WaitForChild("MenuOpen"):WaitForChild("Actions")
+	self._actions = self._actionsMenu:WaitForChild("BG"):WaitForChild("Actions")
 	self._actionsAnimations = self._actionsMenu:WaitForChild("Animations")
 
 	self._drownAnimA = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 0})
 	self._drownAnimB = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 1})
-
-	self._selectedAction = false
 
 	_connectHandlers(self)
 
@@ -114,7 +121,7 @@ function _connectHandlers(self)
 			self._drownFrame.Visible = false
 			humanoid.WalkSpeed = DEFAULT_WALKSPEED
 
-			_resetActionSelections(self)
+			--_resetActionSelections(self)
 		end
 	end
 
@@ -140,14 +147,44 @@ function _connectHandlers(self)
 		self._tooltip.Visible = false
 	end
 
-	local function onActionsMenuOpened()
-		self._actionsMenu.MenuOpen.Visible = true
-		self._actionsMenu.MenuClosed.Visible = false
+	-- local function onActionsMenuOpened()
+	-- 	self._actionsMenu.MenuOpen.Visible = true
+	-- 	self._actionsMenu.MenuClosed.Visible = false
+	-- end
+
+	-- local function onActionsMenuClosed()
+	-- 	self._actionsMenu.MenuOpen.Visible = false
+	-- 	self._actionsMenu.MenuClosed.Visible = true
+	-- end
+
+	local function cannonballAnimation(anim, actionUI)
+		if not debounce then
+			if humanoid.Sit == false then
+				debounce = true
+				local animTrack = humanoid:LoadAnimation(anim)
+				local force = Instance.new("VectorForce")
+
+				force.Parent = hrp
+				force.Force = Vector3.new(0, 4500, -1200)
+				force.ApplyAtCenterOfMass = true
+				force.Attachment0 = hrp:FindFirstChildWhichIsA("Attachment")
+
+				animTrack:Play()
+				humanoid.Sit = true
+				self.actionSelected = true
+				actionUI.UIStroke.Enabled = true
+				task.wait(.5)
+				force:Destroy()
+				task.wait(3)
+				debounce = false
+				self.actionSelected = false
+				actionUI.UIStroke.Enabled = false
+			end
+		end
 	end
 
-	local function onActionsMenuClosed()
-		self._actionsMenu.MenuOpen.Visible = false
-		self._actionsMenu.MenuClosed.Visible = true
+	local function diveAnimation(anim)
+
 	end
 
 	local function onInputBegan(input)
@@ -156,47 +193,21 @@ function _connectHandlers(self)
 		end
 		local keycode = input.KeyCode
 
-		local function doCannonball(anim)
-			if not debounce then
-				if humanoid.Sit == false then
-					debounce = true
-					local animTrack = humanoid:LoadAnimation(anim)
-					local force = Instance.new("VectorForce")
-
-					force.Parent = hrp
-					force.Force = Vector3.new(0, 4500, -1200)
-					force.ApplyAtCenterOfMass = true
-					force.Attachment0 = hrp:FindFirstChildWhichIsA("Attachment")
-
-					animTrack:Play()
-					humanoid.Sit = true
-					task.wait(.5)
-					force:Destroy()
-					task.wait(3)
-					debounce = false
-				end
-			end
-		end
-
-		for _, action in pairs(self._actions:GetChildren()) do
-			local actionKey = action:GetAttribute("Keybind")
-			if actionKey == keycode.Name then
-				if action.UIStroke.Enabled then
-					self.selectedAction = false
-					action.UIStroke.Enabled = false
-					return
-				end
-				if not self.selectedAction then
+		if not self.actionSelected then
+			for _, action in pairs(self._actions:GetChildren()) do
+				if action:GetAttribute("Keybind") == keycode.Name then
+					--Find the animation that matches the keybind
 					for _, anim in pairs(self._actionsAnimations:GetChildren()) do
 						local keybind = anim:GetAttribute("Keybind")
 						if keybind == keycode.Name then
-							doCannonball(anim)
+							if keybind == "X" then
+								cannonballAnimation(anim, action)
+							elseif keybind == "C" then
+								diveAnimation(anim)
+							end
 						end
 					end
-					action.UIStroke.Enabled = true
-					self.selectedAction = true
 				end
-				break
 			end
 		end
 	end
@@ -206,8 +217,8 @@ function _connectHandlers(self)
 		onInputBegan(input)
 	end)
 
-	self._connectionManager:ConnectToEvent(self._actionsMenu.MenuOpen.ButtonClose.MouseButton1Click, onActionsMenuClosed)
-	self._connectionManager:ConnectToEvent(self._actionsMenu.MenuClosed.ButtonOpen.MouseButton1Click, onActionsMenuOpened)
+	-- self._connectionManager:ConnectToEvent(self._actionsMenu.MenuOpen.ButtonClose.MouseButton1Click, onActionsMenuClosed)
+	-- self._connectionManager:ConnectToEvent(self._actionsMenu.MenuClosed.ButtonOpen.MouseButton1Click, onActionsMenuOpened)
 
 	self._connectionManager:ConnectToEvent(self._oxygenVal.Changed, onOxygenValueChanged)
 	self._connectionManager:ConnectToEvent(self._waterVal.Changed, onWaterValueChanged)
@@ -237,14 +248,14 @@ function _connectHandlers(self)
 end
 
 -- Resets the action selections
-function _resetActionSelections(self)
-	for _, action in pairs(self._actions:GetChildren()) do
-		if action.Name ~= "UIListLayout" then
-			action.UIStroke.Enabled = false
-		end
-	end
-	self._selectedAction = false
-end
+-- function _resetActionSelections(self)
+-- 	for _, action in pairs(self._actions:GetChildren()) do
+-- 		if action.Name ~= "UIListLayout" then
+-- 			action.UIStroke.Enabled = false
+-- 		end
+-- 	end
+-- 	self._selectedAction = false
+-- end
 
 return {
 	new = new
