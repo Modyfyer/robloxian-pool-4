@@ -1,4 +1,4 @@
-orderEvent = game:GetService("ReplicatedStorage"):WaitForChild("RemoteEvents"):WaitForChild("OrderFood")
+local orderEvent = game:GetService("ReplicatedStorage"):WaitForChild("RemoteEvents"):WaitForChild("OrderFood")
 
 orderEvent.OnServerEvent:connect(function(player, foodItem)
 	local food = foodItem:Clone()

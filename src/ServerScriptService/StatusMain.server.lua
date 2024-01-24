@@ -2,20 +2,24 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local RemoteEventsFolder = ReplicatedStorage:WaitForChild("RemoteEvents")
 
+local DEFAULT_COLOR: Color3 = Color3.new(0.835294, 0.45098, 0.239216)
+local MAX_OXYGEN: number = 100
+local MAX_WATER: number = 100
+
 function equipStats(pl)
 	local oxygenValue = Instance.new("NumberValue")
 	oxygenValue.Name = "Oxygen"
-	oxygenValue.Value = 100
+	oxygenValue.Value = MAX_OXYGEN
 	oxygenValue.Parent = pl.Character
 
 	local waterValue = Instance.new("NumberValue")
 	waterValue.Name = "Water"
-	waterValue.Value = 100
+	waterValue.Value = MAX_WATER
 	waterValue.Parent = pl.Character
-	
+
 	local colorValue = Instance.new("Color3Value")
 	colorValue.Name = "Color"
-	colorValue.Value = Color3.new(0.835294, 0.45098, 0.239216)
+	colorValue.Value = DEFAULT_COLOR
 	colorValue.Parent = pl.Character
 end
 
@@ -44,7 +48,7 @@ end
 function drown(pl)
 	local drownSpot = getNearestBrick(pl)
 	pl.Character:MoveTo(drownSpot.Position)
-	pl.Character.Oxygen.Value = 100
+	pl.Character.Oxygen.Value = MAX_OXYGEN
 	pl.Character.Humanoid.WalkSpeed = 16
 end
 
@@ -80,8 +84,8 @@ oxygenEvent.OnServerEvent:Connect(function(pl, amt)
 
 	if plOxy ~= nil then
 		plOxy.Value = plOxy.Value + amt
-		if plOxy.Value > 100 then
-			plOxy.Value = 100
+		if plOxy.Value > MAX_OXYGEN then
+			plOxy.Value = MAX_OXYGEN
 		elseif plOxy.Value < 0 then
 			plOxy.Value = 0
 		end
@@ -93,8 +97,8 @@ waterEvent.OnServerEvent:Connect(function(pl, amt)
 
 	if plWat ~= nil then
 		plWat.Value = plWat.Value + amt
-		if plWat.Value > 100 then
-			plWat.Value = 100
+		if plWat.Value > MAX_WATER then
+			plWat.Value = MAX_WATER
 		elseif plWat.Value < 0 then
 			plWat.Value = 0
 		end
@@ -103,16 +107,16 @@ end)
 
 colorEvent.OnServerEvent:Connect(function(pl, color)
 	local plColor = pl.Character:FindFirstChild("Color")
-	
+
 	if plColor ~= nil then
 		plColor.Value = color
-		
+
 		for _, v in pairs(pl.Backpack:GetChildren()) do
 			if v:IsA("Tool") and v:FindFirstChild("Customizable") then
 				v.Handle.Color = color
 			end
 		end
-		
+
 		for _, v in pairs(pl.Character:GetChildren()) do
 			if v:IsA("Tool") and v:FindFirstChild("Customizable") then
 				v.Handle.Color = color

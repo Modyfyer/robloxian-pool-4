@@ -1,85 +1,72 @@
 --[[--<<---------------------------------------------------->>--
 Module purpose: Handles the HUD UI for desktop
 
-Public functions:
--Show()
--Hide()
-
 Initialized by: HUDUIManager
 --]]--<<---------------------------------------------------->>--
 
+--Services
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
+--Modules
+local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
+
+--Declarations
 local LocalPlayer = Players.LocalPlayer
 local LocalChar = LocalPlayer.Character
-
-local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
---local UIHelpers = require(LocalPlayer.PlayerScripts.UIHelpers)
 
 local DEFAULT_WALKSPEED = 16
 local OXYGEN_SCALE = (70 / 100)
 local WATER_SCALE = (180 / 100)
 
-local drownTweenInfo = TweenInfo.new(
-	3, -- Time
-	Enum.EasingStyle.Linear, -- EasingStyle
-	Enum.EasingDirection.Out, -- EasingDirection
-	0, -- RepeatCount (when less than zero the tween will loop indefinitely)
-	false, -- Reverses (tween will reverse once reaching it's goal)
-	0 -- DelayTime
-)
-
--- local hoverTweenInfo = TweenInfo.new(
--- 	1.5,
--- 	Enum.EasingStyle.Linear,
--- 	Enum.EasingDirection.Out,
--- 	0,
--- 	false,
--- 	0
--- )
-
-local debounce = false
+local actionKeys: {string: Enum.KeyCode} = {
+	Cannonball = Enum.KeyCode.X,
+	Dive = Enum.KeyCode.C,
+	FrontFlip = Enum.KeyCode.V,
+	BackFlip = Enum.KeyCode.B,
+	Whistle = Enum.KeyCode.N
+}
+local actionSelected: boolean = false
+local debounce: boolean = false
+local drownTweenInfo: TweenInfo = TweenInfo.new(3, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
 
 local UIManager = {}
 UIManager.__index = UIManager
 
---[[**
-	Creates new instance
-
-	@param [t:ScreenGui] screenGui The platform specific screenGui
-**--]]
+--Creates new instance
 function new(screenGui)
 	local self = setmetatable({}, UIManager)
 
+	-- Dependency group 0
 	self._mainFrame = screenGui:WaitForChild("Desktop")
-	self._localCharacterHumanoid = LocalChar:WaitForChild("Humanoid")
-
 	self._connectionManager = ConnectionManager.new()
 
+	-- Dependency group 1
 	self._actionsMenu = self._mainFrame:WaitForChild("ActionsMenu")
-	self._avatarButton = self._mainFrame:WaitForChild("AvatarButton")
 	self._drownFrame = self._mainFrame:WaitForChild("DrownAnim")
-	self._emotesButton = self._mainFrame:WaitForChild("EmotesButton")
-	self._settingsButton = self._mainFrame:WaitForChild("SettingsButton")
-	self._shopsButton = self._mainFrame:WaitForChild("ShopsButton")
+	self._progressBars = self._mainFrame:WaitForChild("ProgressBars")
+	self._sidebarLeft = self._mainFrame:WaitForChild("SidebarLeft")
 	self._tooltip = self._mainFrame:WaitForChild("ButtonTooltip")
 
-	self._oxygenBar = self._mainFrame:WaitForChild("OxygenMeter"):WaitForChild("OxygenLevelBG"):WaitForChild("OxygenLevel")
+	self._oxygenBar = self._progressBars:WaitForChild("OxygenMeter"):WaitForChild("BG"):WaitForChild("Amount")
 	self._oxygenVal = LocalChar:WaitForChild("Oxygen")
 
-	self._waterBar = self._mainFrame:WaitForChild("WaterMeter"):WaitForChild("WaterLevel")
+	self._waterBar = self._progressBars:WaitForChild("WaterMeter"):WaitForChild("BG"):WaitForChild("Amount")
 	self._waterVal = LocalChar:WaitForChild("Water")
 
-	self._actions = self._actionsMenu:WaitForChild("MenuOpen"):WaitForChild("Actions")
-	self._actionsAnimations = self._actionsMenu:WaitForChild("Animations")
+	-- Dependency group 2
+	-- self._actions = self._actionsMenu:WaitForChild("BG"):WaitForChild("Actions")
+	-- self._actionsAnimations = self._actionsMenu:WaitForChild("Animations")
+
+	self._avatarButton = self._sidebarLeft:WaitForChild("AvatarButton")
+	self._emotesButton = self._sidebarLeft:WaitForChild("EmotesButton"):WaitForChild("Button")
+	self._settingsButton = self._sidebarLeft:WaitForChild("SettingsButton"):WaitForChild("Button")
+	self._shopsButton = self._sidebarLeft:WaitForChild("ShopsButton")
 
 	self._drownAnimA = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 0})
 	self._drownAnimB = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 1})
-
-	self._selectedAction = false
 
 	_connectHandlers(self)
 
@@ -94,19 +81,22 @@ function UIManager:Hide()
 	self._mainFrame.Visible = false
 end
 
---[[**
-	Shows UI
-**--]]
+--Shows UI
 function UIManager:Show()
 	self._connectionManager:ConnectAll()
 	self._mainFrame.Visible = true
 end
 
+--[[ Private functions ]]--
+
+-- Handles event connections
 function _connectHandlers(self)
+	--Character declarations
 	local character = LocalPlayer.Character
 	local hrp = character:WaitForChild("HumanoidRootPart")
 	local humanoid = character:WaitForChild("Humanoid")
 
+	--Oxygen UI
 	local function onOxygenValueChanged()
 		character = LocalPlayer.Character
 		if not character then
@@ -119,8 +109,8 @@ function _connectHandlers(self)
 		end
 
 		local oxLev: number = self._oxygenVal.Value
-		self._oxygenBar.Size = UDim2.new(1, 0, 0, ((OXYGEN_SCALE) * oxLev))
-		self._oxygenBar.Position = UDim2.new(0, 0, 1, ((OXYGEN_SCALE * oxLev) * -1))
+		local scaled = math.clamp(oxLev / 100, 0, 1)
+		self._oxygenBar.Size = UDim2.new(scaled, 0, 1, 0)
 
 		if oxLev <= 0 then
 			self._drownFrame.Visible = true
@@ -131,136 +121,137 @@ function _connectHandlers(self)
 			task.wait(3)
 			self._drownFrame.Visible = false
 			humanoid.WalkSpeed = DEFAULT_WALKSPEED
-
-			_resetActionSelections(self)
 		end
 	end
 
+	--Water UI
 	local function onWaterValueChanged()
-		local waterLev = self._waterVal.Value
-		self._waterBar.Size = UDim2.new(1, 0, 0, (WATER_SCALE * waterLev))
+		local waterLev: number = self._waterVal.Value
+		local scaled = math.clamp(waterLev / 100, 0, 1)
+		self._waterBar.Size = UDim2.new(scaled, 0, 1, 0)
 	end
 
-	local function onMouseEnter(x, y, text)
+	--Tooltip--
+	local function showTooltip(x: number, y: number, text: string)
 		local OFFSET = 50
 		self._tooltip.Position = UDim2.new(0, x + OFFSET, 0, y + OFFSET)
 		self._tooltip.Visible = true
 		self._tooltip.Tooltip.Text = text
 	end
 
-	local function onMouseMoved(x, y)
+	local function setTooltipPosition(x: number, y: number)
 		self._tooltip.Position = UDim2.new(0, x, 0, y)
 	end
 
-	local function onMouseLeave()
+	local function hideTooltip()
 		self._tooltip.Position = UDim2.new(0.5,0,0.5,0)
 		self._tooltip.Tooltip.Text = ""
 		self._tooltip.Visible = false
 	end
 
-	local function onActionsMenuOpened()
-		self._actionsMenu.MenuOpen.Visible = true
-		self._actionsMenu.MenuClosed.Visible = false
+	--Animations--
+	local function cannonballAnimation(anim, actionUI)
+		if not debounce then
+			if humanoid.Sit == false then
+				debounce = true
+				local animTrack = humanoid:LoadAnimation(anim)
+				local force = Instance.new("VectorForce")
+
+				force.Parent = hrp
+				force.Force = Vector3.new(0, 4500, -1200)
+				force.ApplyAtCenterOfMass = true
+				force.Attachment0 = hrp:FindFirstChildWhichIsA("Attachment")
+
+				animTrack:Play()
+				humanoid.Sit = true
+				self.actionSelected = true
+				actionUI.UIStroke.Enabled = true
+				task.wait(.5)
+				force:Destroy()
+				task.wait(3)
+				debounce = false
+				self.actionSelected = false
+				actionUI.UIStroke.Enabled = false
+			end
+		end
 	end
 
-	local function onActionsMenuClosed()
-		self._actionsMenu.MenuOpen.Visible = false
-		self._actionsMenu.MenuClosed.Visible = true
+	local function diveAnimation(anim)
+		print("dive anim")
 	end
 
+	--Input handler--
 	local function onInputBegan(input)
 		if input.UserInputType ~= Enum.UserInputType.Keyboard then
 			return
 		end
-		local keycode = input.KeyCode
+		local keycode: string = input.KeyCode.Name
 
-		local function doCannonball(anim)
-			if not debounce then
-				if humanoid.Sit == false then
-					debounce = true
-					local animTrack = humanoid:LoadAnimation(anim)
-					local force = Instance.new("VectorForce")
-
-					force.Parent = hrp
-					force.Force = Vector3.new(0, 4500, -1200)
-					force.ApplyAtCenterOfMass = true
-					force.Attachment0 = hrp:FindFirstChildWhichIsA("Attachment")
-
-					animTrack:Play()
-					humanoid.Sit = true
-					task.wait(.5)
-					force:Destroy()
-					task.wait(3)
-					debounce = false
-				end
-			end
-		end
-
-		for _, action in pairs(self._actions:GetChildren()) do
-			local actionKey = action:GetAttribute("Keybind")
-			if actionKey == keycode.Name then
-				if action.UIStroke.Enabled then
-					self.selectedAction = false
-					action.UIStroke.Enabled = false
-					return
-				end
-				if not self.selectedAction then
-					for _, anim in pairs(self._actionsAnimations:GetChildren()) do
-						local keybind = anim:GetAttribute("Keybind")
-						if keybind == keycode.Name then
-							doCannonball(anim)
+		if not self.actionSelected then
+			for _, action: Frame in pairs(self._actions:GetChildren()) do
+				if action:GetAttribute("Keybind") == keycode then
+					--Find the animation that matches the keybind
+					for _, anim: Animation in pairs(self._actionsAnimations:GetChildren()) do
+						local keybind: string? = anim:GetAttribute("Keybind")
+						if keybind == keycode then
+							if keybind == "X" then
+								cannonballAnimation(anim, action)
+							elseif keybind == "C" then
+								diveAnimation(anim)
+							end
 						end
 					end
-					action.UIStroke.Enabled = true
-					self.selectedAction = true
 				end
-				break
 			end
 		end
 	end
 
-	--Connections
-	self._connectionManager:ConnectToEvent(UserInputService.InputBegan, function(input)
-		onInputBegan(input)
-	end)
+	-----------------Connections-----------------
+	-- self._connectionManager:ConnectToEvent(UserInputService.InputBegan, function(input)
+	-- 	onInputBegan(input)
+	-- end)
 
-	self._connectionManager:ConnectToEvent(self._actionsMenu.MenuOpen.ButtonClose.MouseButton1Click, onActionsMenuClosed)
-	self._connectionManager:ConnectToEvent(self._actionsMenu.MenuClosed.ButtonOpen.MouseButton1Click, onActionsMenuOpened)
-
+	----Oxygen/Water----
 	self._connectionManager:ConnectToEvent(self._oxygenVal.Changed, onOxygenValueChanged)
 	self._connectionManager:ConnectToEvent(self._waterVal.Changed, onWaterValueChanged)
+
+	----Sidebar Left----
+	--Avatar
+	self._connectionManager:ConnectToEvent(self._avatarButton.MouseButton1Click, function()
+	
+	end)
 	self._connectionManager:ConnectToEvent(self._avatarButton.MouseEnter, function(x, y)
-		onMouseEnter(x, y, "Avatar")
+		showTooltip(x, y, "Avatar")
 	end)
-	self._connectionManager:ConnectToEvent(self._avatarButton.MouseMoved, onMouseMoved)
-	self._connectionManager:ConnectToEvent(self._avatarButton.MouseLeave, onMouseLeave)
+	self._connectionManager:ConnectToEvent(self._avatarButton.MouseMoved, setTooltipPosition)
+	self._connectionManager:ConnectToEvent(self._avatarButton.MouseLeave, hideTooltip)
 
+	--Emotes
 	self._connectionManager:ConnectToEvent(self._emotesButton.MouseEnter, function(x, y)
-		onMouseEnter(x, y, "Emotes")
+		showTooltip(x, y, "Emotes")
 	end)
-	self._connectionManager:ConnectToEvent(self._emotesButton.MouseMoved, onMouseMoved)
-	self._connectionManager:ConnectToEvent(self._emotesButton.MouseLeave, onMouseLeave)
+	self._connectionManager:ConnectToEvent(self._emotesButton.MouseMoved, setTooltipPosition)
+	self._connectionManager:ConnectToEvent(self._emotesButton.MouseLeave, hideTooltip)
 
+	--Settings
+	self._connectionManager:ConnectToEvent(self._settingsButton.MouseButton1Click, function()
+		print("settings")
+	end)
 	self._connectionManager:ConnectToEvent(self._settingsButton.MouseEnter, function(x, y)
-		onMouseEnter(x, y, "Settings")
+		showTooltip(x, y, "Settings")
 	end)
-	self._connectionManager:ConnectToEvent(self._settingsButton.MouseMoved, onMouseMoved)
-	self._connectionManager:ConnectToEvent(self._settingsButton.MouseLeave, onMouseLeave)
+	self._connectionManager:ConnectToEvent(self._settingsButton.MouseMoved, setTooltipPosition)
+	self._connectionManager:ConnectToEvent(self._settingsButton.MouseLeave, hideTooltip)
 
+	--Shops
+	self._connectionManager:ConnectToEvent(self._shopsButton.MouseButton1Click, function()
+	
+	end)
 	self._connectionManager:ConnectToEvent(self._shopsButton.MouseEnter, function(x, y)
-		onMouseEnter(x, y, "Shops")
+		showTooltip(x, y, "Shops")
 	end)
-	self._connectionManager:ConnectToEvent(self._shopsButton.MouseMoved, onMouseMoved)
-	self._connectionManager:ConnectToEvent(self._shopsButton.MouseLeave, onMouseLeave)
-end
-
-function _resetActionSelections(self)
-	for _, action in pairs(self._actions:GetChildren()) do
-		if action.Name ~= "UIListLayout" then
-			action.UIStroke.Enabled = false
-		end
-	end
-	self._selectedAction = false
+	self._connectionManager:ConnectToEvent(self._shopsButton.MouseMoved, setTooltipPosition)
+	self._connectionManager:ConnectToEvent(self._shopsButton.MouseLeave, hideTooltip)
 end
 
 return {

@@ -1,17 +1,20 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local player = Players.LocalPlayer
 task.wait(3) --cbt
-player = game.Players.LocalPlayer
 
-main = script.Parent
-snacksFrame = main.SnacksBG.ScrollingFrame
-drinksFrame = main.DrinksBG.ScrollingFrame
-itemButton = main.itemButton
+local main = script.Parent
+local snacksFrame = main.SnacksBG.ScrollingFrame
+local drinksFrame = main.DrinksBG.ScrollingFrame
+local itemButton = main.itemButton
 
-fOrder1 = workspace:WaitForChild("fOrder1")
-fOrder2 = workspace:WaitForChild("fOrder2")
+-- local fOrder1 = workspace:WaitForChild("fOrder1")
+-- local fOrder2 = workspace:WaitForChild("fOrder2")
 
-foods = game:GetService("ReplicatedStorage"):WaitForChild("Foods")
-drinks = game:GetService("ReplicatedStorage"):WaitForChild("Drinks")
-event = game:GetService("ReplicatedStorage"):WaitForChild("RemoteEvents"):WaitForChild("OrderFood")
+local foods = ReplicatedStorage:WaitForChild("Foods")
+local drinks = ReplicatedStorage:WaitForChild("Drinks")
+local event = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("OrderFood")
 
 function playerHasTool(plr, toolName)
 	local backpack = plr:FindFirstChild("Backpack")
@@ -32,7 +35,7 @@ function doOrderFood(button, tool)
 			if not playerHasTool(player, tool.Name) then
 				event:FireServer(tool)
 			end
-			wait(3)
+			task.wait(3)
 			deb = false
 		end
 	end)
@@ -57,16 +60,16 @@ for _, v in pairs(drinks:GetChildren()) do
 	addButton(v, drinksFrame)
 end
 
-while wait() do
-	local playerChar = player.Character
-	hrp = playerChar:WaitForChild("HumanoidRootPart")
+-- while task.wait() do
+-- 	local playerChar = player.Character
+-- 	local hrp = playerChar:WaitForChild("HumanoidRootPart")
 
-	local dist1 = (hrp.Position - fOrder1.Position).Magnitude
-	local dist2 = (hrp.Position - fOrder2.Position).Magnitude
+-- 	local dist1 = (hrp.Position - fOrder1.Position).Magnitude
+-- 	local dist2 = (hrp.Position - fOrder2.Position).Magnitude
 
-	if dist1 <= 5 or dist2 <= 5 then
-		main.Visible = true
-	else
-		main.Visible = false
-	end
-end
+-- 	if dist1 <= 5 or dist2 <= 5 then
+-- 		main.Visible = true
+-- 	else
+-- 		main.Visible = false
+-- 	end
+-- end

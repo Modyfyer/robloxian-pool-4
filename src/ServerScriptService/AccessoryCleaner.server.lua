@@ -3,8 +3,8 @@ local handleWhiteList = {"Attachment", "ValueBase", "Weld", "SpecialMesh", "Surf
 
 local function cleanAccessory(hat)
 	if hat:IsA("Hat") or hat:IsA("Accessory") then
-		spawn(function()
-			wait(3)
+		task.spawn(function()
+			task.wait(3)
 			for _, n in pairs(blackListNames) do
 				if string.find(hat.Name:lower(), n:lower()) then
 					hat:Destroy()
