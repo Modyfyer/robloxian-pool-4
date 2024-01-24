@@ -22,14 +22,7 @@ local DEFAULT_WALKSPEED = 16
 local OXYGEN_SCALE = (70 / 100)
 local WATER_SCALE = (180 / 100)
 
-local drownTweenInfo = TweenInfo.new(
-	3, -- Time
-	Enum.EasingStyle.Linear, -- EasingStyle
-	Enum.EasingDirection.Out, -- EasingDirection
-	0, -- RepeatCount (when less than zero the tween will loop indefinitely)
-	false, -- Reverses (tween will reverse once reaching it's goal)
-	0 -- DelayTime
-)
+local drownTweenInfo: TweenInfo = TweenInfo.new(3, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
 
 local UIManager = {}
 UIManager.__index = UIManager
@@ -47,22 +40,26 @@ function new(screenGui)
 
 	self._connectionManager = ConnectionManager.new()
 
+	self._sidebarLeft = self._mainFrame:WaitForChild("SidebarLeft")
+	self._sidebarRight = self._mainFrame:WaitForChild("SidebarRight")
 	self._actionsMenu = self._mainFrame:WaitForChild("ActionsMenu")
-	self._avatarButton = self._mainFrame:WaitForChild("AvatarButton")
-	self._emotesButton = self._mainFrame:WaitForChild("EmotesButton")
-	self._settingsButton = self._mainFrame:WaitForChild("SettingsButton")
+	self._progressBars = self._mainFrame:WaitForChild("ProgressBars")
 
-	self._oxygenBar = self._mainFrame:WaitForChild("OxygenMeter"):WaitForChild("OxygenLevelBG"):WaitForChild("OxygenLevel")
+	
+	self._avatarButton = self._sidebarLeft:WaitForChild("AvatarButton")
+	self._emotesButton = self._sidebarLeft:WaitForChild("EmotesButton")
+	self._settingsButton = self._sidebarLeft:WaitForChild("SettingsButton")
+
+	self._oxygenBar = self._progressBars:WaitForChild("OxygenMeter"):WaitForChild("BG"):WaitForChild("Amount")
 	self._oxygenVal = LocalChar:WaitForChild("Oxygen")
 
-	self._waterBar = self._mainFrame:WaitForChild("WaterMeter"):WaitForChild("WaterLevelBG"):WaitForChild("WaterLevel")
+	self._waterBar = self._progressBars:WaitForChild("WaterMeter"):WaitForChild("BG"):WaitForChild("Amount")
 	self._waterVal = LocalChar:WaitForChild("Water")
 
 	self._drownFrame = self._mainFrame:WaitForChild("DrownAnim")
 
 	self._drownAnimA = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 0})
 	self._drownAnimB = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 1})
-
 	
 	_connectHandlers(self)
 	
@@ -86,18 +83,18 @@ function UIManager:Show()
 end
 
 function _connectHandlers(self)
-	self._actionsMenu.ButtonClose.MouseButton1Click:Connect(function()
-		self._actionsMenu.MenuOpen.Visible = false
-		self._actionsMenu.MenuClosed.Visible = true
-		self._actionsMenu.ButtonOpen.Visible = true
-		self._actionsMenu.ButtonClose.Visible = false
-	end)
-	self._actionsMenu.ButtonOpen.MouseButton1Click:Connect(function()
-		self._actionsMenu.MenuOpen.Visible = true
-		self._actionsMenu.MenuClosed.Visible = false
-		self._actionsMenu.ButtonOpen.Visible = false
-		self._actionsMenu.ButtonClose.Visible = true
-	end)
+	-- self._actionsMenu.ButtonClose.MouseButton1Click:Connect(function()
+	-- 	self._actionsMenu.MenuOpen.Visible = false
+	-- 	self._actionsMenu.MenuClosed.Visible = true
+	-- 	self._actionsMenu.ButtonOpen.Visible = true
+	-- 	self._actionsMenu.ButtonClose.Visible = false
+	-- end)
+	-- self._actionsMenu.ButtonOpen.MouseButton1Click:Connect(function()
+	-- 	self._actionsMenu.MenuOpen.Visible = true
+	-- 	self._actionsMenu.MenuClosed.Visible = false
+	-- 	self._actionsMenu.ButtonOpen.Visible = false
+	-- 	self._actionsMenu.ButtonClose.Visible = true
+	-- end)
 
 	local function onOxygenValueChanged()
 		local oxLev = self._oxygenVal.Value
