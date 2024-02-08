@@ -17,6 +17,12 @@ local ItemType = require(ReplicatedStorage.Enums.ItemType)
 --Declarations
 local RemoteEvents = ReplicatedStorage:WaitForChild("RemoteEvents")
 
+type cabana = {
+	owner: string?,
+	cabanaBuilding: Instance?,
+	index: number?
+}
+
 local CabanaManager = {}
 CabanaManager.__index = CabanaManager
 
@@ -71,6 +77,10 @@ function CabanaManager:ClearAllCabanaRentals()
 	end
 end
 
+function CabanaManager:ClearCabanaRental(player: Player)
+	--table.find
+end
+
 function CabanaManager:InitializeCabanas()
 	for _, cabanaModel in pairs(self.CabanaFolder:GetChildren()) do
 		if cabanaModel.Name == "Cabana" then
@@ -84,12 +94,6 @@ function CabanaManager:RentCabana(player: Player, cabana: Instance): boolean
 		warn(player.Name, "does not have the cabana rental pass")
 		return false
 	end
-	-- for _, v in pairs(self._cabanas) do
-	-- 	if v.cabanaBuilding == cabana then
-	-- 		warn(v.owner, "already rented this cabana")
-	-- 		return false
-	-- 	end
-	-- end
 
 	local owner = cabana:GetAttribute("Owner")
 	if owner and owner ~= "" and owner ~= player.Name then
@@ -104,7 +108,7 @@ function CabanaManager:RentCabana(player: Player, cabana: Instance): boolean
 end
 
 function _connectHandlers(self)
-	self._connectionManager:ConnectToEvent(RemoteEvents.RentCabana.OnServerEvent, function(player, cabana)
+	self._connectionManager:ConnectToEvent(RemoteEvents.RentCabana.OnServerEvent, function(player: Player, cabana)
 		local rentResult = self:RentCabana(player, cabana)
 		if rentResult then
 			print("rented")
