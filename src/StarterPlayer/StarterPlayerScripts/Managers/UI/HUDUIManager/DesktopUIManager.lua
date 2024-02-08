@@ -5,6 +5,7 @@ Initialized by: HUDUIManager
 --]]--<<---------------------------------------------------->>--
 
 --Services
+local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
@@ -18,6 +19,7 @@ local LocalPlayer = Players.LocalPlayer
 local LocalChar = LocalPlayer.Character
 
 local DEFAULT_WALKSPEED = 16
+local LIFEGUARD_GAMEPASS_ID = 703084245
 local OXYGEN_SCALE = (70 / 100)
 local WATER_SCALE = (180 / 100)
 
@@ -48,6 +50,7 @@ function new(screenGui)
 	self._drownFrame = self._mainFrame:WaitForChild("DrownAnim")
 	self._progressBars = self._mainFrame:WaitForChild("ProgressBars")
 	self._sidebarLeft = self._mainFrame:WaitForChild("SidebarLeft")
+	self._sidebarRight = self._mainFrame:WaitForChild("SidebarRight")
 	self._tooltip = self._mainFrame:WaitForChild("ButtonTooltip")
 
 	self._oxygenBar = self._progressBars:WaitForChild("OxygenMeter"):WaitForChild("BG"):WaitForChild("Amount")
@@ -62,6 +65,7 @@ function new(screenGui)
 
 	self._avatarButton = self._sidebarLeft:WaitForChild("AvatarButton")
 	self._emotesButton = self._sidebarLeft:WaitForChild("EmotesButton"):WaitForChild("Button")
+	self._lifeguardButton = self._sidebarRight:WaitForChild("LifeguardButton"):WaitForChild("Button")
 	self._settingsButton = self._sidebarLeft:WaitForChild("SettingsButton"):WaitForChild("Button")
 	self._shopsButton = self._sidebarLeft:WaitForChild("ShopsButton")
 
@@ -95,6 +99,8 @@ function _connectHandlers(self)
 	local character = LocalPlayer.Character
 	local hrp = character:WaitForChild("HumanoidRootPart")
 	local humanoid = character:WaitForChild("Humanoid")
+
+	TweenService:Create(self._lifeguardButton, TweenInfo.new(10, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, false), { Rotation = 360 }):Play()
 
 	--Oxygen UI
 	local function onOxygenValueChanged()
@@ -232,6 +238,11 @@ function _connectHandlers(self)
 	end)
 	self._connectionManager:ConnectToEvent(self._emotesButton.MouseMoved, setTooltipPosition)
 	self._connectionManager:ConnectToEvent(self._emotesButton.MouseLeave, hideTooltip)
+
+	--Lifeguard
+	self._connectionManager:ConnectToEvent(self._lifeguardButton.MouseButton1Click, function()
+		MarketplaceService:PromptGamePassPurchase(LocalPlayer, LIFEGUARD_GAMEPASS_ID)
+	end)
 
 	--Settings
 	self._connectionManager:ConnectToEvent(self._settingsButton.MouseButton1Click, function()
