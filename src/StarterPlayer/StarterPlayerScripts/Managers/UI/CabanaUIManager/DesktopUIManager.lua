@@ -117,11 +117,11 @@ function _connectHandlers(self)
 
 			if self.cabanaPurchased and cabana:GetAttribute("Owner") == player.Name then
 				openSettings()
-			elseif cabana:GetAttribute("Owner") ~= "" and cabana:GetAttribute("Owner") ~= player.Name then
-				print("Someone else owns this cabana")
-			else
+			elseif (cabana:GetAttribute("Owner") == "") or (not cabana:GetAttribute("Owner")) then
 				UIHelpers:SetupViewport(self._purchasePrompt.PreviewFrame.ViewportFrame, self.Cabana)
 				openRentalPrompt()
+			else
+				print("Someone else owns this cabana")
 			end
 		end
 	end
