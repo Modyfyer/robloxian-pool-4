@@ -19,6 +19,8 @@ local ItemType = require(ReplicatedStorage.Enums.ItemType)
 local ProductFunctions = {}
 local PurchaseHistoryStore = DataStoreService:GetDataStore("PurchaseHistory")
 
+local LIFEGUARD_GAMEPASS_ID = 703084245
+
 local PurchaseManager = {}
 PurchaseManager.__index = PurchaseManager
 
@@ -32,15 +34,26 @@ function new()
 	self._connectionManager = ConnectionManager.new()
 
     self.CabanaRented = Event.new()
+	self.LifeguardEnabled = Event.new()
 
     ProductFunctions[ItemsData.Items[ItemType.Rental].DeveloperProductId] = function(_receipt, player)
         self.CabanaRented:Fire(player)
         return true
     end
 
+	ProductFunctions[LIFEGUARD_GAMEPASS_ID] = function(_receipt, player)
+        self.LifeguardEnabled:Fire(player)
+        return true
+    end
+
 	return self
 end
 
+--[[**
+	Processes purchases and returns the purchase result
+
+	@returns Enum.ProductPurchaseDecision
+**--]]
 function _processReceipt(receiptInfo)
 	local playerProductKey = receiptInfo.PlayerId .. "_" .. receiptInfo.PurchaseId
 	local purchased = false
