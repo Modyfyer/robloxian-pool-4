@@ -32,12 +32,6 @@ function new(screenGui)
 
 	-- Dependency group 0
 	self._connectionManager = ConnectionManager.new()
-
-	-- Dependency group 1
-	self._sidebarLeft = self._mainFrame:WaitForChild("SidebarLeft")
-	
-	-- Dependency group 2
-	self._avatarButton = self._sidebarLeft:WaitForChild("AvatarButton")
 	
 	_connectHandlers(self)
 	

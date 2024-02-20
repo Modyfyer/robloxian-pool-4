@@ -34,7 +34,7 @@ AvatarUIManager.__index = AvatarUIManager --called a "metamethod" - protects you
 
 	@returns The new instance
 **--]]
-function new(platformDetectionManager)
+function new(hudUIManager, platformDetectionManager)
 	local self = setmetatable({}, AvatarUIManager) 
 
 	-- Dependency group 0

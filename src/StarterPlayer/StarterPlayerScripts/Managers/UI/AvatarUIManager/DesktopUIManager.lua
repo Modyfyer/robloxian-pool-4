@@ -27,12 +27,6 @@ function new(screenGui)
 	self._mainFrame = screenGui:WaitForChild("Desktop")
 	self._connectionManager = ConnectionManager.new()
 
-	-- Dependency group 1
-	self._sidebarLeft = self._mainFrame:WaitForChild("SidebarLeft")
-
-	-- Dependency group 2
-	self.avatarButton = self._sidebarLeft:WaitForChild("AvatarButton")
-
 	_connectHandlers(self)
 
 	return self
@@ -56,9 +50,7 @@ end
 
 -- Handles event connections
 function _connectHandlers(self)
-	self.avatarButton.MouseButton1Click:Connect(function()
-		self._mainFrame.Visible = not self._mainFrame.Visible
-	end)
+
 end
 
 return {
