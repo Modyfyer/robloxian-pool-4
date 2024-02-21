@@ -19,13 +19,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local LocalPlayer = Players.LocalPlayer
 
-local ConnectionManager = require(ReplicatedStorage.ConnectionManager) --This is an easy way to have all connections in one place so you can disconnect everything and not leak memory
-local PlatformType = require(LocalPlayer.PlayerScripts.Managers.PlatformDetectionManager.PlatformType) --This is effectively an Enum
+local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
+local PlatformType = require(LocalPlayer.PlayerScripts.Managers.PlatformDetectionManager.PlatformType)
 
 local UI_NAME = "AvatarGui"
 
-local AvatarUIManager = {} --creates the table "object"
-AvatarUIManager.__index = AvatarUIManager --called a "metamethod" - protects you if you try to access a field of the table AvatarUIManager that isn't there
+local AvatarUIManager = {}
+AvatarUIManager.__index = AvatarUIManager
 
 --[[**
 	Creates a new instance
@@ -35,14 +35,11 @@ AvatarUIManager.__index = AvatarUIManager --called a "metamethod" - protects you
 	@returns The new instance
 **--]]
 function new(hudUIManager, platformDetectionManager)
-	local self = setmetatable({}, AvatarUIManager) 
+	local self = setmetatable({}, AvatarUIManager)
 
-	-- Dependency group 0
-	local connectionManager = ConnectionManager.new() 
+	local connectionManager = ConnectionManager.new()
 	local screenGui = LocalPlayer.PlayerGui:WaitForChild(UI_NAME)
 
-	-- Dependency group 1
-	-- This finds each platform UI manager (desktop, mobile, console) and instances them
 	local platformSpecificUIManagers = {}
 	for i = 1, #PlatformType do
 		local platformTypeName = PlatformType[i]
@@ -54,6 +51,7 @@ function new(hudUIManager, platformDetectionManager)
 	end
 
 	self._connectionManager = connectionManager
+	self._hudUIManager = hudUIManager
 	self._platformDetectionManager = platformDetectionManager
 	self._platformSpecificUIManagers = platformSpecificUIManagers
 	self._screenGui = screenGui
@@ -79,7 +77,7 @@ end
 **--]]
 function AvatarUIManager:Show()
 	self._screenGui.Enabled = true
-	_showAppropriatePlatformSpecificUIManager(self)
+	--_showAppropriatePlatformSpecificUIManager(self)
 end
 
 --[[ Private functions ]]--
@@ -107,7 +105,6 @@ function _iterateOverAllPlatformSpecificUIManagers(self, callback)
 	end
 end
 
---Initially show the correct platform's UI
 function _showAppropriatePlatformSpecificUIManager(self)
 	local currentPlatformType = self._platformDetectionManager:GetCurrentPlatformType()
 

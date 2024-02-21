@@ -12,11 +12,13 @@ local ServerStorage = game:GetService("ServerStorage")
 
 --Modules
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
+local Event = require(ReplicatedStorage.Utils.Event)
 local ItemsData = require(ReplicatedStorage.Data.ItemsData)
 local ItemType = require(ReplicatedStorage.Enums.ItemType)
 
 --Declarations
-local RemoteEvents = ReplicatedStorage:WaitForChild("RemoteEvents")
+local BindableEvents: Folder = ReplicatedStorage:WaitForChild("BindableEvents")
+local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
 
 local AvatarManager = {}
 AvatarManager.__index = AvatarManager
@@ -37,6 +39,7 @@ function new(purchaseManager)
 end
 
 function _connectHandlers(self)
+
 end
 
 return {

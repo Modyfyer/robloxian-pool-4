@@ -12,25 +12,16 @@ local UserInputService = game:GetService("UserInputService")
 
 --Modules
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
+local Event = require(ReplicatedStorage.Utils.Event)
 
 --Declarations
+local BindableEvents: Folder = ReplicatedStorage:WaitForChild("BindableEvents")
+local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
+
 local LocalPlayer = Players.LocalPlayer
 local LocalChar = LocalPlayer.Character
 
-local DEFAULT_WALKSPEED = 16
-local OXYGEN_SCALE = (70 / 100)
-local WATER_SCALE = (180 / 100)
-
-local actionKeys: {string: Enum.KeyCode} = {
-	Cannonball = Enum.KeyCode.X,
-	Dive = Enum.KeyCode.C,
-	FrontFlip = Enum.KeyCode.V,
-	BackFlip = Enum.KeyCode.B,
-	Whistle = Enum.KeyCode.N
-}
-local actionSelected: boolean = false
-local debounce: boolean = false
-local drownTweenInfo: TweenInfo = TweenInfo.new(3, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+local DEFAULT_WALKSPEED: number = 16
 
 local UIManager = {}
 UIManager.__index = UIManager
@@ -56,18 +47,23 @@ function new(screenGui)
 	self._waterBar = self._progressBars:WaitForChild("WaterMeter"):WaitForChild("BG"):WaitForChild("Amount")
 	self._waterVal = LocalChar:WaitForChild("Water")
 
+	self.AvatarButtonEvent = BindableEvents:WaitForChild("AvatarButtonPressed")
+
 	-- Dependency group 2
 	-- self._actions = self._actionsMenu:WaitForChild("BG"):WaitForChild("Actions")
-	-- self._actionsAnimations = self._actionsMenu:WaitForChild("Animations")
+	self._actionsAnimations = self._actionsMenu:WaitForChild("Animations")
 
-	self._avatarButton = self._sidebarLeft:WaitForChild("AvatarButton")
+	self._avatarButton = self._sidebarLeft:WaitForChild("AvatarButton"):WaitForChild("Button")
 	self._emotesButton = self._sidebarLeft:WaitForChild("EmotesButton"):WaitForChild("Button")
 	self._settingsButton = self._sidebarLeft:WaitForChild("SettingsButton"):WaitForChild("Button")
-	self._shopsButton = self._sidebarLeft:WaitForChild("ShopsButton")
+	self._shopsButton = self._sidebarLeft:WaitForChild("ShopsButton"):WaitForChild("Button")
+
+	local drownTweenInfo : TweenInfo = TweenInfo.new(3, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
 
 	self._drownAnimA = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 0})
 	self._drownAnimB = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 1})
 
+	_connectAnimationHandlers(self)
 	_connectHandlers(self)
 
 	return self
@@ -89,11 +85,87 @@ end
 
 --[[ Private functions ]]--
 
--- Handles event connections
-function _connectHandlers(self)
+function _connectAnimationHandlers(self)
 	--Character declarations
 	local character = LocalPlayer.Character
 	local hrp = character:WaitForChild("HumanoidRootPart")
+	local humanoid = character:WaitForChild("Humanoid")
+
+	local actionKeys: {string: Enum.KeyCode} = {
+		Cannonball = Enum.KeyCode.X,
+		Dive = Enum.KeyCode.C,
+		FrontFlip = Enum.KeyCode.V,
+		BackFlip = Enum.KeyCode.B,
+		Whistle = Enum.KeyCode.N
+	}
+
+	local debounce: boolean = false
+
+	--Animations--
+	local function cannonballAnimation(anim: Animation, action: Enum.KeyCode)
+		if not debounce then
+			if humanoid.Sit == false then
+				debounce = true
+				local animTrack = humanoid:LoadAnimation(anim)
+				local force = Instance.new("VectorForce")
+
+				force.Parent = hrp
+				force.Force = Vector3.new(0, 4500, -1200)
+				force.ApplyAtCenterOfMass = true
+				force.Attachment0 = hrp:FindFirstChildWhichIsA("Attachment")
+
+				animTrack:Play()
+				humanoid.Sit = true
+
+				--actionUI.UIStroke.Enabled = true
+				task.wait(.5)
+				force:Destroy()
+				task.wait(3)
+				debounce = false
+
+				--actionUI.UIStroke.Enabled = false
+			end
+		end
+	end
+
+	local function diveAnimation(anim)
+		print("dive anim")
+	end
+
+	--Input handler--
+	local function onInputBegan(input)
+		if input.UserInputType ~= Enum.UserInputType.Keyboard then
+			return
+		end
+		local keycode: string = input.KeyCode.Name
+
+		-- if not self.actionSelected then
+		-- 	for _, action: Frame in pairs(actionKeys) do
+		-- 		if action:GetAttribute("Keybind") == keycode then
+		-- 			--Find the animation that matches the keybind
+		-- 			for _, anim: Animation in pairs(self._actionsAnimations:GetChildren()) do
+		-- 				local keybind: string? = anim:GetAttribute("Keybind")
+		-- 				if keybind == keycode then
+		-- 					if keybind == "X" then
+		-- 						cannonballAnimation(anim, action)
+		-- 					elseif keybind == "C" then
+		-- 						diveAnimation(anim)
+		-- 					end
+		-- 				end
+		-- 			end
+		-- 		end
+		-- 	end
+		-- end
+	end
+
+	self._connectionManager:ConnectToEvent(UserInputService.InputBegan, function(input)
+		onInputBegan(input)
+	end)
+end
+
+function _connectHandlers(self)
+	--Character declarations
+	local character = LocalPlayer.Character
 	local humanoid = character:WaitForChild("Humanoid")
 
 	--Oxygen UI
@@ -149,68 +221,7 @@ function _connectHandlers(self)
 		self._tooltip.Visible = false
 	end
 
-	--Animations--
-	local function cannonballAnimation(anim, actionUI)
-		if not debounce then
-			if humanoid.Sit == false then
-				debounce = true
-				local animTrack = humanoid:LoadAnimation(anim)
-				local force = Instance.new("VectorForce")
-
-				force.Parent = hrp
-				force.Force = Vector3.new(0, 4500, -1200)
-				force.ApplyAtCenterOfMass = true
-				force.Attachment0 = hrp:FindFirstChildWhichIsA("Attachment")
-
-				animTrack:Play()
-				humanoid.Sit = true
-				self.actionSelected = true
-				actionUI.UIStroke.Enabled = true
-				task.wait(.5)
-				force:Destroy()
-				task.wait(3)
-				debounce = false
-				self.actionSelected = false
-				actionUI.UIStroke.Enabled = false
-			end
-		end
-	end
-
-	local function diveAnimation(anim)
-		print("dive anim")
-	end
-
-	--Input handler--
-	local function onInputBegan(input)
-		if input.UserInputType ~= Enum.UserInputType.Keyboard then
-			return
-		end
-		local keycode: string = input.KeyCode.Name
-
-		if not self.actionSelected then
-			for _, action: Frame in pairs(self._actions:GetChildren()) do
-				if action:GetAttribute("Keybind") == keycode then
-					--Find the animation that matches the keybind
-					for _, anim: Animation in pairs(self._actionsAnimations:GetChildren()) do
-						local keybind: string? = anim:GetAttribute("Keybind")
-						if keybind == keycode then
-							if keybind == "X" then
-								cannonballAnimation(anim, action)
-							elseif keybind == "C" then
-								diveAnimation(anim)
-							end
-						end
-					end
-				end
-			end
-		end
-	end
-
 	-----------------Connections-----------------
-	-- self._connectionManager:ConnectToEvent(UserInputService.InputBegan, function(input)
-	-- 	onInputBegan(input)
-	-- end)
-
 	----Oxygen/Water----
 	self._connectionManager:ConnectToEvent(self._oxygenVal.Changed, onOxygenValueChanged)
 	self._connectionManager:ConnectToEvent(self._waterVal.Changed, onWaterValueChanged)
@@ -218,7 +229,7 @@ function _connectHandlers(self)
 	----Sidebar Left----
 	--Avatar
 	self._connectionManager:ConnectToEvent(self._avatarButton.MouseButton1Click, function()
-	
+		self.AvatarButtonEvent:Fire()
 	end)
 	self._connectionManager:ConnectToEvent(self._avatarButton.MouseEnter, function(x, y)
 		showTooltip(x, y, "Avatar")
