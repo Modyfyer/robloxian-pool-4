@@ -64,7 +64,8 @@ function new(screenGui)
 	self._drownAnimB = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 1})
 
 	_connectAnimationHandlers(self)
-	_connectHandlers(self)
+	_connectButtonHandlers(self)
+	_connectMeterHandlers(self)
 
 	return self
 end
@@ -163,7 +164,66 @@ function _connectAnimationHandlers(self)
 	end)
 end
 
-function _connectHandlers(self)
+function _connectButtonHandlers(self)
+	--Tooltip--
+	local function showTooltip(x: number, y: number, text: string)
+		local OFFSET = 50
+		self._tooltip.Position = UDim2.new(0, x + OFFSET, 0, y + OFFSET)
+		self._tooltip.Visible = true
+		self._tooltip.Tooltip.Text = text
+	end
+
+	local function setTooltipPosition(x: number, y: number)
+		self._tooltip.Position = UDim2.new(0, x, 0, y)
+	end
+
+	local function hideTooltip()
+		self._tooltip.Position = UDim2.new(0.5,0,0.5,0)
+		self._tooltip.Tooltip.Text = ""
+		self._tooltip.Visible = false
+	end
+
+	-------------------Listeners-----------------
+	----Sidebar Left----
+	--Avatar
+	self._connectionManager:ConnectToEvent(self._avatarButton.MouseButton1Click, function()
+		self.AvatarButtonEvent:Fire()
+	end)
+	self._connectionManager:ConnectToEvent(self._avatarButton.MouseEnter, function(x, y)
+		showTooltip(x, y, "Avatar")
+	end)
+	self._connectionManager:ConnectToEvent(self._avatarButton.MouseMoved, setTooltipPosition)
+	self._connectionManager:ConnectToEvent(self._avatarButton.MouseLeave, hideTooltip)
+
+	--Emotes
+	self._connectionManager:ConnectToEvent(self._emotesButton.MouseEnter, function(x, y)
+		showTooltip(x, y, "Emotes")
+	end)
+	self._connectionManager:ConnectToEvent(self._emotesButton.MouseMoved, setTooltipPosition)
+	self._connectionManager:ConnectToEvent(self._emotesButton.MouseLeave, hideTooltip)
+
+	--Settings
+	self._connectionManager:ConnectToEvent(self._settingsButton.MouseButton1Click, function()
+		print("settings")
+	end)
+	self._connectionManager:ConnectToEvent(self._settingsButton.MouseEnter, function(x, y)
+		showTooltip(x, y, "Settings")
+	end)
+	self._connectionManager:ConnectToEvent(self._settingsButton.MouseMoved, setTooltipPosition)
+	self._connectionManager:ConnectToEvent(self._settingsButton.MouseLeave, hideTooltip)
+
+	--Shops
+	self._connectionManager:ConnectToEvent(self._shopsButton.MouseButton1Click, function()
+	
+	end)
+	self._connectionManager:ConnectToEvent(self._shopsButton.MouseEnter, function(x, y)
+		showTooltip(x, y, "Shops")
+	end)
+	self._connectionManager:ConnectToEvent(self._shopsButton.MouseMoved, setTooltipPosition)
+	self._connectionManager:ConnectToEvent(self._shopsButton.MouseLeave, hideTooltip)
+end
+
+function _connectMeterHandlers(self)
 	--Character declarations
 	local character = LocalPlayer.Character
 	local humanoid = character:WaitForChild("Humanoid")
@@ -203,66 +263,9 @@ function _connectHandlers(self)
 		self._waterBar.Size = UDim2.new(scaled, 0, 1, 0)
 	end
 
-	--Tooltip--
-	local function showTooltip(x: number, y: number, text: string)
-		local OFFSET = 50
-		self._tooltip.Position = UDim2.new(0, x + OFFSET, 0, y + OFFSET)
-		self._tooltip.Visible = true
-		self._tooltip.Tooltip.Text = text
-	end
-
-	local function setTooltipPosition(x: number, y: number)
-		self._tooltip.Position = UDim2.new(0, x, 0, y)
-	end
-
-	local function hideTooltip()
-		self._tooltip.Position = UDim2.new(0.5,0,0.5,0)
-		self._tooltip.Tooltip.Text = ""
-		self._tooltip.Visible = false
-	end
-
-	-----------------Connections-----------------
-	----Oxygen/Water----
+	--Listeners
 	self._connectionManager:ConnectToEvent(self._oxygenVal.Changed, onOxygenValueChanged)
 	self._connectionManager:ConnectToEvent(self._waterVal.Changed, onWaterValueChanged)
-
-	----Sidebar Left----
-	--Avatar
-	self._connectionManager:ConnectToEvent(self._avatarButton.MouseButton1Click, function()
-		self.AvatarButtonEvent:Fire()
-	end)
-	self._connectionManager:ConnectToEvent(self._avatarButton.MouseEnter, function(x, y)
-		showTooltip(x, y, "Avatar")
-	end)
-	self._connectionManager:ConnectToEvent(self._avatarButton.MouseMoved, setTooltipPosition)
-	self._connectionManager:ConnectToEvent(self._avatarButton.MouseLeave, hideTooltip)
-
-	--Emotes
-	self._connectionManager:ConnectToEvent(self._emotesButton.MouseEnter, function(x, y)
-		showTooltip(x, y, "Emotes")
-	end)
-	self._connectionManager:ConnectToEvent(self._emotesButton.MouseMoved, setTooltipPosition)
-	self._connectionManager:ConnectToEvent(self._emotesButton.MouseLeave, hideTooltip)
-
-	--Settings
-	self._connectionManager:ConnectToEvent(self._settingsButton.MouseButton1Click, function()
-		print("settings")
-	end)
-	self._connectionManager:ConnectToEvent(self._settingsButton.MouseEnter, function(x, y)
-		showTooltip(x, y, "Settings")
-	end)
-	self._connectionManager:ConnectToEvent(self._settingsButton.MouseMoved, setTooltipPosition)
-	self._connectionManager:ConnectToEvent(self._settingsButton.MouseLeave, hideTooltip)
-
-	--Shops
-	self._connectionManager:ConnectToEvent(self._shopsButton.MouseButton1Click, function()
-	
-	end)
-	self._connectionManager:ConnectToEvent(self._shopsButton.MouseEnter, function(x, y)
-		showTooltip(x, y, "Shops")
-	end)
-	self._connectionManager:ConnectToEvent(self._shopsButton.MouseMoved, setTooltipPosition)
-	self._connectionManager:ConnectToEvent(self._shopsButton.MouseLeave, hideTooltip)
 end
 
 return {
