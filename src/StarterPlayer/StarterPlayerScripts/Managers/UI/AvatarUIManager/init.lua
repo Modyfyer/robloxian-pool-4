@@ -1,5 +1,5 @@
 --[[--<<---------------------------------------------------->>--
-Module purpose: Handles the HUD UI
+Module purpose: Handles the Avatar UI
 
 Initialized by: ClientInit
 --]]--<<---------------------------------------------------->>--
@@ -9,14 +9,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local LocalPlayer = Players.LocalPlayer
 
-local ConnectionManager = require(ReplicatedStorage.ConnectionManager) 
-local Event = require(ReplicatedStorage.Utils.Event)
-local PlatformType = require(LocalPlayer.PlayerScripts.Managers.PlatformDetectionManager.PlatformType) 
+local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
+local PlatformType = require(LocalPlayer.PlayerScripts.Managers.PlatformDetectionManager.PlatformType)
 
-local UI_NAME = "HUDGui"
+local UI_NAME = "AvatarGui"
 
-local HUDUIManager = {} 
-HUDUIManager.__index = HUDUIManager --called a "metamethod" - protects you if you try to access a field of the table HUDUIManager that isn't there
+local AvatarUIManager = {}
+AvatarUIManager.__index = AvatarUIManager
 
 --[[**
 	Creates a new instance
@@ -25,15 +24,12 @@ HUDUIManager.__index = HUDUIManager --called a "metamethod" - protects you if yo
 
 	@returns The new instance
 **--]]
-function new(platformDetectionManager)
-	local self = setmetatable({}, HUDUIManager) --metatables are complicated, but self refers to the instance of the object (like "this" in C#/Java/etc.)
+function new(hudUIManager, platformDetectionManager)
+	local self = setmetatable({}, AvatarUIManager)
 
-	-- Dependency group 0
-	local connectionManager = ConnectionManager.new() --creates a new instance of the ConnectionManager object
+	local connectionManager = ConnectionManager.new()
 	local screenGui = LocalPlayer.PlayerGui:WaitForChild(UI_NAME)
 
-	-- Dependency group 1
-	-- This finds each platform UI manager (desktop, mobile, console) and instances them
 	local platformSpecificUIManagers = {}
 	for i = 1, #PlatformType do
 		local platformTypeName = PlatformType[i]
@@ -45,11 +41,10 @@ function new(platformDetectionManager)
 	end
 
 	self._connectionManager = connectionManager
+	self._hudUIManager = hudUIManager
 	self._platformDetectionManager = platformDetectionManager
 	self._platformSpecificUIManagers = platformSpecificUIManagers
 	self._screenGui = screenGui
-
-	self.HideHUDMenus = Event.new()
 
 	_connectHandlers(self)
 
@@ -59,7 +54,7 @@ end
 --[[**
 	Hides the HUD UI
 **--]]
-function HUDUIManager:Hide()
+function AvatarUIManager:Hide()
 	self._screenGui.Enabled = false
 
 	_iterateOverAllPlatformSpecificUIManagers(self, function (_, platformSpecificUIManager)
@@ -70,13 +65,12 @@ end
 --[[**
 	Shows the HUD UI
 **--]]
-function HUDUIManager:Show()
+function AvatarUIManager:Show()
 	self._screenGui.Enabled = true
 	_showAppropriatePlatformSpecificUIManager(self)
 end
 
 --[[ Private functions ]]--
---This sets up all the event handlers
 function _connectHandlers(self)
 	--When the platformDetectionManager detects a change, hide the old platform UI and show the new one
 	local function onDetectedPlatformTypeChanged(newPlatformType, oldPlatformType)
@@ -100,7 +94,6 @@ function _iterateOverAllPlatformSpecificUIManagers(self, callback)
 	end
 end
 
---Initially show the correct platform's UI
 function _showAppropriatePlatformSpecificUIManager(self)
 	local currentPlatformType = self._platformDetectionManager:GetCurrentPlatformType()
 

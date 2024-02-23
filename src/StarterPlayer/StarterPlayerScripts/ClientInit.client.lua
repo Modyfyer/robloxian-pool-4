@@ -23,3 +23,7 @@ cabanaUIManager = cabanaUIManager.new(platformDetectionManager)
 local hudUIManager = require(uiFolder.HUDUIManager)
 hudUIManager = hudUIManager.new(platformDetectionManager)
 
+--Dependency group 4
+local avatarUIManager = require(uiFolder.AvatarUIManager)
+avatarUIManager = avatarUIManager.new(hudUIManager, platformDetectionManager)
+
