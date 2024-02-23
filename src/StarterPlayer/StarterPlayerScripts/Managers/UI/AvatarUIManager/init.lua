@@ -77,7 +77,7 @@ end
 **--]]
 function AvatarUIManager:Show()
 	self._screenGui.Enabled = true
-	--_showAppropriatePlatformSpecificUIManager(self)
+	_showAppropriatePlatformSpecificUIManager(self)
 end
 
 --[[ Private functions ]]--
