@@ -30,6 +30,10 @@ function new(screenGui)
 	self._mainFrame = screenGui:WaitForChild("Desktop")
 	self._connectionManager = ConnectionManager.new()
 
+	self._background = self._mainFrame:WaitForChild("BG")
+
+	self._closeButton = self._background:WaitForChild("CloseButton")
+
 	self.AvatarButtonEvent = BindableEvents:WaitForChild("AvatarButtonPressed")
 
 	_connectHandlers(self)
@@ -64,11 +68,12 @@ function _connectHandlers(self)
 		else
 			self._mainFrame.Visible = false
 		end
-		task.wait(1)
+		task.wait(0.1)
 		debounce = false
 	end
 
 	self._connectionManager:ConnectToEvent(self.AvatarButtonEvent.Event, onAvatarButtonPressed)
+	self._connectionManager:ConnectToEvent(self._closeButton.MouseButton1Click, onAvatarButtonPressed)
 end
 
 return {
