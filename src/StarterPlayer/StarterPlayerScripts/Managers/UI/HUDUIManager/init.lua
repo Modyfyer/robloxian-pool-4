@@ -1,17 +1,7 @@
 --[[--<<---------------------------------------------------->>--
 Module purpose: Handles the HUD UI
 
-Public functions:
--Show()
--Hide()
-
 Initialized by: ClientInit
-
-Conventions:
-ALL_CAPS = constants
-_underscoreLeadingVariable = private
-camelCaseVariable = public
-CapitalizedVariable = global to file
 --]]--<<---------------------------------------------------->>--
 
 local Players = game:GetService("Players")
@@ -19,12 +9,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local LocalPlayer = Players.LocalPlayer
 
-local ConnectionManager = require(ReplicatedStorage.ConnectionManager) --This is an easy way to have all connections in one place so you can disconnect everything and not leak memory
-local PlatformType = require(LocalPlayer.PlayerScripts.Managers.PlatformDetectionManager.PlatformType) --This is effectively an Enum
+local ConnectionManager = require(ReplicatedStorage.ConnectionManager) 
+local Event = require(ReplicatedStorage.Utils.Event)
+local PlatformType = require(LocalPlayer.PlayerScripts.Managers.PlatformDetectionManager.PlatformType) 
 
 local UI_NAME = "HUDGui"
 
-local HUDUIManager = {} --creates the table "object"
+local HUDUIManager = {} 
 HUDUIManager.__index = HUDUIManager --called a "metamethod" - protects you if you try to access a field of the table HUDUIManager that isn't there
 
 --[[**
@@ -57,6 +48,8 @@ function new(platformDetectionManager)
 	self._platformDetectionManager = platformDetectionManager
 	self._platformSpecificUIManagers = platformSpecificUIManagers
 	self._screenGui = screenGui
+
+	self.HideHUDMenus = Event.new()
 
 	_connectHandlers(self)
 

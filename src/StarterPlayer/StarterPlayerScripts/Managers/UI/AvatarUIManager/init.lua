@@ -1,17 +1,7 @@
 --[[--<<---------------------------------------------------->>--
 Module purpose: Handles the Avatar UI
 
-Public functions:
--Show()
--Hide()
-
 Initialized by: ClientInit
-
-Conventions:
-ALL_CAPS = constants
-_underscoreLeadingVariable = private
-camelCaseVariable = public
-CapitalizedVariable = global to file
 --]]--<<---------------------------------------------------->>--
 
 local Players = game:GetService("Players")
@@ -81,7 +71,6 @@ function AvatarUIManager:Show()
 end
 
 --[[ Private functions ]]--
---This sets up all the event handlers
 function _connectHandlers(self)
 	--When the platformDetectionManager detects a change, hide the old platform UI and show the new one
 	local function onDetectedPlatformTypeChanged(newPlatformType, oldPlatformType)

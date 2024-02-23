@@ -59,14 +59,21 @@ end
 
 -- Handles event connections
 function _connectHandlers(self)
-	local debounce = false
+	local debounce: boolean = false
+	local menuTween = TweenInfo.new(0.45, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+	local openTween = TweenService:Create(self._background.UIScale, menuTween, {Scale = 1})
+	local closeTween = TweenService:Create(self._background.UIScale, menuTween, {Scale = 0})
+	closeTween.Completed:Connect(function()
+		self._mainFrame.Visible = false
+	end)
 	local function onAvatarButtonPressed()
 		if debounce then return end
 		debounce = true
 		if not self._mainFrame.Visible then
 			self._mainFrame.Visible = true
+			openTween:Play()
 		else
-			self._mainFrame.Visible = false
+			closeTween:Play()
 		end
 		task.wait(0.1)
 		debounce = false
