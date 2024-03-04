@@ -7,8 +7,11 @@ Initialized by: Self
 local ServerScriptService = game:GetService("ServerScriptService")
 
 --Dependency group 0
-local PurchaseManager = require(ServerScriptService:WaitForChild("PurchaseManager")).new()
+local DataManager = require(ServerScriptService:WaitForChild("DataManager")).new()
 
 --Dependency group 1
+local PurchaseManager = require(ServerScriptService:WaitForChild("PurchaseManager")).new(DataManager)
+
+--Dependency group 2
 local AvatarManager = require(ServerScriptService:WaitForChild("AvatarManager")).new(PurchaseManager)
 local CabanaManager = require(ServerScriptService:WaitForChild("CabanaManager")).new(PurchaseManager)
