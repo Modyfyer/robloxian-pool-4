@@ -116,12 +116,5 @@ end)
 ConnectionManager:ConnectToEvent(Players.PlayerRemoving, function(player: Player)
   savePlayerData(player)
 end)
--- Players.PlayerAdded:Connect(function(player: Player)
---   loadPlayerData(player)
--- end)
-
--- Players.PlayerRemoving:Connect(function(player: Player)
---   savePlayerData(player)
--- end)
 
 return DataManager
