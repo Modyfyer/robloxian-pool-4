@@ -12,8 +12,42 @@ local ProfileService = require(ServerScriptService.ProfileService)
 -- Types
 export type DataTemplate = {
   poolPoints: number,
-  items: {},
-  daysLoggedIn: number
+  inventory: {
+    actions: {},
+    emotes: {},
+    outfits: {},
+    tools: {}
+  },
+  daysLoggedIn: number,
+  settings: {
+    gameVolume: number,
+    musicVolume: number,
+    uiVolume: number
+  },
+  cabanaSettings: {
+    accentColors: {
+      red: number,
+      green: number,
+      blue: number
+    },
+    currentSongID: number,
+    allowedFriends: string,
+    tvChannel: string
+  },
+  purchases: {
+    purchaseID: string,
+		productID: number,
+    itemCost: number,
+		purchaseDate: string,
+  },
+  quests: {
+    questID: number,
+    requiredAmount: number,
+    completedAmount: number
+  },
+  playerStats: {
+    timePlayed: number,
+  }
 }
 
 -- Declarations
@@ -22,8 +56,13 @@ local PLAYER_DATA_STORE_NAME: string = if RunService:IsStudio() then "Player_dat
 
 local ProfileTemplate: DataTemplate = {
   poolPoints = 0,
-  items = {},
+  inventory = {},
   daysLoggedIn = 0,
+  settings = {},
+  cabanaSettings = {},
+  purchases = {},
+  quests = {},
+  playerStats = {},
 }
 
 local BindableEvents: Folder = ReplicatedStorage:WaitForChild("BindableEvents")
@@ -96,6 +135,49 @@ function DataManager.getProfile(player: Player): DataTemplate?
 		return profile.Data
 	end
   return
+end
+
+function DataManager.getKey(player: Player, key: string): any
+	local data = DataManager.getProfile(player)
+	if data then
+		local tokens = string.split(key, ".")
+		local pos = data
+		for i, t in tokens do
+			if pos[t] ~= nil then
+				if i == #tokens then
+					return pos[t]
+				end
+				pos = pos[t]
+			end
+		end
+		error("Unable to find key " .. key)
+	end
+	return nil
+end
+
+function DataManager.setKey(player: Player, key: string, value: any): boolean
+	local data = DataManager.getProfile(player)
+	if data then
+		local tokens = string.split(key, ".")
+		local pos = data
+		for i, t in tokens do
+			if pos[t] ~= nil then
+				if i == #tokens then
+					if typeof(value) == typeof(pos[t]) then
+						pos[t] = value
+						return true
+					else
+						warn("Set key types do not match!")
+						return false
+					end
+				end
+				pos = pos[t]
+			end
+		end
+	else
+		warn("Data not found")
+	end
+	return false
 end
 
 ----- Initialize -----
