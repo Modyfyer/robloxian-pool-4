@@ -4,9 +4,6 @@ Module purpose: Handles the cabana rental and management interface
 Initialized by: ServerInit
 --]]--<<---------------------------------------------------->>--
 --Services
-local DataStoreService = game:GetService("DataStoreService")
-local MarketplaceService = game:GetService("MarketplaceService")
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 --Modules
@@ -15,7 +12,8 @@ local ItemsData = require(ReplicatedStorage.Data.ItemsData)
 local ItemType = require(ReplicatedStorage.Enums.ItemType)
 
 --Declarations
-local RemoteEvents = ReplicatedStorage:WaitForChild("RemoteEvents")
+local BindableEvents: Folder = ReplicatedStorage:WaitForChild("BindableEvents")
+local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
 
 local CabanaManager = {}
 CabanaManager.__index = CabanaManager
