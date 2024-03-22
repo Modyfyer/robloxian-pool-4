@@ -1,84 +1,28 @@
 -- Services
---local DataStoreService = game:GetService("DataStoreService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 -- Modules
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager).new()
-local ProfileService = require(ServerScriptService.ProfileService)
-
--- Types
-export type DataTemplate = {
-  poolPoints: number,
-  inventory: {
-    actions: {},
-    emotes: {},
-    outfits: {},
-    tools: {}
-  },
-  daysLoggedIn: number,
-  settings: {
-    gameVolume: number,
-    musicVolume: number,
-    uiVolume: number
-  },
-  cabanaSettings: {
-    accentColors: {
-      red: number,
-      green: number,
-      blue: number
-    },
-    currentSongID: number,
-    allowedFriends: string,
-    tvChannel: string
-  },
-  purchases: {
-    purchaseID: string,
-		productID: number,
-    itemCost: number,
-		purchaseDate: string,
-  },
-  quests: {
-    questID: number,
-    requiredAmount: number,
-    completedAmount: number
-  },
-  playerStats: {
-    timePlayed: number,
-  }
-}
+local DataTypes = require(script.Parent.DataTypes)
+local ProfileService = require(ServerScriptService.Data.ProfileService)
 
 -- Declarations
-local PLAYER_DATA_KEY: string = "Player_"
-local PLAYER_DATA_STORE_NAME: string = if RunService:IsStudio() then "Player_data_studio" else "Player_data_live"
-
-local ProfileTemplate: DataTemplate = {
-  poolPoints = 0,
-  inventory = {},
-  daysLoggedIn = 0,
-  settings = {},
-  cabanaSettings = {},
-  purchases = {},
-  quests = {},
-  playerStats = {},
-}
-
 local BindableEvents: Folder = ReplicatedStorage:WaitForChild("BindableEvents")
 local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
 
 --Module
 local DataManager = {}
-DataManager.template = ProfileTemplate
-DataManager.playerDataKey = PLAYER_DATA_KEY
-DataManager.playerDataStoreName = PLAYER_DATA_STORE_NAME
+DataManager.template = DataTypes.ProfileTemplate
+DataManager.playerDataKey = DataTypes.PlayerDataKey
+DataManager.playerDataStoreName = DataTypes.PlayerDataStoreName
 
 ----- Private Variables -----
-local Profiles: {[Player]: DataTemplate} = {}
+local Profiles: {[Player]: DataTypes.DataTemplate} = {}
 
 ----- Private Functions -----
-local function onLoadedProfile(player: Player, profile: DataTemplate)
+local function onLoadedProfile(player: Player, profile: DataTypes.DataTemplate)
   BindableEvents.ProfileLoaded:Fire(profile.Data)
   RemoteEvents.ProfileLoaded:FireClient(player, profile.Data)
   print(profile.Data)
@@ -92,12 +36,12 @@ local function loadPlayerData(player: Player)
   end
 
   local ProfileStore = ProfileService.GetProfileStore(
-    PLAYER_DATA_STORE_NAME,
-    ProfileTemplate
+    DataManager.playerDataStoreName,
+    DataManager.template
   )
 
   local success, err = pcall(function()
-      profile = ProfileStore:LoadProfileAsync(PLAYER_DATA_KEY .. player.UserId)
+      profile = ProfileStore:LoadProfileAsync(DataManager.playerDataKey .. player.UserId)
   end)
 
   if success and profile and profile.Data then
@@ -122,6 +66,8 @@ end
 local function savePlayerData(player: Player)
   local profile = Profiles[player]
   if profile ~= nil then
+      print("Saving data for", player.UserId)
+      print(profile.Data)
       profile:Release()
   else
     warn("Unable to find profile for", player.UserId)
@@ -129,7 +75,15 @@ local function savePlayerData(player: Player)
 end
 
 ----- Public Functions -----
-function DataManager.getProfile(player: Player): DataTemplate?
+function DataManager.getProfile(player: Player): any
+  local profile = Profiles[player]
+  if profile then
+		return profile
+	end
+  return
+end
+
+function DataManager.getProfileData(player: Player): DataTypes.DataTemplate?
   local profile = Profiles[player]
   if profile and profile.Data then
 		return profile.Data
@@ -138,7 +92,7 @@ function DataManager.getProfile(player: Player): DataTemplate?
 end
 
 function DataManager.getKey(player: Player, key: string): any
-	local data = DataManager.getProfile(player)
+	local data = DataManager.getProfileData(player)
 	if data then
 		local tokens = string.split(key, ".")
 		local pos = data
@@ -156,7 +110,7 @@ function DataManager.getKey(player: Player, key: string): any
 end
 
 function DataManager.setKey(player: Player, key: string, value: any): boolean
-	local data = DataManager.getProfile(player)
+	local data = DataManager.getProfileData(player)
 	if data then
 		local tokens = string.split(key, ".")
 		local pos = data
@@ -182,13 +136,14 @@ end
 
 ----- Initialize -----
 function DataManager.new()
-  for _, player: Player in ipairs(Players:GetPlayers()) do
-    task.spawn(function()
-      loadPlayerData(player)
-    end)
-  end
+  task.spawn(function()
+    for _, player: Player in ipairs(Players:GetPlayers()) do
+      task.spawn(function()
+        loadPlayerData(player)
+      end)
+    end
+  end)
 end
-
 
 ----- Connections -----
 ConnectionManager:ConnectToEvent(Players.PlayerAdded, function(player: Player)
