@@ -9,6 +9,9 @@ local PlayerFloatyToggle = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitFo
 local debounce = false
 
 Tool.Activated:Connect(function()
+	if not character then
+		character = player.Character
+	end
 	if debounce == false then
 		if character:FindFirstChild("Floaty") then
 			PlayerFloatyToggle:FireServer(false)
