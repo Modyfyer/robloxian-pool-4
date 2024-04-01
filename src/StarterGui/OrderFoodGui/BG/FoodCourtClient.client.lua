@@ -9,8 +9,8 @@ local snacksFrame = main.SnacksBG.ScrollingFrame
 local drinksFrame = main.DrinksBG.ScrollingFrame
 local itemButton = main.itemButton
 
--- local fOrder1 = workspace:WaitForChild("fOrder1")
--- local fOrder2 = workspace:WaitForChild("fOrder2")
+local fOrder1 = workspace:WaitForChild("fOrder1")
+local fOrder2 = workspace:WaitForChild("fOrder2")
 
 local foods = ReplicatedStorage:WaitForChild("Foods")
 local drinks = ReplicatedStorage:WaitForChild("Drinks")
@@ -60,16 +60,16 @@ for _, v in pairs(drinks:GetChildren()) do
 	addButton(v, drinksFrame)
 end
 
--- while task.wait() do
--- 	local playerChar = player.Character
--- 	local hrp = playerChar:WaitForChild("HumanoidRootPart")
+while task.wait() do
+	local playerChar = player.Character
+	local hrp = playerChar:WaitForChild("HumanoidRootPart")
 
--- 	local dist1 = (hrp.Position - fOrder1.Position).Magnitude
--- 	local dist2 = (hrp.Position - fOrder2.Position).Magnitude
+	local dist1 = (hrp.Position - fOrder1.Position).Magnitude
+	local dist2 = (hrp.Position - fOrder2.Position).Magnitude
 
--- 	if dist1 <= 5 or dist2 <= 5 then
--- 		main.Visible = true
--- 	else
--- 		main.Visible = false
--- 	end
--- end
+	if dist1 <= 5 or dist2 <= 5 then
+		main.Visible = true
+	else
+		main.Visible = false
+	end
+end
