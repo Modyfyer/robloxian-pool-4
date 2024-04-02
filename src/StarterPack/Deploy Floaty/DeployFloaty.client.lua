@@ -12,12 +12,8 @@ Tool.Activated:Connect(function()
 	if not character then
 		character = player.Character
 	end
-	if debounce == false then
-		if character:FindFirstChild("Floaty") then
-			PlayerFloatyToggle:FireServer(false)
-		else
-			PlayerFloatyToggle:FireServer(true)
-		end
+	if debounce == false and character then
+		PlayerFloatyToggle:FireServer()
 		debounce = true
 		task.wait(5)
 		debounce = false
