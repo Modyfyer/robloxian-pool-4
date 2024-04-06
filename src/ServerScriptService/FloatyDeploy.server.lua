@@ -23,8 +23,9 @@ game.Players.PlayerAdded:Connect(function(player)
 	FloatyTypeValue.Parent = player
 end)
 
-PlayerFloatyToggle.OnServerEvent:Connect(function(player, deployFloaty)
-	if deployFloaty then
+PlayerFloatyToggle.OnServerEvent:Connect(function(player)
+	local Char = player.Character
+	if not Char:FindFirstChild("Floaty") then
 		local floatyTypeValue = player:FindFirstChild("FloatyType")
 		if floatyTypeValue and floatyTypeValue:IsA("StringValue") then
 			local floatyModelName = floatyTypeValue.Value
