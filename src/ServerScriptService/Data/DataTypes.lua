@@ -26,6 +26,7 @@ export type DataTemplate = {
         allowedFriends: string,
         tvChannel: string
     },
+    cabanaRentalTime: string,
     purchases: {
         purchaseID: string,
         productID: number,
@@ -48,6 +49,7 @@ local ProfileTemplate: DataTemplate = {
     daysLoggedIn = 0,
     settings = {},
     cabanaSettings = {},
+    cabanaRentalTime = -1,
     purchases = {},
     quests = {},
     playerStats = {},

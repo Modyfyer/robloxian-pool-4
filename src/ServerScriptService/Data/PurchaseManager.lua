@@ -16,12 +16,12 @@ local Event = require(ReplicatedStorage.Utils.Event)
 
 --Declarations
 local BindableEvents: Folder = ReplicatedStorage:WaitForChild("BindableEvents")
+local DataManager = nil
 
 local PurchaseManager = {}
 PurchaseManager.CabanaRented = Event.new()
 PurchaseManager.Products = {}
 PurchaseManager.Settings = {}
-PurchaseManager.DataManager = nil
 
 function PurchaseManager:PurchaseIdCheckAsync(profile, purchase_id, receipt_info, grant_product_callback) --> Enum.ProductPurchaseDecision
 	-- Yields until the purchase_id is confirmed to be saved to the profile or the profile is released
@@ -82,7 +82,7 @@ end
 
 -- We shouldn't yield during the product granting process!
 function PurchaseManager:GrantProduct(player: Player, product_id: number | string)
-    local profile = PurchaseManager.DataManager.getProfile(player)
+    local profile = DataManager.getProfile(player)
     local product_function = PurchaseManager.Products[product_id]
     if product_function ~= nil then
         product_function(profile)
@@ -93,9 +93,11 @@ end
 
 ----- Initialize -----
 function PurchaseManager.new(dataManager)
-	PurchaseManager.DataManager = dataManager
+	DataManager = dataManager
 
 	PurchaseManager.Products[1555280575] = function(profile)
+		local now = DateTime.now()
+		profile.Data.cabanaRentalTime = now:FormatUniversalTime("YYYY HH:mm:ss", "en-us")
 		PurchaseManager.CabanaRented:Fire()
 		return true
 	end
@@ -113,7 +115,7 @@ function PurchaseManager.ProcessReceipt(receipt_info)
 		return Enum.ProductPurchaseDecision.NotProcessedYet
 	end
 
-	local profile = PurchaseManager.DataManager.getProfile(player)
+	local profile = DataManager.getProfile(player)
 	if profile ~= nil then
 		return PurchaseManager:PurchaseIdCheckAsync(
 			profile,
