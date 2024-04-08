@@ -4,18 +4,14 @@ Module purpose: Handles the cabana rental and management interface
 Initialized by: ServerInit
 --]]--<<---------------------------------------------------->>--
 --Services
-local DataStoreService = game:GetService("DataStoreService")
-local MarketplaceService = game:GetService("MarketplaceService")
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 --Modules
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
-local ItemsData = require(ReplicatedStorage.Data.ItemsData)
-local ItemType = require(ReplicatedStorage.Enums.ItemType)
 
 --Declarations
-local RemoteEvents = ReplicatedStorage:WaitForChild("RemoteEvents")
+local BindableEvents: Folder = ReplicatedStorage:WaitForChild("BindableEvents")
+local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
 
 local CabanaManager = {}
 CabanaManager.__index = CabanaManager
@@ -80,27 +76,24 @@ function CabanaManager:InitializeCabanas()
 end
 
 function CabanaManager:RentCabana(player: Player, cabana: Instance): boolean
-	if not table.find(self._playersWithRentalPass, player) then
-		warn(player.Name, "does not have the cabana rental pass")
-		return false
+	local rented = false
+	for _, pl in pairs(self._playersWithRentalPass) do
+		if pl.Name == player.Name then
+			rented = true
+			break
+		end
 	end
-	-- for _, v in pairs(self._cabanas) do
-	-- 	if v.cabanaBuilding == cabana then
-	-- 		warn(v.owner, "already rented this cabana")
-	-- 		return false
-	-- 	end
-	-- end
 
 	local owner = cabana:GetAttribute("Owner")
 	if owner and owner ~= "" and owner ~= player.Name then
 		warn(owner, "already rented this cabana")
-		return false
+		return rented
 	end
 
 	cabana:SetAttribute("Owner", player.Name)
 	cabana:SetAttribute("Rented", true)
 
-	return true
+	return rented
 end
 
 function _connectHandlers(self)

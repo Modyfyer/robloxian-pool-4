@@ -22,6 +22,8 @@ local LocalPlayer = Players.LocalPlayer
 local LocalChar = LocalPlayer.Character
 
 local DEFAULT_WALKSPEED: number = 16
+local MAX_OXYGEN: number = 100
+local MAX_WATER: number = 100
 
 local UIManager = {}
 UIManager.__index = UIManager
@@ -241,8 +243,9 @@ function _connectMeterHandlers(self)
 		end
 
 		local oxLev: number = self._oxygenVal.Value
-		local scaled = math.clamp(oxLev / 100, 0, 1)
-		self._oxygenBar.Size = UDim2.new(scaled, 0, 1, 0)
+		local scaled = (oxLev / MAX_OXYGEN)--math.clamp(oxLev / 100, 0, 1)
+		self._oxygenBar:TweenSize(UDim2.fromScale(scaled, 1), Enum.EasingDirection.InOut, Enum.EasingStyle.Sine, 0.5)
+		--self._oxygenBar.Size = UDim2.new(scaled, 0, 1, 0)
 
 		if oxLev <= 0 then
 			self._drownFrame.Visible = true
@@ -259,8 +262,9 @@ function _connectMeterHandlers(self)
 	--Water UI
 	local function onWaterValueChanged()
 		local waterLev: number = self._waterVal.Value
-		local scaled = math.clamp(waterLev / 100, 0, 1)
-		self._waterBar.Size = UDim2.new(scaled, 0, 1, 0)
+		local scaled = (waterLev / MAX_WATER)--math.clamp(waterLev / 100, 0, 1)
+		self._waterBar:TweenSize(UDim2.fromScale(scaled, 1), Enum.EasingDirection.InOut, Enum.EasingStyle.Sine, 0.5)
+		--self._waterBar.Size = UDim2.new(scaled, 0, 1, 0)
 	end
 
 	--Listeners
