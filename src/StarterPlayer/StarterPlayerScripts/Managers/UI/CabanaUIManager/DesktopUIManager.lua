@@ -15,7 +15,6 @@ local TweenService = game:GetService("TweenService")
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
 --local CabanaSettingsByName = require(ReplicatedStorage.Data.CabanaSettingsByName)
 local ItemsData = require(ReplicatedStorage.Data.ItemsData)
-local ItemType = require(ReplicatedStorage.Enums.ItemType)
 --local SettingType = require(ReplicatedStorage.Enums.SettingType)
 
 --Declarations
@@ -45,6 +44,7 @@ function new(screenGui)
 	self._arrowEffectRightTweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false, 0)
 	self._purchasePromptCloseTweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out, 0, false, 0)
 	self._purchasePromptOpenTweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false, 0)
+	self._settingsTweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quint)
 
 	self.Cabana = nil
 	self._settings = {}
@@ -94,12 +94,12 @@ function _connectHandlers(self)
 
 	--Settings
 	local function closeSettings()
-		local tween = TweenService:Create(self._settingsFrame.UIScale, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {Scale = 0})
+		local tween = TweenService:Create(self._settingsFrame.UIScale, self._settingsTweenInfo, {Scale = 0})
 		tween:Play()
 	end
 
 	local function openSettings()
-		local tween = TweenService:Create(self._settingsFrame.UIScale, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {Scale = 1})
+		local tween = TweenService:Create(self._settingsFrame.UIScale, self._settingsTweenInfo, {Scale = 1})
 		tween:Play()
 	end
 
@@ -118,7 +118,7 @@ function _connectHandlers(self)
 			if self.cabanaPurchased and cabana:GetAttribute("Owner") == player.Name then
 				openSettings()
 			elseif (cabana:GetAttribute("Owner") == "") or (not cabana:GetAttribute("Owner")) then
-				UIHelpers:SetupViewport(self._purchasePrompt.PreviewFrame.ViewportFrame, self.Cabana)
+				--UIHelpers:SetupViewport(self._purchasePrompt.PreviewFrame.ViewportFrame, self.Cabana)
 				openRentalPrompt()
 			else
 				print("Someone else owns this cabana")
@@ -128,7 +128,7 @@ function _connectHandlers(self)
 
 	--Purchase
 	local function onProductPurchaseFinished(userID, productID, isPurchased)
-		if userID == LocalPlayer.UserId and productID == ItemsData.Items[ItemType.Rental].DeveloperProductId then
+		if userID == LocalPlayer.UserId and productID == ItemsData["CabanaRental"].DeveloperProductId then
 			if isPurchased then
 				self.cabanaPurchased = true
 				if not self.Cabana then return end
@@ -167,11 +167,12 @@ function _connectHandlers(self)
 
 	self._connectionManager:ConnectToEvent(self._purchasePrompt.CloseButton.MouseButton1Click, closeRentalPrompt)
 	self._connectionManager:ConnectToEvent(self._purchasePrompt.PurchaseButton.MouseButton1Click, function()
-		MarketplaceService:PromptProductPurchase(LocalPlayer, ItemsData.Items[ItemType.Rental].DeveloperProductId, false, Enum.CurrencyType.Robux)
+		MarketplaceService:PromptProductPurchase(LocalPlayer, ItemsData["CabanaRental"].DeveloperProductId, false, Enum.CurrencyType.Robux)
 		closeRentalPrompt()
 	end)
 	self._connectionManager:ConnectToEvent(ProximityPromptService.PromptTriggered, onProximityPromptTriggered)
 	self._connectionManager:ConnectToEvent(MarketplaceService.PromptProductPurchaseFinished, onProductPurchaseFinished)
+	self._connectionManager:ConnectToEvent()
 end
 
 function _createDropdownSetting(self, settingFrame: GuiObject)
@@ -205,13 +206,13 @@ function _initSettings(self)
 	-- for _, v in pairs(CabanaSettingsByName) do
 	-- 	for __, setting in pairs(v) do
 	-- 		print(setting["displayName"])
-	-- 		-- if setting["displayName"].SettingType == SettingType.TextEntry then
-	-- 		-- 	--local newSetting --= self._mainFrame.SettingsListFrame.SliderSetting:Clone()
-	-- 		-- -- 		newSetting.Name = setting.displayName
-	-- 		-- -- 		newSetting.SettingName.Text = setting.displayName
-	-- 		-- -- 		newSetting.Visible = true
-	-- 		-- -- 		newSetting.Parent = self._mainFrame.SettingsListFrame
-	-- 		-- end
+	-- 		if setting["displayName"].SettingType == SettingType.TextEntry then
+	-- 			local newSetting --= self._mainFrame.SettingsListFrame.SliderSetting:Clone()
+	-- 			newSetting.Name = setting.displayName
+	-- 			newSetting.SettingName.Text = setting.displayName
+	-- 			newSetting.Visible = true
+	-- 			newSetting.Parent = self._mainFrame.SettingsListFrame
+	-- 		end
 	-- 	end
 	-- end
 end

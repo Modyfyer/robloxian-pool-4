@@ -13,12 +13,6 @@ local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
 local BindableEvents: Folder = ReplicatedStorage:WaitForChild("BindableEvents")
 local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
 
-type cabana = {
-	owner: string?,
-	cabanaBuilding: Instance?,
-	index: number?
-}
-
 local CabanaManager = {}
 CabanaManager.__index = CabanaManager
 
@@ -34,7 +28,6 @@ function new(purchaseManager)
 
 	self._cabanas = {}
 	self._playersWithRentalPass = {}
-	self._productFunctions = {}
 
 	self.CabanaFolder = workspace.Cabanas
 
@@ -74,7 +67,9 @@ function CabanaManager:ClearAllCabanaRentals()
 end
 
 function CabanaManager:ClearCabanaRental(player: Player)
-	--table.find
+	for _, cabanaModel in pairs(self.CabanaFolder:GetChildren()) do
+
+	end
 end
 
 function CabanaManager:InitializeCabanas()

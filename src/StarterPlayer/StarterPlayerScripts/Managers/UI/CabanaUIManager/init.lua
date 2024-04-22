@@ -44,7 +44,7 @@ function new(platformDetectionManager)
 	self._platformSpecificUIManagers = platformSpecificUIManagers
 	self._screenGui = screenGui
 
-	self.RentalResult= Event.new()
+	self.RentalResult = Event.new()
 
 	self._screenGui.Enabled = true
 
