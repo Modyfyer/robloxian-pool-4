@@ -19,7 +19,7 @@ CabanaManager.__index = CabanaManager
 --[[**
 	Creates new instance
 **--]]
-function new(purchaseManager)
+function new(dataManager, purchaseManager)
 	local self = setmetatable({}, CabanaManager)
 
 	-- Dependency group 0

@@ -17,5 +17,5 @@ local PurchaseManager = require(ServerScriptService:WaitForChild("Data"):WaitFor
 PurchaseManager.new(DataManager)
 
 --Dependency group 2
-local AvatarManager = require(ServerScriptService:WaitForChild("AvatarManager")).new(PurchaseManager)
-local CabanaManager = require(ServerScriptService:WaitForChild("CabanaManager")).new(PurchaseManager)
+local AvatarManager = require(ServerScriptService:WaitForChild("AvatarManager")).new(DataManager, PurchaseManager)
+local CabanaManager = require(ServerScriptService:WaitForChild("CabanaManager")).new(DataManager, PurchaseManager)

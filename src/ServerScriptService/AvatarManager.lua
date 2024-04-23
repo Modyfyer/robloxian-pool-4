@@ -25,7 +25,7 @@ AvatarManager.__index = AvatarManager
 --[[**
 	Creates new instance
 **--]]
-function new(purchaseManager)
+function new(dataManager, purchaseManager)
 	local self = setmetatable({}, AvatarManager)
 
 	-- Dependency group 0
