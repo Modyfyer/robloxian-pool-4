@@ -48,7 +48,16 @@ local ProfileTemplate: DataTemplate = {
     inventory = {},
     daysLoggedIn = 0,
     settings = {},
-    cabanaSettings = {},
+    cabanaSettings = {
+        accentColors = {
+            red = 0,
+            green = 0,
+            blue = 0
+        },
+        currentSongID = 0,
+        allowedFriends = "All",
+        tvChannel = "News"
+    },
     cabanaRentalTime = -1,
     purchases = {},
     quests = {},

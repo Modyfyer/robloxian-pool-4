@@ -25,7 +25,7 @@ local Profiles: {[Player]: DataTypes.DataTemplate} = {}
 local function onLoadedProfile(player: Player, profile: DataTypes.DataTemplate)
   BindableEvents.ProfileLoaded:Fire(profile.Data)
   RemoteEvents.ProfileLoaded:FireClient(player, profile.Data)
-  print(profile.Data)
+  --print(profile.Data)
 end
 
 local function loadPlayerData(player: Player)
