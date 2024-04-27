@@ -1,4 +1,7 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+
+local SharedSettings = require(ReplicatedStorage.Data.SharedSettings)
 
 local DataTypes = {}
 
@@ -16,16 +19,7 @@ export type DataTemplate = {
         musicVolume: number,
         uiVolume: number
     },
-    cabanaSettings: {
-        accentColors: {
-        red: number,
-        green: number,
-        blue: number
-        },
-        currentSongID: number,
-        allowedFriends: string,
-        tvChannel: string
-    },
+    cabanaSettings: SharedSettings.cabanaSettings,
     cabanaRentalTime: string,
     purchases: {
         purchaseID: string,
@@ -48,16 +42,7 @@ local ProfileTemplate: DataTemplate = {
     inventory = {},
     daysLoggedIn = 0,
     settings = {},
-    cabanaSettings = {
-        accentColors = {
-            red = 0,
-            green = 0,
-            blue = 0
-        },
-        currentSongID = 0,
-        allowedFriends = "All",
-        tvChannel = "News"
-    },
+    cabanaSettings = SharedSettings.DefaultSettings,
     cabanaRentalTime = -1,
     purchases = {},
     quests = {},

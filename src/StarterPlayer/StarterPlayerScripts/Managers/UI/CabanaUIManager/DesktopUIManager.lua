@@ -13,14 +13,13 @@ local TweenService = game:GetService("TweenService")
 
 --Modules
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
---local CabanaSettingsByName = require(ReplicatedStorage.Data.CabanaSettingsByName)
 local ItemsData = require(ReplicatedStorage.Data.ItemsData)
---local SettingType = require(ReplicatedStorage.Enums.SettingType)
+local SharedSettings = require(ReplicatedStorage.Data.SharedSettings)
 
 --Declarations
 local LocalPlayer = Players.LocalPlayer
 local RemoteEvents = ReplicatedStorage:WaitForChild("RemoteEvents")
-local UIHelpers = require(LocalPlayer.PlayerScripts.UIHelpers)
+--local UIHelpers = require(LocalPlayer.PlayerScripts.UIHelpers)
 
 local UIManager = {}
 UIManager.__index = UIManager
@@ -38,12 +37,12 @@ function new(screenGui)
 
 	self._settingsListFrame = self._settingsFrame:WaitForChild("Frame"):WaitForChild("SettingsFrame")
 
-	self._sliderEffectOffTweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, 0, false, 0)
-	self._sliderEffectOnTweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false, 0)
-	self._arrowEffectLeftTweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false, 0)
-	self._arrowEffectRightTweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false, 0)
-	self._purchasePromptCloseTweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out, 0, false, 0)
-	self._purchasePromptOpenTweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false, 0)
+	self._sliderEffectOffTweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+	self._sliderEffectOnTweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Linear, Enum.EasingDirection.In)
+	self._arrowEffectLeftTweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Linear, Enum.EasingDirection.In)
+	self._arrowEffectRightTweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Linear, Enum.EasingDirection.In)
+	self._purchasePromptCloseTweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out)
+	self._purchasePromptOpenTweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Linear, Enum.EasingDirection.In)
 	self._settingsTweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quint)
 
 	self.Cabana = nil
@@ -77,6 +76,7 @@ function UIManager:Clear()
 end
 
 --[[ Private functions ]]--
+
 
 function _connectHandlers(self)
 	--Rental prompts
@@ -118,7 +118,6 @@ function _connectHandlers(self)
 			if self.cabanaPurchased and cabana:GetAttribute("Owner") == player.Name then
 				openSettings()
 			elseif (cabana:GetAttribute("Owner") == "") or (not cabana:GetAttribute("Owner")) then
-				--UIHelpers:SetupViewport(self._purchasePrompt.PreviewFrame.ViewportFrame, self.Cabana)
 				openRentalPrompt()
 			else
 				print("Someone else owns this cabana")
@@ -172,53 +171,63 @@ function _connectHandlers(self)
 	end)
 	self._connectionManager:ConnectToEvent(ProximityPromptService.PromptTriggered, onProximityPromptTriggered)
 	self._connectionManager:ConnectToEvent(MarketplaceService.PromptProductPurchaseFinished, onProductPurchaseFinished)
-	self._connectionManager:ConnectToEvent()
-end
-
-function _createDropdownSetting(self, settingFrame: GuiObject)
-
-end
-
-function _createTextEntrySetting(self, settingFrame: GuiObject)
-
+	self._connectionManager:ConnectToEvent(RemoteEvents.LoadCabanaSettings.OnClientEvent, function(settings: SharedSettings.cabanaSettings)
+		_loadSettings(self, settings)
+	end)
 end
 
 function _initSettings(self)
-	for _, settingFrame in pairs(self._settingsListFrame:GetChildren()) do
-		if settingFrame:GetAttribute("SettingName") == "AccentColor" then
-			for _, item in pairs(settingFrame:GetChildren()) do
-				if item:IsA("ImageLabel") then
-					local textbox = item:FindFirstChildOfClass("TextBox")
-					if textbox then
-						textbox:GetPropertyChangedSignal("Text"):Connect(function()
-							-- if textbox.Text ~= nil then
-							-- 	local val = tonumber(textbox.Text)
-							-- 	if val and typeof(val) ~= number then
-
-							-- 	end
-							-- end
-						end)
-					end
-				end
-			end
-		end
-	end
-	-- for _, v in pairs(CabanaSettingsByName) do
-	-- 	for __, setting in pairs(v) do
-	-- 		print(setting["displayName"])
-	-- 		if setting["displayName"].SettingType == SettingType.TextEntry then
-	-- 			local newSetting --= self._mainFrame.SettingsListFrame.SliderSetting:Clone()
-	-- 			newSetting.Name = setting.displayName
-	-- 			newSetting.SettingName.Text = setting.displayName
-	-- 			newSetting.Visible = true
-	-- 			newSetting.Parent = self._mainFrame.SettingsListFrame
-	-- 		end
+	-- for _, settingFrame in ipairs(self._settingsListFrame:GetChildren()) do
+	-- 	if settingFrame:GetAttribute("SettingName") == "AccentColor" then
+	-- 		-- for _, item in ipairs(settingFrame:GetChildren()) do
+	-- 		-- 	if item:IsA("ImageLabel") then
+	-- 		-- 		local textbox = item:FindFirstChildOfClass("TextBox")
+	-- 		-- 		if textbox then
+	-- 		-- 			textbox:GetPropertyChangedSignal("Text"):Connect(_verifyTextInput(textbox))
+	-- 		-- 		end
+	-- 		-- 	end
+	-- 		-- end
 	-- 	end
 	-- end
 end
 
-function _saveSettings(self)
+function _loadSettings(self, settings: SharedSettings.cabanaSettings)
+	self._settings = settings
+	--print(settings)
 
+	for _, settingFrame in ipairs(self._settingsListFrame:GetChildren()) do
+		if settingFrame:IsA("Frame") then
+			if settingFrame:GetAttribute("SettingName") == "StereoSongID" then
+				local textboxFrame = settingFrame:FindFirstChild("TextBoxFrame")
+				if textboxFrame then
+					local textbox: TextBox? = textboxFrame:FindFirstChild("TextBox")
+					if textbox then
+						textbox.Text = tostring(settings.currentSongID)
+						textbox:GetPropertyChangedSignal("Text"):Connect(function()
+							local val = tonumber(textbox.Text)
+							if val then
+								self._settings.currentSongID = val
+							end
+						end)
+					end
+				end
+			elseif settingFrame:GetAttribute("SettingName") == "AccentColor" then
+				print(1)
+			elseif settingFrame:GetAttribute("SettingName") == "AllowedEntry" then
+				print(2)
+			elseif settingFrame:GetAttribute("SettingName") == "TVChannel" then
+				print(3)
+			end
+		end
+	end
+end
+
+function _saveSettings(self)
+	local settings: SharedSettings.cabanaSettings = SharedSettings.DefaultSettings
+	if self._settings ~= nil then
+		settings = self._settings
+	end
+	RemoteEvents.SaveCabanaSettings:FireServer(settings)
 end
 
 return {
