@@ -193,9 +193,8 @@ end
 
 function _loadSettings(self, settings: SharedSettings.cabanaSettings)
 	self._settings = settings
-	--print(settings)
 
-	local function validateNumberEntry(text): boolean
+	local function validateNumberEntry(text, lowerBound: number?, upperBound: number?): boolean
 		if not text then
 			return false
 		end
@@ -203,23 +202,33 @@ function _loadSettings(self, settings: SharedSettings.cabanaSettings)
 		if not val then
 			return false
 		end
+
+		if lowerBound and val < lowerBound then
+			return false
+		end
+
+		if upperBound and val > upperBound then
+			return false
+		end
+
 		return true
 	end
 
 	for _, settingFrame in ipairs(self._settingsListFrame:GetChildren()) do
 		if settingFrame:IsA("Frame") then
 			if settingFrame:GetAttribute("SettingName") == "StereoSongID" then
-				local textboxFrame = settingFrame:FindFirstChild("TextBoxFrame")
+				local textboxFrame: ImageLabel = settingFrame:FindFirstChild("TextBoxFrame")
 				if textboxFrame then
 					local textbox: TextBox? = textboxFrame:FindFirstChild("TextBox")
 					if textbox then
 						textbox.Text = tostring(settings.currentSongID)
 						textbox.FocusLost:Connect(function()
-							local valid = validateNumberEntry(textbox.Text)
+							local valid: boolean = validateNumberEntry(textbox.Text)
 							if valid then
 								self._settings.currentSongID = tonumber(textbox.Text)
 							else
 								textbox.PlaceholderText = "Value must be a number"
+								textbox.Text = tostring(settings.currentSongID)
 							end
 						end)
 					end
@@ -234,11 +243,12 @@ function _loadSettings(self, settings: SharedSettings.cabanaSettings)
 								textbox.Text = tostring(settings.accentColors[color])
 
 								textbox.FocusLost:Connect(function()
-									local valid = validateNumberEntry(textbox.Text)
+									local valid: boolean = validateNumberEntry(textbox.Text, 0, 255)
 									if valid then
 										self._settings.accentColors[color] = tonumber(textbox.Text)
 									else
 										textbox.PlaceholderText = "Value must be a number"
+										textbox.Text = tostring(settings.accentColors[color])
 									end
 								end)
 							end
@@ -252,22 +262,47 @@ function _loadSettings(self, settings: SharedSettings.cabanaSettings)
 				local selectOptions: {string} = SharedSettings.AllowedFriends
 				local index = 1
 				local length = #selectOptions
+
 				arrowL.MouseButton1Click:Connect(function()
 					index -= 1
 					if index < 1 or index > length then
 						index = length
 					end
 					selected.Text = selectOptions[index]
+					self._settings.allowedFriends = selectOptions[index]
 				end)
 				arrowR.MouseButton1Click:Connect(function()
 					index += 1
+					if index > length then
+						index = 1
+					end
+					selected.Text = selectOptions[index]
+					self._settings.allowedFriends = selectOptions[index]
+				end)
+			elseif settingFrame:GetAttribute("SettingName") == "TVChannel" then
+				local arrowL: ImageButton = settingFrame:WaitForChild("ArrowL") :: ImageButton
+				local arrowR: ImageButton = settingFrame:WaitForChild("ArrowR") :: ImageButton
+				local selected: TextLabel = settingFrame:WaitForChild("Selected") :: TextLabel
+				local selectOptions: {string} = SharedSettings.Channels
+				local index = 1
+				local length = #selectOptions
+
+				arrowL.MouseButton1Click:Connect(function()
+					index -= 1
 					if index < 1 or index > length then
 						index = length
 					end
 					selected.Text = selectOptions[index]
+					self._settings.tvChannel = selectOptions[index]
 				end)
-			elseif settingFrame:GetAttribute("SettingName") == "TVChannel" then
-				print(3)
+				arrowR.MouseButton1Click:Connect(function()
+					index += 1
+					if index > length then
+						index = 1
+					end
+					selected.Text = selectOptions[index]
+					self._settings.tvChannel = selectOptions[index]
+				end)
 			end
 		end
 	end
