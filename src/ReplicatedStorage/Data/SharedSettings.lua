@@ -4,7 +4,7 @@ export type colorRGB = {
 	blue: number
 }
 
-export type allowedFriends = "All" | "None"
+export type allowedFriends = "All" | "Friends" | "None"
 
 export type channel = "News" | "Weather" | "Kittens"
 
@@ -29,5 +29,8 @@ local cSettings: cabanaSettings = {
 }
 
 module.DefaultSettings = cSettings
+
+module.Channels = {"News", "Weather", "Kittens"}
+module.AllowedFriends = {"All", "Friends", "None"}
 
 return module
