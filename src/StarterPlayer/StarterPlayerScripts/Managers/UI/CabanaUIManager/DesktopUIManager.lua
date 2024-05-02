@@ -176,7 +176,7 @@ function _connectHandlers(self)
 	end)
 end
 
-function _initSettings(self)
+function _initSettings(self, settings: SharedSettings.cabanaSettings)
 	-- for _, settingFrame in ipairs(self._settingsListFrame:GetChildren()) do
 	-- 	if settingFrame:GetAttribute("SettingName") == "AccentColor" then
 	-- 		-- for _, item in ipairs(settingFrame:GetChildren()) do
@@ -195,6 +195,17 @@ function _loadSettings(self, settings: SharedSettings.cabanaSettings)
 	self._settings = settings
 	--print(settings)
 
+	local function validateNumberEntry(text): boolean
+		if not text then
+			return false
+		end
+		local val = tonumber(text)
+		if not val then
+			return false
+		end
+		return true
+	end
+
 	for _, settingFrame in ipairs(self._settingsListFrame:GetChildren()) do
 		if settingFrame:IsA("Frame") then
 			if settingFrame:GetAttribute("SettingName") == "StereoSongID" then
@@ -203,18 +214,58 @@ function _loadSettings(self, settings: SharedSettings.cabanaSettings)
 					local textbox: TextBox? = textboxFrame:FindFirstChild("TextBox")
 					if textbox then
 						textbox.Text = tostring(settings.currentSongID)
-						textbox:GetPropertyChangedSignal("Text"):Connect(function()
-							local val = tonumber(textbox.Text)
-							if val then
-								self._settings.currentSongID = val
+						textbox.FocusLost:Connect(function()
+							local valid = validateNumberEntry(textbox.Text)
+							if valid then
+								self._settings.currentSongID = tonumber(textbox.Text)
+							else
+								textbox.PlaceholderText = "Value must be a number"
 							end
 						end)
 					end
 				end
 			elseif settingFrame:GetAttribute("SettingName") == "AccentColor" then
-				print(1)
+				for _, v in pairs(settingFrame:GetChildren()) do
+					if v:IsA("ImageLabel") then
+						local textbox: TextBox? = v:FindFirstChild("TextBox")
+						if textbox then
+							local color = v:GetAttribute("AccentColor")
+							if color then
+								textbox.Text = tostring(settings.accentColors[color])
+
+								textbox.FocusLost:Connect(function()
+									local valid = validateNumberEntry(textbox.Text)
+									if valid then
+										self._settings.accentColors[color] = tonumber(textbox.Text)
+									else
+										textbox.PlaceholderText = "Value must be a number"
+									end
+								end)
+							end
+						end
+					end
+				end
 			elseif settingFrame:GetAttribute("SettingName") == "AllowedEntry" then
-				print(2)
+				local arrowL: ImageButton = settingFrame:WaitForChild("ArrowL") :: ImageButton
+				local arrowR: ImageButton = settingFrame:WaitForChild("ArrowR") :: ImageButton
+				local selected: TextLabel = settingFrame:WaitForChild("Selected") :: TextLabel
+				local selectOptions: {string} = SharedSettings.AllowedFriends
+				local index = 1
+				local length = #selectOptions
+				arrowL.MouseButton1Click:Connect(function()
+					index -= 1
+					if index < 1 or index > length then
+						index = length
+					end
+					selected.Text = selectOptions[index]
+				end)
+				arrowR.MouseButton1Click:Connect(function()
+					index += 1
+					if index < 1 or index > length then
+						index = length
+					end
+					selected.Text = selectOptions[index]
+				end)
 			elseif settingFrame:GetAttribute("SettingName") == "TVChannel" then
 				print(3)
 			end

@@ -95,10 +95,12 @@ function CabanaManager:RentCabana(player: Player, cabana: Instance)
 		end
 	end
 
-	-- local owner = cabana:GetAttribute("Owner")
-	-- if owner and owner ~= "" and owner ~= player.Name then
-	-- 	warn(owner, "already rented this cabana")
-	-- end
+	print(self._playersWithRentalPass)
+
+	local owner = cabana:GetAttribute("Owner")
+	if owner and owner ~= "" and owner ~= player.Name then
+		warn(owner, "already rented this cabana")
+	end
 
 	cabana:SetAttribute("Owner", player.Name)
 	cabana:SetAttribute("Rented", true)
@@ -117,7 +119,7 @@ function _connectHandlers(self)
 	end)
 	self._connectionManager:ConnectToEvent(RemoteEvents.SaveCabanaSettings.OnServerEvent, function(player: Player, settings: SharedSettings.cabanaSettings)
 		local saved = self._dataManager.setKey(player, "cabanaSettings", settings)
-		print(saved)
+		warn("Data saved for", player.name, ":", saved)
 	end)
 end
 
