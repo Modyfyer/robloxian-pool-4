@@ -12,6 +12,7 @@ local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
 --Declarations
 --local BindableEvents: Folder = ReplicatedStorage:WaitForChild("BindableEvents")
 local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
+local RemoteFunctions: Folder = ReplicatedStorage:WaitForChild("RemoteFunctions")
 local SharedSettings = require(ReplicatedStorage.Data.SharedSettings)
 
 local CabanaManager = {}
@@ -121,6 +122,13 @@ function _connectHandlers(self)
 		local saved = self._dataManager.setKey(player, "cabanaSettings", settings)
 		warn("Data saved for", player.name, ":", saved)
 	end)
+
+	local function getCabanaRentalTime(player: Player)
+		local rentalTime = self._dataManager.getKey(player, "cabanaRentalTime")
+		return rentalTime
+	end
+
+	RemoteFunctions.GetLastCabanaRentalTime.OnServerInvoke = getCabanaRentalTime
 end
 
 return {

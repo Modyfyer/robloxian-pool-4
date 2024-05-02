@@ -41,7 +41,7 @@ function PurchaseManager:PurchaseIdCheckAsync(profile, purchase_id, receipt_info
 			purchaseID = purchase_id,
 			productID = receipt_info.ProductId,
 			itemCost = receipt_info.CurrencySpent,
-			purchaseDate = dt:FormatUniversalTime("LL", "en-us")
+			purchaseDate = dt:ToIsoDate()
 		})
 
 		-- Granting product if not received:
@@ -96,8 +96,8 @@ function PurchaseManager.new(dataManager)
 	DataManager = dataManager
 
 	PurchaseManager.Products[1555280575] = function(profile)
-		local now = DateTime.now()
-		profile.Data.cabanaRentalTime = now:FormatUniversalTime("YYYY HH:mm:ss", "en-us")
+		local now: DateTime = DateTime.now()
+		profile.Data.cabanaRentalTime = now:ToIsoDate()--now:FormatUniversalTime("YYYY HH:mm:ss", "en-us")
 		PurchaseManager.CabanaRented:Fire()
 		return true
 	end

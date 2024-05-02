@@ -16,9 +16,13 @@ local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
 local ItemsData = require(ReplicatedStorage.Data.ItemsData)
 local SharedSettings = require(ReplicatedStorage.Data.SharedSettings)
 
+--Constants
+local SECONDS_IN_DAY: number = 86400
+
 --Declarations
 local LocalPlayer = Players.LocalPlayer
 local RemoteEvents = ReplicatedStorage:WaitForChild("RemoteEvents")
+local RemoteFunctions: Folder = ReplicatedStorage:WaitForChild("RemoteFunctions")
 --local UIHelpers = require(LocalPlayer.PlayerScripts.UIHelpers)
 
 local UIManager = {}
@@ -166,7 +170,13 @@ function _connectHandlers(self)
 
 	self._connectionManager:ConnectToEvent(self._purchasePrompt.CloseButton.MouseButton1Click, closeRentalPrompt)
 	self._connectionManager:ConnectToEvent(self._purchasePrompt.PurchaseButton.MouseButton1Click, function()
-		MarketplaceService:PromptProductPurchase(LocalPlayer, ItemsData["CabanaRental"].DeveloperProductId, false, Enum.CurrencyType.Robux)
+		local rentalTime = RemoteFunctions.GetLastCabanaRentalTime:InvokeServer()
+		local rentalTimestamp = DateTime.fromIsoDate(rentalTime).UnixTimestamp
+		local now = DateTime.now().UnixTimestamp
+		if (now - rentalTimestamp) > SECONDS_IN_DAY then
+			MarketplaceService:PromptProductPurchase(LocalPlayer, ItemsData["CabanaRental"].DeveloperProductId, false, Enum.CurrencyType.Robux)
+		end
+
 		closeRentalPrompt()
 	end)
 	self._connectionManager:ConnectToEvent(ProximityPromptService.PromptTriggered, onProximityPromptTriggered)
