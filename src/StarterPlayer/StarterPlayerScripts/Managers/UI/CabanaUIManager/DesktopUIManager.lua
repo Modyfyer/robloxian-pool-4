@@ -51,7 +51,12 @@ function new(screenGui)
 
 	self.Cabana = nil
 	self._settings = {}
-	self.cabanaPurchased = false
+	self.cabanaRented = false
+	self.cabanaClaimed = false
+
+	if _isCabanaAlreadyRented() then
+		self.cabanaRented = true
+	end
 
 	_connectHandlers(self)
 	_initSettings(self)
@@ -76,11 +81,31 @@ end
 function UIManager:Clear()
 	self._settings = {}
 	self.Cabana = nil
-	self.cabanaPurchased = false
+	self.cabanaRented = false
+	self.cabanaClaimed = false
 end
 
 --[[ Private functions ]]--
 
+function _isCabanaAlreadyRented(): boolean
+	local rentalTime: string? = RemoteFunctions.GetLastCabanaRentalTime:InvokeServer()
+	if not rentalTime then --player has never rented a cabana
+		return false
+	end
+	local rentalDT: DateTime? = DateTime.fromIsoDate(rentalTime)
+
+	if rentalDT then
+		local rentalTimestamp = rentalDT.UnixTimestamp
+		local now = DateTime.now().UnixTimestamp
+		if (now - rentalTimestamp) > SECONDS_IN_DAY then --it's been >24h since the rental pass was purchased
+			return false
+		else --the rental is still valid
+			return true
+		end
+	else --no rental time could be parsed
+		return false
+	end
+end
 
 function _connectHandlers(self)
 	--Rental prompts
@@ -108,56 +133,68 @@ function _connectHandlers(self)
 	end
 
 	--ProximityPrompt
-	local function onProximityPromptTriggered(promptObject, player)
+	local function onProximityPromptTriggered(promptObject: any, player: Player)
 		if player ~= LocalPlayer then
 			return
 		end
 
-		local cabana = promptObject.Parent.Parent
+		local cabana: Instance? = promptObject.Parent.Parent
 
-		if cabana.Name == "Cabana" then
+		if cabana and cabana.Name == "Cabana" then
+			if self.cabanaClaimed and cabana:GetAttribute("Owner") ~= player.Name then
+				warn("Player has already rented a different cabana")
+				return
+			end
+
 			self:Show()
 			self.Cabana = cabana
 
-			if self.cabanaPurchased and cabana:GetAttribute("Owner") == player.Name then
+			if (self.cabanaRented) and cabana:GetAttribute("Owner") == player.Name then
 				openSettings()
 			elseif (cabana:GetAttribute("Owner") == "") or (not cabana:GetAttribute("Owner")) then
 				openRentalPrompt()
 			else
-				print("Someone else owns this cabana")
+				warn("Someone else owns this cabana")
+				print(cabana:GetAttribute("Owner"))
 			end
 		end
+	end
+
+
+	--Sets the cabana model visually as rented
+	local function setCabanaAsRented()
+		if not self.Cabana then
+			warn("Cannot set cabana as rented: no cabana found")
+			return
+		end
+
+		local roof: BasePart = self.Cabana:WaitForChild("Roof") :: BasePart
+		local statusGui: GuiObject = roof:WaitForChild("RentalStatusGui") :: GuiObject
+		local label: GuiObject? = statusGui:WaitForChild("Frame"):WaitForChild("TextLabel")
+		if label then
+			label.Text = LocalPlayer.Name .. "'s Cabana"
+		end
+
+		local floor: BasePart = self.Cabana:WaitForChild("Floor") :: BasePart
+		if floor then
+			local proxPrompt: ProximityPrompt? = floor:FindFirstChildOfClass("ProximityPrompt")
+			if proxPrompt then
+				proxPrompt.ActionText = "Edit Cabana Settings"
+			end
+		end
+
+		RemoteEvents.RentCabana:FireServer(self.Cabana)
+		self.cabanaClaimed = true
 	end
 
 	--Purchase
 	local function onProductPurchaseFinished(userID, productID, isPurchased)
 		if userID == LocalPlayer.UserId and productID == ItemsData["CabanaRental"].DeveloperProductId then
 			if isPurchased then
-				self.cabanaPurchased = true
-				if not self.Cabana then return end
-
-				local roof = self.Cabana:FindFirstChild("Roof")
-				if roof then
-					local statusGui = roof:FindFirstChild("RentalStatusGui")
-					if statusGui then
-						local label = statusGui:WaitForChild("Frame"):WaitForChild("TextLabel")
-						if label then
-							label.Text = LocalPlayer.Name .. "'s Cabana"
-						end
-					end
-				end
-
-				local floor = self.Cabana:FindFirstChild("Floor")
-				if floor then
-					local proxPrompt = floor:FindFirstChildOfClass("ProximityPrompt")
-					if proxPrompt then
-						proxPrompt.ActionText = "Edit Cabana Settings"
-					end
-				end
-
-				RemoteEvents.RentCabana:FireServer(self.Cabana)
+				self.cabanaRented = true
+				setCabanaAsRented()
 			else
-				warn("not purchased")
+				warn("Cabana was not purchased for", userID)
 			end
 		end
 	end
@@ -170,10 +207,11 @@ function _connectHandlers(self)
 
 	self._connectionManager:ConnectToEvent(self._purchasePrompt.CloseButton.MouseButton1Click, closeRentalPrompt)
 	self._connectionManager:ConnectToEvent(self._purchasePrompt.PurchaseButton.MouseButton1Click, function()
-		local rentalTime = RemoteFunctions.GetLastCabanaRentalTime:InvokeServer()
-		local rentalTimestamp = DateTime.fromIsoDate(rentalTime).UnixTimestamp
-		local now = DateTime.now().UnixTimestamp
-		if (now - rentalTimestamp) > SECONDS_IN_DAY then
+		if _isCabanaAlreadyRented() then
+			self.cabanaRented = true
+			setCabanaAsRented()
+			openSettings()
+		else
 			MarketplaceService:PromptProductPurchase(LocalPlayer, ItemsData["CabanaRental"].DeveloperProductId, false, Enum.CurrencyType.Robux)
 		end
 
@@ -187,18 +225,6 @@ function _connectHandlers(self)
 end
 
 function _initSettings(self, settings: SharedSettings.cabanaSettings)
-	-- for _, settingFrame in ipairs(self._settingsListFrame:GetChildren()) do
-	-- 	if settingFrame:GetAttribute("SettingName") == "AccentColor" then
-	-- 		-- for _, item in ipairs(settingFrame:GetChildren()) do
-	-- 		-- 	if item:IsA("ImageLabel") then
-	-- 		-- 		local textbox = item:FindFirstChildOfClass("TextBox")
-	-- 		-- 		if textbox then
-	-- 		-- 			textbox:GetPropertyChangedSignal("Text"):Connect(_verifyTextInput(textbox))
-	-- 		-- 		end
-	-- 		-- 	end
-	-- 		-- end
-	-- 	end
-	-- end
 end
 
 function _loadSettings(self, settings: SharedSettings.cabanaSettings)
