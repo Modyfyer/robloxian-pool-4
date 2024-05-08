@@ -97,8 +97,8 @@ function PurchaseManager.new(dataManager)
 
 	PurchaseManager.Products[1555280575] = function(profile, player: Player)
 		local now: DateTime = DateTime.now()
-		profile.Data.cabanaRentalTime = now:ToIsoDate()--now:FormatUniversalTime("YYYY HH:mm:ss", "en-us")
-		PurchaseManager.CabanaRented:Fire(player)
+		profile.Data.cabanaRentalTime = now:ToIsoDate()
+		BindableEvents.CabanaRented:Fire(player)
 		return true
 	end
 

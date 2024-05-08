@@ -222,6 +222,12 @@ function _connectHandlers(self)
 	self._connectionManager:ConnectToEvent(RemoteEvents.LoadCabanaSettings.OnClientEvent, function(settings: SharedSettings.cabanaSettings)
 		_loadSettings(self, settings)
 	end)
+	self._connectionManager:ConnectToEvent(Players.PlayerRemoving, function(player: Player)
+		if player ~= LocalPlayer then
+			return
+		end
+		self:Clear()
+	end)
 end
 
 function _initSettings(self, settings: SharedSettings.cabanaSettings)
