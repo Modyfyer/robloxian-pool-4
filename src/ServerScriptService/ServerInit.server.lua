@@ -4,11 +4,23 @@ Purpose: Initializes high level objects
 Initialized by: Self
 --]]--<<---------------------------------------------------->>--
 
-local Players = game:GetService("Players")
+--local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 --Dependency group 0
-local PurchaseManager = require(ServerScriptService:WaitForChild("PurchaseManager")).new()
+local DataManager = require(ServerScriptService:WaitForChild("Data"):WaitForChild("DataManager"))
+DataManager.new()
+
+repeat
+    task.wait()
+until DataManager ~= nil
 
 --Dependency group 1
-local CabanaManager = require(ServerScriptService:WaitForChild("CabanaManager")).new(PurchaseManager)
+local PurchaseManager = require(ServerScriptService:WaitForChild("Data"):WaitForChild("PurchaseManager"))
+PurchaseManager.new(DataManager)
+
+--Dependency group 2
+local AvatarManager = require(ServerScriptService:WaitForChild("AvatarManager"))
+AvatarManager.new(DataManager, PurchaseManager)
+local CabanaManager = require(ServerScriptService:WaitForChild("CabanaManager"))
+CabanaManager.new(DataManager, PurchaseManager)

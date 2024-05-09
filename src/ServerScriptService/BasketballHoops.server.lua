@@ -1,9 +1,20 @@
+-- Services
+local CollectionService = game:GetService("CollectionService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- Modules
+local ConnectionManager = require(ReplicatedStorage.ConnectionManager).new()
+
+-- Declarations
+local hoops: {Instance} = CollectionService:GetTagged("BasketballHoop")
+
+-- Functions
 function handleBasketballHoop(hoop)
 	local goalPart = hoop:WaitForChild("Goal")
 	local snd = goalPart:WaitForChild("Applause")
-	local deb = false
+	local deb: boolean = false
 
-	goalPart.Touched:Connect(function(prt)
+	ConnectionManager:ConnectToEvent(goalPart.Touched, function(prt: Instance)
 		if prt:IsA("MeshPart") and prt.Name == "Basketball" and not deb then
 			snd:Play()
 			for _, v in pairs(goalPart:GetChildren()) do
@@ -12,9 +23,9 @@ function handleBasketballHoop(hoop)
 				end
 			end
 			deb = true
-			
-			wait(5)
-			
+
+			task.wait(5)
+
 			snd:Stop()
 			for _, v in pairs(goalPart:GetChildren()) do
 				if v:IsA("ParticleEmitter") then
@@ -26,8 +37,6 @@ function handleBasketballHoop(hoop)
 	end)
 end
 
-for _, v in pairs(workspace.BasketBallHoops:GetChildren()) do
-	if v.Name == "BasketballHoop" then
-		handleBasketballHoop(v)
-	end
+for _, v: Instance in pairs(hoops) do
+	handleBasketballHoop(v)
 end

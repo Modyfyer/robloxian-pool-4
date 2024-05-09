@@ -1,5 +1,6 @@
-local pl = game.Players
-local us = game:GetService("UserService")
+local Players = game.Players
+local ServerStorage = game:GetService("ServerStorage")
+local UserService = game:GetService("UserService")
 
 for _, v in pairs(workspace.NPCSpots:GetChildren()) do
 	if v:IsA("BasePart") then
@@ -8,17 +9,18 @@ for _, v in pairs(workspace.NPCSpots:GetChildren()) do
 			isWalker = true
 		end
 
+		local id = v.UserId.Value
+		local inf = UserService:GetUserInfosByUserIdsAsync({ id })
+
 		task.spawn(function()
-			local id = v.UserId.Value
-			local desc = pl:GetHumanoidDescriptionFromUserId(id)
-			local inf = us:GetUserInfosByUserIdsAsync({ id })
-			local md = pl:CreateHumanoidModelFromDescription(desc, Enum.HumanoidRigType.R15)
+			local desc = Players:GetHumanoidDescriptionFromUserId(id)
+			local md = Players:CreateHumanoidModelFromDescription(desc, Enum.HumanoidRigType.R15)
 			md.Parent = workspace.NPCs
 			md.Humanoid.WalkSpeed = 8
 
 			md.Name = inf[1].DisplayName .. " (@" .. inf[1].Username .. ")"
-			local ani = game.ServerStorage.NPCStuff.Animate:Clone()
-			local prmpt = game.ServerStorage.NPCStuff.ProximityPrompt:Clone()
+			local ani = ServerStorage.NPCStuff.Animate:Clone()
+			local prmpt = ServerStorage.NPCStuff.ProximityPrompt:Clone()
 			local dia = v.Dialog:Clone()
 
 			for _, v in pairs(md.Animate:GetChildren()) do
@@ -35,7 +37,7 @@ for _, v in pairs(workspace.NPCSpots:GetChildren()) do
 			if isWalker == false then
 				md.HumanoidRootPart.Anchored = true
 			elseif isWalker == true then
-				local walkScript = game.ServerStorage.NPCStuff.Walk:Clone()
+				local walkScript = ServerStorage.NPCStuff.Walk:Clone()
 				walkScript.Parent = md
 				walkScript.Disabled = false
 				local walkVal = Instance.new("BoolValue")
