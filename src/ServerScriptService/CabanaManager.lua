@@ -10,9 +10,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 --Modules
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
 
---Constants
-local SECONDS_IN_DAY: number = 86400
-
 --Declarations
 local BindableEvents: Folder = ReplicatedStorage:WaitForChild("BindableEvents")
 local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
@@ -70,38 +67,6 @@ function CabanaManager:InitializeCabanas()
 end
 
 function CabanaManager:RentCabana(player: Player, cabana: Instance)
-	-- local canRent: boolean = false
-	-- -- for _, pl: number in pairs(self._playersWithRentalPass) do
-	-- -- 	if pl == player.UserId then
-	-- -- 		canRent = true
-	-- -- 	end
-	-- -- end
-
-	-- local function _isCabanaAlreadyRented(rentalTime: string): boolean
-	-- 	local rentalDT: DateTime? = DateTime.fromIsoDate(rentalTime)
-	
-	-- 	if rentalDT then
-	-- 		local rentalTimestamp = rentalDT.UnixTimestamp
-	-- 		local now = DateTime.now().UnixTimestamp
-	-- 		if (now - rentalTimestamp) > SECONDS_IN_DAY then --it's been >24h since the rental pass was purchased
-	-- 			return false
-	-- 		else --the rental is still valid
-	-- 			return true
-	-- 		end
-	-- 	else --no rental time could be parsed
-	-- 		return false
-	-- 	end
-	-- end
-
-	-- local rentalTime: string? = self._dataManager.getKey(player, "cabanaRentalTime")
-	-- if rentalTime then
-	-- 	if _isCabanaAlreadyRented(rentalTime) then
-	-- 		canRent = true
-	-- 	end
-	-- end
-
-	-- print(canRent)
-
 	local owner = cabana:GetAttribute("Owner")
 	if owner and owner ~= "" and owner ~= player.Name then
 		warn(owner, "already rented this cabana")
