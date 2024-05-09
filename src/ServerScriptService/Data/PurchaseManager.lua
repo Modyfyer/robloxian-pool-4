@@ -41,7 +41,7 @@ function PurchaseManager:PurchaseIdCheckAsync(profile, purchase_id, receipt_info
 			purchaseID = purchase_id,
 			productID = receipt_info.ProductId,
 			itemCost = receipt_info.CurrencySpent,
-			purchaseDate = dt:FormatUniversalTime("LL", "en-us")
+			purchaseDate = dt:ToIsoDate()
 		})
 
 		-- Granting product if not received:
@@ -85,7 +85,7 @@ function PurchaseManager:GrantProduct(player: Player, product_id: number | strin
     local profile = DataManager.getProfile(player)
     local product_function = PurchaseManager.Products[product_id]
     if product_function ~= nil then
-        product_function(profile)
+        product_function(profile, player)
     else
         warn("ProductId " .. tostring(product_id) .. " has not been defined in Products table")
     end
@@ -95,10 +95,10 @@ end
 function PurchaseManager.new(dataManager)
 	DataManager = dataManager
 
-	PurchaseManager.Products[1555280575] = function(profile)
-		local now = DateTime.now()
-		profile.Data.cabanaRentalTime = now:FormatUniversalTime("YYYY HH:mm:ss", "en-us")
-		PurchaseManager.CabanaRented:Fire()
+	PurchaseManager.Products[1555280575] = function(profile, player: Player)
+		local now: DateTime = DateTime.now()
+		profile.Data.cabanaRentalTime = now:ToIsoDate()
+		BindableEvents.CabanaRented:Fire(player)
 		return true
 	end
 

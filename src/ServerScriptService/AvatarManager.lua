@@ -14,7 +14,6 @@ local ServerStorage = game:GetService("ServerStorage")
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
 local Event = require(ReplicatedStorage.Utils.Event)
 local ItemsData = require(ReplicatedStorage.Data.ItemsData)
-local ItemType = require(ReplicatedStorage.Enums.ItemType)
 
 --Declarations
 local BindableEvents: Folder = ReplicatedStorage:WaitForChild("BindableEvents")
@@ -26,7 +25,7 @@ AvatarManager.__index = AvatarManager
 --[[**
 	Creates new instance
 **--]]
-function new(purchaseManager)
+function new(dataManager, purchaseManager)
 	local self = setmetatable({}, AvatarManager)
 
 	-- Dependency group 0
