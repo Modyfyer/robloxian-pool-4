@@ -19,6 +19,9 @@ until DataManager ~= nil
 local PurchaseManager = require(ServerScriptService:WaitForChild("Data"):WaitForChild("PurchaseManager"))
 PurchaseManager.new(DataManager)
 
+local SettingsManager = require(ServerScriptService:WaitForChild("SettingsManager"))
+SettingsManager.new(DataManager)
+
 --Dependency group 2
 local AvatarManager = require(ServerScriptService:WaitForChild("AvatarManager"))
 AvatarManager.new(DataManager, PurchaseManager)
