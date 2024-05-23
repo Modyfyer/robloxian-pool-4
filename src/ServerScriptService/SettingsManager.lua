@@ -28,8 +28,30 @@ function new(dataManager)
 	-- Dependency group 0
 	self._connectionManager = ConnectionManager.new()
 	self._dataManager = dataManager
+	
+	self.SaveSettingsEvent = RemoteEvents:WaitForChild("SaveHUDSettings")
+
+	_connectHandlers(self)
 
 	return self
+end
+
+function SettingsManager:LoadSettings(player: Player, data)
+	--local settings = self._dataManager.getKey(player, "settings")
+	local settings = data.settings
+	local loadSettingsEvent = RemoteEvents:WaitForChild("LoadHUDSettings")
+	loadSettingsEvent:FireClient(player, settings)
+end
+
+function _connectHandlers(self)
+	self._connectionManager:ConnectToEvent(self.SaveSettingsEvent.OnServerEvent, function(player: Player, settings: SharedSettings.hudSettings)
+		local saved = self._dataManager.setKey(player, "settings", settings)
+		warn("Data saved for", player.name, ":", saved)
+	end)
+
+	self._connectionManager:ConnectToEvent(BindableEvents.ProfileLoaded.Event, function(player: Player, data)
+		SettingsManager:LoadSettings(player, data)
+	end)
 end
 
 return {

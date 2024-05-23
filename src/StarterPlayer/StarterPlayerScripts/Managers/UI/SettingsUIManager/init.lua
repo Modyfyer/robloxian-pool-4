@@ -1,52 +1,42 @@
 --[[--<<---------------------------------------------------->>--
 Module purpose: Handles the Settings UI
 
-Public functions:
--Show()
--Hide()
-
 Initialized by: ClientInit
-
-Conventions:
-ALL_CAPS = constants
-_underscoreLeadingVariable = private
-camelCaseVariable = public
-CapitalizedVariable = global to file
 --]]--<<---------------------------------------------------->>--
-
+--Services
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+--Modules
 local LocalPlayer = Players.LocalPlayer
 
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager) --This is an easy way to have all connections in one place so you can disconnect everything and not leak memory
 local PlatformType = require(LocalPlayer.PlayerScripts.Managers.PlatformDetectionManager.PlatformType) --This is effectively an Enum
 
+--Declarations
+local BindableEvents: Folder = ReplicatedStorage:WaitForChild("BindableEvents")
+local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
+local RemoteFunctions: Folder = ReplicatedStorage:WaitForChild("RemoteFunctions")
+
 local UI_NAME = "SettingsGui"
 
-local SettingsUIManager = {} --creates the table "object"
-SettingsUIManager.__index = SettingsUIManager --called a "metamethod" - protects you if you try to access a field of the table SettingsUIManager that isn't there
+local SettingsUIManager = {} 
+SettingsUIManager.__index = SettingsUIManager 
 
 --[[**
 	Creates a new instance
-
-	@param [t:PlatformDetectionManager] platformDetectionManager The platform detection manager
-
-	@returns The new instance
 **--]]
-function new(platformDetectionManager)
-	local self = setmetatable({}, SettingsUIManager) --metatables are complicated, but self refers to the instance of the object (like "this" in C#/Java/etc.)
+function new(hudUIManager, platformDetectionManager)
+	local self = setmetatable({}, SettingsUIManager)
 
-	-- Dependency group 0
-	local connectionManager = ConnectionManager.new() --creates a new instance of the ConnectionManager object
+	local connectionManager = ConnectionManager.new() 
 	local screenGui = LocalPlayer.PlayerGui:WaitForChild(UI_NAME)
 
-	-- Dependency group 1
 	-- This finds each platform UI manager (desktop, mobile, console) and instances them
 	local platformSpecificUIManagers = {}
 	for i = 1, #PlatformType do
 		local platformTypeName = PlatformType[i]
-		local platformSpecificUIManagerName = string.format("%sUIManager", platformTypeName) --%s outputs a string
+		local platformSpecificUIManagerName = string.format("%sUIManager", platformTypeName)
 
 		if script:FindFirstChild(platformSpecificUIManagerName) then
 			platformSpecificUIManagers[i] = require(script:FindFirstChild(platformSpecificUIManagerName)).new(screenGui)
@@ -54,11 +44,16 @@ function new(platformDetectionManager)
 	end
 
 	self._connectionManager = connectionManager
+	self._hudUIManager = hudUIManager
 	self._platformDetectionManager = platformDetectionManager
 	self._platformSpecificUIManagers = platformSpecificUIManagers
 	self._screenGui = screenGui
 
+	self.SettingsButtonPressed = BindableEvents:WaitForChild("SettingsButtonPressed")
+
 	_connectHandlers(self)
+
+	screenGui.Enabled = true
 
 	return self
 end
@@ -83,7 +78,7 @@ function SettingsUIManager:Show()
 end
 
 --[[ Private functions ]]--
---This sets up all the event handlers
+--Sets up event handlers
 function _connectHandlers(self)
 	--When the platformDetectionManager detects a change, hide the old platform UI and show the new one
 	local function onDetectedPlatformTypeChanged(newPlatformType, oldPlatformType)
@@ -96,8 +91,17 @@ function _connectHandlers(self)
 		end
 	end
 
+	local function onSettingsButtonPressed()
+		if self._screenGui.Enabled then
+			self:Show()
+		else
+			self:Hide()
+		end
+	end
+
 	--Listeners
 	self._connectionManager:ConnectToEvent(self._platformDetectionManager.DetectedPlatformTypeChanged, onDetectedPlatformTypeChanged)
+	self._connectionManager:ConnectToEvent(self.SettingsButtonPressed.Event, onSettingsButtonPressed)
 end
 
 --Helper function for applying a function to every platform specific UI manager

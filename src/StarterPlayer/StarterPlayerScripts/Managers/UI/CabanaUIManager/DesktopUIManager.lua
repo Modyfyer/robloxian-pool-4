@@ -351,7 +351,7 @@ function _loadSettings(self, settings: SharedSettings.cabanaSettings)
 end
 
 function _saveSettings(self)
-	local settings: SharedSettings.cabanaSettings = SharedSettings.DefaultSettings
+	local settings: SharedSettings.cabanaSettings = SharedSettings.DefaultCabanaSettings
 	if self._settings ~= nil then
 		settings = self._settings
 	end

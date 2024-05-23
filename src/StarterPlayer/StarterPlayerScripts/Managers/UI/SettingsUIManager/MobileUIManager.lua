@@ -8,13 +8,21 @@ Public functions:
 Initialized by: SettingsUIManager
 --]]--<<---------------------------------------------------->>--
 
+--Services
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
 
-local LocalPlayer = Players.LocalPlayer
-
+--Modules
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
---local UIHelpers = require(LocalPlayer.PlayerScripts.UIHelpers)
+local SharedSettings = require(ReplicatedStorage.Data.SharedSettings)
+
+--Declarations
+local LocalPlayer: Player = Players.LocalPlayer
+
+local BindableEvents: Folder = ReplicatedStorage:WaitForChild("BindableEvents")
+local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
+local RemoteFunctions: Folder = ReplicatedStorage:WaitForChild("RemoteFunctions")
 
 
 local UIManager = {}
@@ -32,9 +40,7 @@ function new(screenGui)
 
 	self._connectionManager = ConnectionManager.new()
 
-	self._sidebarLeft = self._mainFrame:WaitForChild("SidebarLeft")
-
-	self._settingsButton = self._sidebarLeft:WaitForChild("SettingsButton")
+	self.SettingsButtonPressed = BindableEvents:WaitForChild("SettingsButtonPressed")
 
 	_connectHandlers(self)
 
@@ -58,6 +64,11 @@ function UIManager:Show()
 end
 
 function _connectHandlers(self)
+	local function onSettingsButtonPressed()
+
+	end
+	
+	self._connectionManager:ConnectToEvent(self.SettingsButtonPressed.Event, onSettingsButtonPressed)
 end
 
 return {
