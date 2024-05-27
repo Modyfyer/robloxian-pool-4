@@ -8,6 +8,7 @@ Initialized by: SettingsUIManager
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 
 --Modules
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
@@ -18,9 +19,8 @@ local LocalPlayer: Player = Players.LocalPlayer
 
 local BindableEvents: Folder = ReplicatedStorage:WaitForChild("BindableEvents")
 local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
-local RemoteFunctions: Folder = ReplicatedStorage:WaitForChild("RemoteFunctions")
+--local RemoteFunctions: Folder = ReplicatedStorage:WaitForChild("RemoteFunctions")
 
-local debounce: boolean = false
 local menuTween: TweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
 
 local UIManager = {}
@@ -35,7 +35,8 @@ function new(screenGui)
 	self._mainFrame = screenGui:WaitForChild("Desktop")
 
 	self._connectionManager = ConnectionManager.new()
-	self._settings = {}
+	local playerSettings: SharedSettings.hudSettings = {}
+	self._settings = playerSettings
 
 	self._background = self._mainFrame:WaitForChild("BG")
 
@@ -43,6 +44,7 @@ function new(screenGui)
 	self._settingsContainer = self._background:WaitForChild("ScrollingFrame")
 
 	self.SettingsButtonPressed = BindableEvents:WaitForChild("SettingsButtonPressed")
+
 
 	local openTween: Tween = TweenService:Create(self._background.UIScale, menuTween, {Scale = 1})
 	local closeTween: Tween = TweenService:Create(self._background.UIScale, menuTween, {Scale = 0})
@@ -77,6 +79,10 @@ function UIManager:Clear()
 	self._background.UIScale.Scale = 0
 end
 
+function UIManager:GetState()
+	return self._mainFrame.Visible
+end
+
 --[[ Private functions ]]--
 
 -- Handles event connections
@@ -101,20 +107,77 @@ function _clearSettingsFrame(self)
 	end
 end
 
-function _createSetting(self, settingName: string, setting: any)
-	local newSetting = self._settingsContainer:WaitForChild("Setting"):Clone()
-	newSetting.Name = settingName
-	newSetting.SettingName.Text = settingName
-	newSetting.Visible = true
-	newSetting.Parent = self._settingsContainer
+function _createSettingsFrames(self)
+	local mouse: Mouse = LocalPlayer:GetMouse()
+	local snapAmount: number = 0.1
+	local offset: number = 0 --padding between slider and bar
+	local scalar: number = 0.5
+	local maxVal: number = 100
+	local clicked: {boolean} = {}
+
+	local function updateSlider(slider: ImageButton, amount: TextLabel, bar: Frame)
+		local xOffset: number = math.floor((mouse.X - bar.AbsolutePosition.X) / snapAmount + scalar) * snapAmount
+		local xOffsetClamped = math.clamp(xOffset, offset, bar.AbsoluteSize.X - offset)
+
+		local newPos: UDim2 = UDim2.new(0, xOffsetClamped, 0.5, 0)
+		slider.Position = newPos
+
+		local roundedAbsSize: number = math.floor(bar.AbsoluteSize.X / snapAmount + scalar) * snapAmount
+		local roundedOffsetClamped: number = math.floor(xOffsetClamped / snapAmount + scalar) * snapAmount
+
+		local sliderVal: number = roundedOffsetClamped / roundedAbsSize
+		local scaledVal: number = math.clamp((sliderVal * maxVal), 0, 100)
+		local scaledValInt: number = math.modf(scaledVal)
+		local formattedText: string = tostring(scaledValInt)
+		amount.Text = formattedText
+	end
+
+	local function activateSlider(settingFrame: Frame, index: number)
+		local bar: Frame = settingFrame:WaitForChild("Bar") :: Frame
+		local slider: ImageButton = bar:WaitForChild("Slider") :: ImageButton
+		local amount: TextLabel = bar:WaitForChild("Amount") :: TextLabel
+		table.insert(clicked, index, false)
+
+		local function setAll(bool: boolean)
+			for i = 1, #clicked do
+				clicked[i] = bool
+			end
+		end
+
+		self._connectionManager:ConnectToEvent(slider.MouseButton1Down, function()
+			setAll(false)
+			clicked[index] = true
+		end)
+
+		self._connectionManager:ConnectToEvent(UserInputService.InputEnded, function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 then
+				clicked[index] = false
+			end
+		end)
+
+		self._connectionManager:ConnectToEvent(mouse.Move, function()
+			if clicked[index] then
+				updateSlider(slider, amount, bar)
+			end
+		end)
+	end
+
+	for settingName, _ in pairs(SharedSettings.DefaultHUDSettings) do
+		for index, settingFrame in pairs(self._settingsContainer:GetChildren()) do
+			if settingFrame:IsA("Frame") and settingFrame:GetAttribute("SettingName") == settingName then
+				settingFrame.Visible = true
+				settingFrame.SettingName.Text = settingFrame:GetAttribute("DisplayName") or settingName
+				if settingFrame:GetAttribute("SettingType") == "Slider" then
+					activateSlider(settingFrame, index)
+				end
+			end
+		end
+	end
 end
 
 function _loadSettings(self)
 	_clearSettingsFrame(self)
-	print(self._settings)
-	for i, v in pairs(self._settings) do
-		_createSetting(self, i, v)
-	end
+	_createSettingsFrames(self)
 end
 
 function _saveSettings(self)

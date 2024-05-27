@@ -42,8 +42,16 @@ local hSettings: hudSettings = {
 	uiVolume = 0
 }
 
+local hudSettingsDisplayInfo: {string: settingType} = {
+	musicVolume = "Slider",
+	sfxVolume = "Slider",
+	uiVolume = "Slider"
+}
+
 module.DefaultCabanaSettings = cSettings
 module.DefaultHUDSettings = hSettings
+
+module.HUDSettingsDisplayInfo = hudSettingsDisplayInfo
 
 module.AllowedFriends = {"All", "Friends", "None"}
 module.Channels = {"News", "Weather", "Kittens"}

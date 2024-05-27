@@ -11,7 +11,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
 
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager) --This is an easy way to have all connections in one place so you can disconnect everything and not leak memory
-local PlatformType = require(LocalPlayer.PlayerScripts.Managers.PlatformDetectionManager.PlatformType) --This is effectively an Enum
+local PlatformType = require(LocalPlayer.PlayerScripts.Managers.PlatformDetectionManager.PlatformType) --Enum
 
 --Declarations
 local BindableEvents: Folder = ReplicatedStorage:WaitForChild("BindableEvents")
@@ -21,7 +21,7 @@ local RemoteFunctions: Folder = ReplicatedStorage:WaitForChild("RemoteFunctions"
 local UI_NAME = "SettingsGui"
 
 local SettingsUIManager = {} 
-SettingsUIManager.__index = SettingsUIManager 
+SettingsUIManager.__index = SettingsUIManager
 
 --[[**
 	Creates a new instance
@@ -50,10 +50,9 @@ function new(hudUIManager, platformDetectionManager)
 	self._screenGui = screenGui
 
 	self.SettingsButtonPressed = BindableEvents:WaitForChild("SettingsButtonPressed")
+	self.State = false
 
 	_connectHandlers(self)
-
-	screenGui.Enabled = true
 
 	return self
 end
@@ -67,6 +66,8 @@ function SettingsUIManager:Hide()
 	_iterateOverAllPlatformSpecificUIManagers(self, function (_, platformSpecificUIManager)
 		platformSpecificUIManager:Hide()
 	end)
+
+	self.State = false
 end
 
 --[[**
@@ -75,6 +76,7 @@ end
 function SettingsUIManager:Show()
 	self._screenGui.Enabled = true
 	_showAppropriatePlatformSpecificUIManager(self)
+	self.State = true
 end
 
 --[[ Private functions ]]--
@@ -92,7 +94,7 @@ function _connectHandlers(self)
 	end
 
 	local function onSettingsButtonPressed()
-		if self._screenGui.Enabled then
+		if not self.State then
 			self:Show()
 		else
 			self:Hide()
