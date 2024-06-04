@@ -14,7 +14,7 @@ local UserInputService = game:GetService("UserInputService")
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
 local Event = require(ReplicatedStorage.Utils.Event)
 
---Declarations
+
 local BindableEvents: Folder = ReplicatedStorage:WaitForChild("BindableEvents")
 local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
 
@@ -50,6 +50,9 @@ function new(screenGui)
 	self._waterVal = LocalChar:WaitForChild("Water")
 
 	self.AvatarButtonEvent = BindableEvents:WaitForChild("AvatarButtonPressed")
+	self.EmotesButtonEvent = BindableEvents:WaitForChild("EmotesButtonPressed")
+	self.SettingsButtonEvent = BindableEvents:WaitForChild("SettingsButtonPressed")
+	self.ShopsButtonEvent = BindableEvents:WaitForChild("ShopsButtonPressed")
 
 	-- Dependency group 2
 	-- self._actions = self._actionsMenu:WaitForChild("BG"):WaitForChild("Actions")
@@ -198,6 +201,9 @@ function _connectButtonHandlers(self)
 	self._connectionManager:ConnectToEvent(self._avatarButton.MouseLeave, hideTooltip)
 
 	--Emotes
+	self._connectionManager:ConnectToEvent(self._emotesButton.MouseButton1Click, function()
+		self.EmotesButtonEvent:Fire()
+	end)
 	self._connectionManager:ConnectToEvent(self._emotesButton.MouseEnter, function(x, y)
 		showTooltip(x, y, "Emotes")
 	end)
@@ -206,7 +212,7 @@ function _connectButtonHandlers(self)
 
 	--Settings
 	self._connectionManager:ConnectToEvent(self._settingsButton.MouseButton1Click, function()
-		print("settings")
+		self.SettingsButtonEvent:Fire()
 	end)
 	self._connectionManager:ConnectToEvent(self._settingsButton.MouseEnter, function(x, y)
 		showTooltip(x, y, "Settings")
@@ -216,7 +222,7 @@ function _connectButtonHandlers(self)
 
 	--Shops
 	self._connectionManager:ConnectToEvent(self._shopsButton.MouseButton1Click, function()
-	
+		self.ShopsButtonEvent:Fire()
 	end)
 	self._connectionManager:ConnectToEvent(self._shopsButton.MouseEnter, function(x, y)
 		showTooltip(x, y, "Shops")

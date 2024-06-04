@@ -14,11 +14,7 @@ export type DataTemplate = {
         tools: {}
     },
     daysLoggedIn: number,
-    settings: {
-        gameVolume: number,
-        musicVolume: number,
-        uiVolume: number
-    },
+    settings: SharedSettings.hudSettings,
     cabanaSettings: SharedSettings.cabanaSettings,
     cabanaRentalTime: string,
     purchases: {
@@ -41,8 +37,8 @@ local ProfileTemplate: DataTemplate = {
     poolPoints = 0,
     inventory = {},
     daysLoggedIn = 0,
-    settings = {},
-    cabanaSettings = SharedSettings.DefaultSettings,
+    settings = SharedSettings.DefaultHUDSettings,
+    cabanaSettings = SharedSettings.DefaultCabanaSettings,
     cabanaRentalTime = "",
     purchases = {},
     quests = {},
