@@ -92,6 +92,7 @@ function _connectHandlers(self)
 	end)
 	self._connectionManager:ConnectToEvent(self._closeButton.MouseButton1Click, function()
 		self:Hide()
+		_saveSettings(self)
 	end)
 	self._connectionManager:ConnectToEvent(RemoteEvents.LoadHUDSettings.OnClientEvent, function(settings)
 		self._settings = settings
@@ -115,7 +116,7 @@ function _createSettingsFrames(self)
 	local maxVal: number = 100
 	local clicked: {boolean} = {}
 
-	local function updateSlider(slider: ImageButton, amount: TextLabel, bar: Frame)
+	local function updateSlider(slider: ImageButton, amount: TextLabel, bar: Frame, settingName: string?)
 		local xOffset: number = math.floor((mouse.X - bar.AbsolutePosition.X) / snapAmount + scalar) * snapAmount
 		local xOffsetClamped = math.clamp(xOffset, offset, bar.AbsoluteSize.X - offset)
 
@@ -130,13 +131,22 @@ function _createSettingsFrames(self)
 		local scaledValInt: number = math.modf(scaledVal)
 		local formattedText: string = tostring(scaledValInt)
 		amount.Text = formattedText
+
+		if settingName and self._settings[settingName] then
+			self._settings[settingName] = scaledValInt
+		end
 	end
 
 	local function activateSlider(settingFrame: Frame, index: number)
 		local bar: Frame = settingFrame:WaitForChild("Bar") :: Frame
 		local slider: ImageButton = bar:WaitForChild("Slider") :: ImageButton
 		local amount: TextLabel = bar:WaitForChild("Amount") :: TextLabel
+		local settingName: string? = settingFrame:GetAttribute("SettingName")
 		table.insert(clicked, index, false)
+
+		if settingName and self._settings[settingName] then
+			amount.Text = self._settings[settingName]
+		end
 
 		local function setAll(bool: boolean)
 			for i = 1, #clicked do
@@ -157,7 +167,7 @@ function _createSettingsFrames(self)
 
 		self._connectionManager:ConnectToEvent(mouse.Move, function()
 			if clicked[index] then
-				updateSlider(slider, amount, bar)
+				updateSlider(slider, amount, bar, settingName)
 			end
 		end)
 	end
