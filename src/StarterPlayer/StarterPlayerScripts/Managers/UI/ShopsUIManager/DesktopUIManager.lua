@@ -5,7 +5,7 @@ Initialized by: ShopsUIManager
 --]]--<<---------------------------------------------------->>--
 
 --Services
-local Players = game:GetService("Players")
+--local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 --local UserInputService = game:GetService("UserInputService")
@@ -14,10 +14,11 @@ local TweenService = game:GetService("TweenService")
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
 
 --Declarations
-local LocalPlayer = Players.LocalPlayer
+--local LocalPlayer = Players.LocalPlayer
+local UI_NAME: string = "Desktop"
 
 local BindableEvents: Folder = ReplicatedStorage:WaitForChild("BindableEvents")
-local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
+--local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
 
 local menuTween: TweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
 
@@ -30,15 +31,13 @@ function new(screenGui)
 
 	self._screenGui = screenGui
 
-	-- Dependency group 0
-	self._mainFrame = screenGui:WaitForChild("Desktop")
 	self._connectionManager = ConnectionManager.new()
+	self._mainFrame = screenGui:WaitForChild(UI_NAME) :: Frame
+	self.ShopsButtonPressed = BindableEvents:WaitForChild("ShopsButtonPressed") :: BindableEvent
 
-	self._background = self._mainFrame:WaitForChild("BG")
+	self._background = self._mainFrame:WaitForChild("BG") :: Frame
 
-	self._closeButton = self._background:WaitForChild("CloseButton")
-
-	self.ShopsButtonPressed = BindableEvents:WaitForChild("ShopsButtonPressed")
+	self._closeButton = self._background:WaitForChild("CloseButton") :: ImageButton
 
 	local openTween: Tween = TweenService:Create(self._background.UIScale, menuTween, {Scale = 1})
 	local closeTween: Tween = TweenService:Create(self._background.UIScale, menuTween, {Scale = 0})
@@ -50,9 +49,7 @@ function new(screenGui)
 	return self
 end
 
---[[**
-	Hides UI
-**--]]
+--Hides UI and removes connections
 function UIManager:Hide()
 	self._connectionManager:ConnectToEvent(self._closeTween.Completed, function()
 		self._mainFrame.Visible = false
@@ -61,18 +58,20 @@ function UIManager:Hide()
 	self._closeTween:Play()
 end
 
---Shows UI
+--Shows UI and creates connections
 function UIManager:Show()
 	self._connectionManager:ConnectAll()
 	self._mainFrame.Visible = true
 	self._openTween:Play()
 end
 
+--Hides UI and resets to default values
 function UIManager:Clear()
 	self._mainFrame.Visible = false
 	self._background.UIScale.Scale = 0
 end
 
+--Returns the visibility of the main UI frame
 function UIManager:GetState()
 	return self._mainFrame.Visible
 end

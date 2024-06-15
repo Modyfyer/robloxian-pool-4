@@ -23,23 +23,24 @@ local UI_NAME: string = "ShopsGui"
 local ShopsUIManager = {}
 ShopsUIManager.__index = ShopsUIManager
 
---[[**
+--[[
 	Creates a new instance
 
+	@param [t:hudUIManager] hudUIManager The hud UI manager
 	@param [t:PlatformDetectionManager] platformDetectionManager The platform detection manager
 
 	@returns The new instance
-**--]]
+--]]
 function new(hudUIManager, platformDetectionManager)
 	local self = setmetatable({}, ShopsUIManager)
 
 	local connectionManager = ConnectionManager.new()
-	local screenGui = LocalPlayer.PlayerGui:WaitForChild(UI_NAME)
+	local screenGui = LocalPlayer.PlayerGui:WaitForChild(UI_NAME) :: GuiObject
 
 	local platformSpecificUIManagers = {}
 	for i = 1, #PlatformType do
 		local platformTypeName = PlatformType[i]
-		local platformSpecificUIManagerName = string.format("%sUIManager", platformTypeName) --%s outputs a string
+		local platformSpecificUIManagerName = string.format("%sUIManager", platformTypeName)
 
 		if script:FindFirstChild(platformSpecificUIManagerName) then
 			platformSpecificUIManagers[i] = require(script:FindFirstChild(platformSpecificUIManagerName)).new(screenGui)
@@ -52,7 +53,7 @@ function new(hudUIManager, platformDetectionManager)
 	self._platformSpecificUIManagers = platformSpecificUIManagers
 	self._screenGui = screenGui
 
-	self.ShopsButtonPressed = BindableEvents:WaitForChild("ShopsButtonPressed")
+	self.ShopsButtonPressed = BindableEvents:WaitForChild("ShopsButtonPressed") :: BindableEvent
 	self.State = false
 
 	_connectHandlers(self)
@@ -60,9 +61,7 @@ function new(hudUIManager, platformDetectionManager)
 	return self
 end
 
---[[**
-	Hides the HUD UI
-**--]]
+--Hides the Shops UI
 function ShopsUIManager:Hide()
 	self._screenGui.Enabled = false
 
@@ -73,9 +72,7 @@ function ShopsUIManager:Hide()
 	self.State = false
 end
 
---[[**
-	Shows the HUD UI
-**--]]
+--Shows the Shops UI
 function ShopsUIManager:Show()
 	self._screenGui.Enabled = true
 	_showAppropriatePlatformSpecificUIManager(self)
