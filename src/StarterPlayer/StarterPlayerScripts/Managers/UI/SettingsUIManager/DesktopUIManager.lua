@@ -45,7 +45,6 @@ function new(screenGui)
 
 	self.SettingsButtonPressed = BindableEvents:WaitForChild("SettingsButtonPressed")
 
-
 	local openTween: Tween = TweenService:Create(self._background.UIScale, menuTween, {Scale = 1})
 	local closeTween: Tween = TweenService:Create(self._background.UIScale, menuTween, {Scale = 0})
 	self._openTween = openTween
@@ -56,9 +55,7 @@ function new(screenGui)
 	return self
 end
 
---[[**
-	Hides UI
-**--]]
+--Hides UI and removes connections
 function UIManager:Hide()
 	self._connectionManager:ConnectToEvent(self._closeTween.Completed, function()
 		self._mainFrame.Visible = false
@@ -67,12 +64,13 @@ function UIManager:Hide()
 	self._closeTween:Play()
 end
 
---Shows UI
+--Shows UI and creates connections
 function UIManager:Show()
 	self._connectionManager:ConnectAll()
 	self._mainFrame.Visible = true
 	self._openTween:Play()
 end
+
 
 function UIManager:Clear()
 	self._mainFrame.Visible = false

@@ -30,6 +30,10 @@ avatarUIManager = avatarUIManager.new(hudUIManager, platformDetectionManager)
 local settingsUIManager = require(uiFolder.SettingsUIManager)
 settingsUIManager = settingsUIManager.new(hudUIManager, platformDetectionManager)
 
+local shopsUIManager = require(uiFolder.ShopsUIManager)
+shopsUIManager = shopsUIManager.new(hudUIManager, platformDetectionManager)
+
 avatarUIManager:Hide()
 settingsUIManager:Hide()
+shopsUIManager:Hide()
 
