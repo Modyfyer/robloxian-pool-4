@@ -1,15 +1,16 @@
-tool = script.Parent
-sound = tool:WaitForChild("Handle"):WaitForChild("Sound")
+local tool = script.Parent
+local sound = tool:WaitForChild("Handle"):WaitForChild("Sound")
+local anim = nil
 
-drinking = false
+local drinking: boolean = false
 tool.Activated:connect(function()
 	if drinking == false then
 		drinking = true
 		anim = game.Players.LocalPlayer.Character.Humanoid:LoadAnimation(tool.Animation)
 		anim:Play()
-		wait(.7)
+		task.wait(.7)
 		sound:Play()
-		wait(1.5)
+		task.wait(1.5)
 		anim:Stop()
 		drinking = false
 	end
