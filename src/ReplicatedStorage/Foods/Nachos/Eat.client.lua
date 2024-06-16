@@ -1,0 +1,64 @@
+--Services
+local Players = game:GetService("Players")
+
+--Declarations
+local tool: Instance = script.Parent
+local sound = tool:WaitForChild("Handle"):WaitForChild("Sound")
+local player = Players.LocalPlayer
+local char = player.Character
+local anim = nil
+local chip = nil
+local eating: boolean = false
+
+--Functions
+tool.Activated:Connect(function()
+	if not char then
+		char = player.Character
+	end
+	
+	if eating == false then
+		eating = true
+		
+		anim = game.Players.LocalPlayer.Character.Humanoid:LoadAnimation(tool.Animation)
+		anim:Play()
+		
+		task.wait(.4)
+		
+		chip = Instance.new("Part")
+		chip.Size = Vector3.new(.1, .1, .1)
+		chip.CanCollide = false
+
+		local msh = Instance.new("SpecialMesh")
+		msh.MeshId = "rbxassetid://17085111082"
+		msh.TextureId = "rbxassetid://17085111130"
+		msh.Scale = Vector3.new(3, 3, 3)
+		msh.Parent = chip
+
+		chip.Parent = char
+
+		local hand = char:FindFirstChild("LeftHand")
+		local wld = Instance.new("Weld")
+		wld.Part0 = chip
+		wld.Part1 = hand
+		wld.C0 = CFrame.new() * CFrame.Angles(math.rad(180), 0, math.rad(45)) + Vector3.new(-.3, 0, 0)
+		wld.Parent = chip
+		
+		task.wait(.1)
+		
+		sound:Play()
+		
+		task.wait(.5)
+		
+		anim:Stop()
+		chip:Destroy()
+		eating = false
+	end
+end)
+
+tool.Unequipped:Connect(function()
+	eating = false
+	anim:Stop()
+	if chip ~= nil then
+		chip:Destroy()
+	end
+end)

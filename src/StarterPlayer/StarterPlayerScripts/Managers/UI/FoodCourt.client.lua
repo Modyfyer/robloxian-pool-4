@@ -3,10 +3,12 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 --Declarations
-local player: Player = Players.LocalPlayer
+local LocalPlayer: Player = Players.LocalPlayer
 task.wait(3) --cbt
 
-local main: GuiObject = script.Parent
+local UI_NAME = "OrderFoodGui"
+
+local main: GuiObject = LocalPlayer.PlayerGui:WaitForChild(UI_NAME):WaitForChild("BG")
 local snacksFrame: ScrollingFrame = main:WaitForChild("SnacksBG"):WaitForChild("ScrollingFrame")
 local drinksFrame: ScrollingFrame = main:WaitForChild("DrinksBG"):WaitForChild("ScrollingFrame")
 local itemButton = main.itemButton
@@ -35,7 +37,7 @@ function doOrderFood(button, tool)
 	button.MouseButton1Click:Connect(function()
 		if deb == false then
 			deb = true
-			if not playerHasTool(player, tool.Name) then
+			if not playerHasTool(LocalPlayer, tool.Name) then
 				event:FireServer(tool)
 			end
 			task.wait(3)
@@ -64,7 +66,7 @@ for _, v in pairs(drinks:GetChildren()) do
 end
 
 while task.wait() do
-	local playerChar = player.Character
+	local playerChar = LocalPlayer.Character
 	local hrp = playerChar:WaitForChild("HumanoidRootPart")
 
 	local dist1 = (hrp.Position - fOrder1.Position).Magnitude

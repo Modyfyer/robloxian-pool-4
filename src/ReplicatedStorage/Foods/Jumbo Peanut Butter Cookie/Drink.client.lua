@@ -1,21 +1,27 @@
-tool = script.Parent
-sound = tool:WaitForChild("Handle"):WaitForChild("Sound")
+--Services
+--local Players = game:GetService("Players")
 
-drinking = false
+--Declarations
+local tool: Instance = script.Parent
+local sound = tool:WaitForChild("Handle"):WaitForChild("Sound")
+local anim = nil
+local eating: boolean = false
+
+--Functions
 tool.Activated:connect(function()
-	if drinking == false then
-		drinking = true
+	if eating == false then
+		eating = true
 		anim = game.Players.LocalPlayer.Character.Humanoid:LoadAnimation(tool.Animation)
 		anim:Play()
-		wait(.7)
+		task.wait(.7)
 		sound:Play()
-		wait(1.5)
+		task.wait(1.5)
 		anim:Stop()
-		drinking = false
+		eating = false
 	end
 end)
 
 tool.Unequipped:connect(function()
-	drinking = false
+	eating = false
 	anim:Stop()
 end)
