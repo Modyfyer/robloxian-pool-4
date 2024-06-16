@@ -1,7 +1,7 @@
 --[[--<<---------------------------------------------------->>--
-Module purpose: Handles the Shops UI for desktop
+Module purpose: Handles the Emotes UI for desktop
 
-Initialized by: ShopsUIManager
+Initialized by: EmotesUIManager
 --]]--<<---------------------------------------------------->>--
 
 --Services

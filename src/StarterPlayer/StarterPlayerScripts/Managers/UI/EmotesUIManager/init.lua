@@ -1,5 +1,5 @@
 --[[--<<---------------------------------------------------->>--
-Module purpose: Handles the Shops UI
+Module purpose: Handles the Emotes UI
 
 Initialized by: ClientInit
 --]]--<<---------------------------------------------------->>--
