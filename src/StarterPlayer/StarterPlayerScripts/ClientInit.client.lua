@@ -27,9 +27,16 @@ hudUIManager = hudUIManager.new(platformDetectionManager)
 local avatarUIManager = require(uiFolder.AvatarUIManager)
 avatarUIManager = avatarUIManager.new(hudUIManager, platformDetectionManager)
 
+local emotesUIManager = require(uiFolder.EmotesUIManager)
+emotesUIManager = emotesUIManager.new(hudUIManager, platformDetectionManager)
+
 local settingsUIManager = require(uiFolder.SettingsUIManager)
 settingsUIManager = settingsUIManager.new(hudUIManager, platformDetectionManager)
 
+local shopsUIManager = require(uiFolder.ShopsUIManager)
+shopsUIManager = shopsUIManager.new(hudUIManager, platformDetectionManager)
+
 avatarUIManager:Hide()
 settingsUIManager:Hide()
+shopsUIManager:Hide()
 
