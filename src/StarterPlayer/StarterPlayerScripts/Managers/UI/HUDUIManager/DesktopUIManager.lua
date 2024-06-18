@@ -5,6 +5,7 @@ Initialized by: HUDUIManager
 --]]--<<---------------------------------------------------->>--
 
 --Services
+local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
@@ -12,18 +13,18 @@ local UserInputService = game:GetService("UserInputService")
 
 --Modules
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
-local Event = require(ReplicatedStorage.Utils.Event)
-
 
 local BindableEvents: Folder = ReplicatedStorage:WaitForChild("BindableEvents")
-local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
+--local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
 
 local LocalPlayer = Players.LocalPlayer
 local LocalChar = LocalPlayer.Character
 
 local DEFAULT_WALKSPEED: number = 16
+local LIFEGUARD_GAMEPASS_ID = 703084245
 local MAX_OXYGEN: number = 100
 local MAX_WATER: number = 100
+local UI_NAME: string = "Desktop"
 
 local UIManager = {}
 UIManager.__index = UIManager
@@ -33,7 +34,7 @@ function new(screenGui)
 	local self = setmetatable({}, UIManager)
 
 	-- Dependency group 0
-	self._mainFrame = screenGui:WaitForChild("Desktop")
+	self._mainFrame = screenGui:WaitForChild(UI_NAME)
 	self._connectionManager = ConnectionManager.new()
 
 	-- Dependency group 1
@@ -41,6 +42,7 @@ function new(screenGui)
 	self._drownFrame = self._mainFrame:WaitForChild("DrownAnim")
 	self._progressBars = self._mainFrame:WaitForChild("ProgressBars")
 	self._sidebarLeft = self._mainFrame:WaitForChild("SidebarLeft")
+	self._sidebarRight = self._mainFrame:WaitForChild("SidebarRight")
 	self._tooltip = self._mainFrame:WaitForChild("ButtonTooltip")
 
 	self._oxygenBar = self._progressBars:WaitForChild("OxygenMeter"):WaitForChild("BG"):WaitForChild("Amount")
@@ -60,13 +62,16 @@ function new(screenGui)
 
 	self._avatarButton = self._sidebarLeft:WaitForChild("AvatarButton"):WaitForChild("Button")
 	self._emotesButton = self._sidebarLeft:WaitForChild("EmotesButton"):WaitForChild("Button")
+	self._lifeguardButton = self._sidebarRight:WaitForChild("LifeguardButton"):WaitForChild("Button")
 	self._settingsButton = self._sidebarLeft:WaitForChild("SettingsButton"):WaitForChild("Button")
 	self._shopsButton = self._sidebarLeft:WaitForChild("ShopsButton"):WaitForChild("Button")
 
 	local drownTweenInfo : TweenInfo = TweenInfo.new(3, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+	local lifeguardButtonTweenInfo: TweenInfo = TweenInfo.new(8, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, -1)
 
 	self._drownAnimA = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 0})
 	self._drownAnimB = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 1})
+	self._lifeguardSpinTween = TweenService:Create(self._lifeguardButton, lifeguardButtonTweenInfo, {Rotation = 360})
 
 	_connectAnimationHandlers(self)
 	_connectButtonHandlers(self)
@@ -97,14 +102,6 @@ function _connectAnimationHandlers(self)
 	local hrp = character:WaitForChild("HumanoidRootPart")
 	local humanoid = character:WaitForChild("Humanoid")
 
-	local actionKeys: {string: Enum.KeyCode} = {
-		Cannonball = Enum.KeyCode.X,
-		Dive = Enum.KeyCode.C,
-		FrontFlip = Enum.KeyCode.V,
-		BackFlip = Enum.KeyCode.B,
-		Whistle = Enum.KeyCode.N
-	}
-
 	local debounce: boolean = false
 
 	--Animations--
@@ -132,10 +129,6 @@ function _connectAnimationHandlers(self)
 				--actionUI.UIStroke.Enabled = false
 			end
 		end
-	end
-
-	local function diveAnimation(anim)
-		print("dive anim")
 	end
 
 	--Input handler--
@@ -210,6 +203,13 @@ function _connectButtonHandlers(self)
 	self._connectionManager:ConnectToEvent(self._emotesButton.MouseMoved, setTooltipPosition)
 	self._connectionManager:ConnectToEvent(self._emotesButton.MouseLeave, hideTooltip)
 
+	--Lifeguard
+	self._connectionManager:ConnectToEvent(self._lifeguardButton.MouseButton1Click, function()
+		MarketplaceService:PromptGamePassPurchase(LocalPlayer, LIFEGUARD_GAMEPASS_ID)
+	end)
+
+	self._lifeguardSpinTween:Play()
+
 	--Settings
 	self._connectionManager:ConnectToEvent(self._settingsButton.MouseButton1Click, function()
 		self.SettingsButtonEvent:Fire()
@@ -251,7 +251,6 @@ function _connectMeterHandlers(self)
 		local oxLev: number = self._oxygenVal.Value
 		local scaled = (oxLev / MAX_OXYGEN)--math.clamp(oxLev / 100, 0, 1)
 		self._oxygenBar:TweenSize(UDim2.fromScale(scaled, 1), Enum.EasingDirection.InOut, Enum.EasingStyle.Sine, 0.5)
-		--self._oxygenBar.Size = UDim2.new(scaled, 0, 1, 0)
 
 		if oxLev <= 0 then
 			self._drownFrame.Visible = true
@@ -270,7 +269,6 @@ function _connectMeterHandlers(self)
 		local waterLev: number = self._waterVal.Value
 		local scaled = (waterLev / MAX_WATER)--math.clamp(waterLev / 100, 0, 1)
 		self._waterBar:TweenSize(UDim2.fromScale(scaled, 1), Enum.EasingDirection.InOut, Enum.EasingStyle.Sine, 0.5)
-		--self._waterBar.Size = UDim2.new(scaled, 0, 1, 0)
 	end
 
 	--Listeners
