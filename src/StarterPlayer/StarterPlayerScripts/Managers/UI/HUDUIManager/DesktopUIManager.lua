@@ -26,6 +26,7 @@ local DEFAULT_WALKSPEED: number = 16
 local LIFEGUARD_GAMEPASS_ID = 703084245
 local MAX_OXYGEN: number = 100
 local MAX_WATER: number = 100
+local UI_NAME: string = "Desktop"
 
 local UIManager = {}
 UIManager.__index = UIManager
@@ -35,7 +36,7 @@ function new(screenGui)
 	local self = setmetatable({}, UIManager)
 
 	-- Dependency group 0
-	self._mainFrame = screenGui:WaitForChild("Desktop")
+	self._mainFrame = screenGui:WaitForChild(UI_NAME)
 	self._connectionManager = ConnectionManager.new()
 
 	-- Dependency group 1
@@ -248,7 +249,6 @@ function _connectMeterHandlers(self)
 		local oxLev: number = self._oxygenVal.Value
 		local scaled = (oxLev / MAX_OXYGEN)--math.clamp(oxLev / 100, 0, 1)
 		self._oxygenBar:TweenSize(UDim2.fromScale(scaled, 1), Enum.EasingDirection.InOut, Enum.EasingStyle.Sine, 0.5)
-		--self._oxygenBar.Size = UDim2.new(scaled, 0, 1, 0)
 
 		if oxLev <= 0 then
 			self._drownFrame.Visible = true
@@ -267,7 +267,6 @@ function _connectMeterHandlers(self)
 		local waterLev: number = self._waterVal.Value
 		local scaled = (waterLev / MAX_WATER)--math.clamp(waterLev / 100, 0, 1)
 		self._waterBar:TweenSize(UDim2.fromScale(scaled, 1), Enum.EasingDirection.InOut, Enum.EasingStyle.Sine, 0.5)
-		--self._waterBar.Size = UDim2.new(scaled, 0, 1, 0)
 	end
 
 	--Listeners
