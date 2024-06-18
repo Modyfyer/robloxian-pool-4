@@ -93,80 +93,80 @@ end
 
 function _connectAnimationHandlers(self)
 	--Character declarations
-	local character = LocalPlayer.Character
-	local hrp = character:WaitForChild("HumanoidRootPart")
-	local humanoid = character:WaitForChild("Humanoid")
+	-- local character = LocalPlayer.Character
+	-- local hrp = character:WaitForChild("HumanoidRootPart")
+	-- local humanoid = character:WaitForChild("Humanoid")
 
-	local actionKeys: {string: Enum.KeyCode} = {
-		Cannonball = Enum.KeyCode.X,
-		Dive = Enum.KeyCode.C,
-		FrontFlip = Enum.KeyCode.V,
-		BackFlip = Enum.KeyCode.B,
-		Whistle = Enum.KeyCode.N
-	}
+	-- local actionKeys: {string: Enum.KeyCode} = {
+	-- 	Cannonball = Enum.KeyCode.X,
+	-- 	Dive = Enum.KeyCode.C,
+	-- 	FrontFlip = Enum.KeyCode.V,
+	-- 	BackFlip = Enum.KeyCode.B,
+	-- 	Whistle = Enum.KeyCode.N
+	-- }
 
-	local debounce: boolean = false
+	-- local debounce: boolean = false
 
 	--Animations--
-	local function cannonballAnimation(anim: Animation, action: Enum.KeyCode)
-		if not debounce then
-			if humanoid.Sit == false then
-				debounce = true
-				local animTrack = humanoid:LoadAnimation(anim)
-				local force = Instance.new("VectorForce")
+	-- local function cannonballAnimation(anim: Animation, action: Enum.KeyCode)
+	-- 	if not debounce then
+	-- 		if humanoid.Sit == false then
+	-- 			debounce = true
+	-- 			local animTrack = humanoid:LoadAnimation(anim)
+	-- 			local force = Instance.new("VectorForce")
 
-				force.Parent = hrp
-				force.Force = Vector3.new(0, 4500, -1200)
-				force.ApplyAtCenterOfMass = true
-				force.Attachment0 = hrp:FindFirstChildWhichIsA("Attachment")
+	-- 			force.Parent = hrp
+	-- 			force.Force = Vector3.new(0, 4500, -1200)
+	-- 			force.ApplyAtCenterOfMass = true
+	-- 			force.Attachment0 = hrp:FindFirstChildWhichIsA("Attachment")
 
-				animTrack:Play()
-				humanoid.Sit = true
+	-- 			animTrack:Play()
+	-- 			humanoid.Sit = true
 
-				--actionUI.UIStroke.Enabled = true
-				task.wait(.5)
-				force:Destroy()
-				task.wait(3)
-				debounce = false
+	-- 			--actionUI.UIStroke.Enabled = true
+	-- 			task.wait(.5)
+	-- 			force:Destroy()
+	-- 			task.wait(3)
+	-- 			debounce = false
 
-				--actionUI.UIStroke.Enabled = false
-			end
-		end
-	end
+	-- 			--actionUI.UIStroke.Enabled = false
+	-- 		end
+	-- 	end
+	-- end
 
-	local function diveAnimation(anim)
-		print("dive anim")
-	end
+	-- local function diveAnimation(anim)
+	-- 	print("dive anim")
+	-- end
 
 	--Input handler--
-	local function onInputBegan(input)
-		if input.UserInputType ~= Enum.UserInputType.Keyboard then
-			return
-		end
-		local keycode: string = input.KeyCode.Name
+	-- local function onInputBegan(input)
+	-- 	if input.UserInputType ~= Enum.UserInputType.Keyboard then
+	-- 		return
+	-- 	end
+	-- 	--local keycode: string = input.KeyCode.Name
 
-		-- if not self.actionSelected then
-		-- 	for _, action: Frame in pairs(actionKeys) do
-		-- 		if action:GetAttribute("Keybind") == keycode then
-		-- 			--Find the animation that matches the keybind
-		-- 			for _, anim: Animation in pairs(self._actionsAnimations:GetChildren()) do
-		-- 				local keybind: string? = anim:GetAttribute("Keybind")
-		-- 				if keybind == keycode then
-		-- 					if keybind == "X" then
-		-- 						cannonballAnimation(anim, action)
-		-- 					elseif keybind == "C" then
-		-- 						diveAnimation(anim)
-		-- 					end
-		-- 				end
-		-- 			end
-		-- 		end
-		-- 	end
-		-- end
-	end
+	-- 	-- if not self.actionSelected then
+	-- 	-- 	for _, action: Frame in pairs(actionKeys) do
+	-- 	-- 		if action:GetAttribute("Keybind") == keycode then
+	-- 	-- 			--Find the animation that matches the keybind
+	-- 	-- 			for _, anim: Animation in pairs(self._actionsAnimations:GetChildren()) do
+	-- 	-- 				local keybind: string? = anim:GetAttribute("Keybind")
+	-- 	-- 				if keybind == keycode then
+	-- 	-- 					if keybind == "X" then
+	-- 	-- 						cannonballAnimation(anim, action)
+	-- 	-- 					elseif keybind == "C" then
+	-- 	-- 						diveAnimation(anim)
+	-- 	-- 					end
+	-- 	-- 				end
+	-- 	-- 			end
+	-- 	-- 		end
+	-- 	-- 	end
+	-- 	-- end
+	-- end
 
-	self._connectionManager:ConnectToEvent(UserInputService.InputBegan, function(input)
-		onInputBegan(input)
-	end)
+	-- self._connectionManager:ConnectToEvent(UserInputService.InputBegan, function(input)
+	-- 	onInputBegan(input)
+	-- end)
 end
 
 function _connectButtonHandlers(self)

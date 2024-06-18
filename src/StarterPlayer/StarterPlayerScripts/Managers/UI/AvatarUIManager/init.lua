@@ -7,11 +7,17 @@ Initialized by: ClientInit
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local LocalPlayer = Players.LocalPlayer
+local LocalPlayer: Player = Players.LocalPlayer
 
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
 local PlatformType = require(LocalPlayer.PlayerScripts.Managers.PlatformDetectionManager.PlatformType)
 
+--Declarations
+local BindableEvents: Folder = ReplicatedStorage:WaitForChild("BindableEvents")
+local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
+local RemoteFunctions: Folder = ReplicatedStorage:WaitForChild("RemoteFunctions")
+
+--Constants
 local UI_NAME = "AvatarGui"
 
 local AvatarUIManager = {}
@@ -45,6 +51,9 @@ function new(hudUIManager, platformDetectionManager)
 	self._platformDetectionManager = platformDetectionManager
 	self._platformSpecificUIManagers = platformSpecificUIManagers
 	self._screenGui = screenGui
+	
+	self.State = false
+	self.AvatarButtonPressed = BindableEvents:WaitForChild("AvatarButtonPressed") :: BindableEvent
 
 	_connectHandlers(self)
 
@@ -83,8 +92,17 @@ function _connectHandlers(self)
 		end
 	end
 
+	local function onAvatarButtonPressed()
+		if not self.State then
+			self:Show()
+		else
+			self:Hide()
+		end
+	end
+
 	--Listeners
 	self._connectionManager:ConnectToEvent(self._platformDetectionManager.DetectedPlatformTypeChanged, onDetectedPlatformTypeChanged)
+	self._connectionManager:ConnectToEvent(self.AvatarButtonPressed.Event, onAvatarButtonPressed)
 end
 
 --Helper function for applying a function to every platform specific UI manager

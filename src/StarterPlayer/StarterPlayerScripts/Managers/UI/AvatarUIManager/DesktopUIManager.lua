@@ -8,16 +8,17 @@ Initialized by: AvatarUIManager
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
 
 --Modules
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
 
 --Declarations
-local LocalPlayer = Players.LocalPlayer
+--local LocalPlayer = Players.LocalPlayer
 
 local BindableEvents: Folder = ReplicatedStorage:WaitForChild("BindableEvents")
-local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
+--local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
+
+local menuTween: TweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
 
 local UIManager = {}
 UIManager.__index = UIManager
@@ -60,7 +61,6 @@ end
 -- Handles event connections
 function _connectHandlers(self)
 	local debounce: boolean = false
-	local menuTween = TweenInfo.new(0.45, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
 	local openTween = TweenService:Create(self._background.UIScale, menuTween, {Scale = 1})
 	local closeTween = TweenService:Create(self._background.UIScale, menuTween, {Scale = 0})
 	closeTween.Completed:Connect(function()
