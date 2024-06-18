@@ -1,5 +1,5 @@
 --[[--<<---------------------------------------------------->>--
-Module purpose: Handles the HUD UI for desktop
+Module purpose: Handles the HUD UI for mobile
 
 Initialized by: HUDUIManager
 --]]--<<---------------------------------------------------->>--
@@ -13,11 +13,10 @@ local UserInputService = game:GetService("UserInputService")
 
 --Modules
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
-local Event = require(ReplicatedStorage.Utils.Event)
 
-
+--Declarations
 local BindableEvents: Folder = ReplicatedStorage:WaitForChild("BindableEvents")
-local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
+--local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
 
 local LocalPlayer = Players.LocalPlayer
 local LocalChar = LocalPlayer.Character
@@ -69,9 +68,11 @@ function new(screenGui)
 	self._shopsButton = self._sidebarLeft:WaitForChild("ShopsButton"):WaitForChild("Button")
 
 	local drownTweenInfo : TweenInfo = TweenInfo.new(3, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+	local lifeguardButtonTweenInfo: TweenInfo = TweenInfo.new(8, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, -1)
 
 	self._drownAnimA = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 0})
 	self._drownAnimB = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 1})
+	self._lifeguardSpinTween = TweenService:Create(self._lifeguardButton, lifeguardButtonTweenInfo, {Rotation = 360})
 
 	_connectAnimationHandlers(self)
 	_connectButtonHandlers(self)
@@ -98,38 +99,38 @@ end
 
 function _connectAnimationHandlers(self)
 	--Character declarations
-	local character = LocalPlayer.Character
-	local hrp = character:WaitForChild("HumanoidRootPart")
-	local humanoid = character:WaitForChild("Humanoid")
+	-- local character = LocalPlayer.Character
+	-- local hrp = character:WaitForChild("HumanoidRootPart")
+	-- local humanoid = character:WaitForChild("Humanoid")
 
-	local debounce: boolean = false
+	-- local debounce: boolean = false
 
 	--Animations--
-	local function cannonballAnimation(anim: Animation, action: Enum.KeyCode)
-		if not debounce then
-			if humanoid.Sit == false then
-				debounce = true
-				local animTrack = humanoid:LoadAnimation(anim)
-				local force = Instance.new("VectorForce")
+	-- local function cannonballAnimation(anim: Animation, action: Enum.KeyCode)
+	-- 	if not debounce then
+	-- 		if humanoid.Sit == false then
+	-- 			debounce = true
+	-- 			local animTrack = humanoid:LoadAnimation(anim)
+	-- 			local force = Instance.new("VectorForce")
 
-				force.Parent = hrp
-				force.Force = Vector3.new(0, 4500, -1200)
-				force.ApplyAtCenterOfMass = true
-				force.Attachment0 = hrp:FindFirstChildWhichIsA("Attachment")
+	-- 			force.Parent = hrp
+	-- 			force.Force = Vector3.new(0, 4500, -1200)
+	-- 			force.ApplyAtCenterOfMass = true
+	-- 			force.Attachment0 = hrp:FindFirstChildWhichIsA("Attachment")
 
-				animTrack:Play()
-				humanoid.Sit = true
+	-- 			animTrack:Play()
+	-- 			humanoid.Sit = true
 
-				--actionUI.UIStroke.Enabled = true
-				task.wait(.5)
-				force:Destroy()
-				task.wait(3)
-				debounce = false
+	-- 			--actionUI.UIStroke.Enabled = true
+	-- 			task.wait(.5)
+	-- 			force:Destroy()
+	-- 			task.wait(3)
+	-- 			debounce = false
 
-				--actionUI.UIStroke.Enabled = false
-			end
-		end
-	end
+	-- 			--actionUI.UIStroke.Enabled = false
+	-- 		end
+	-- 	end
+	-- end
 
 	--Input handler--
 	local function onInputBegan(input)
@@ -145,70 +146,34 @@ function _connectAnimationHandlers(self)
 end
 
 function _connectButtonHandlers(self)
-	--Tooltip--
-	local function showTooltip(x: number, y: number, text: string)
-		local OFFSET = 50
-		self._tooltip.Position = UDim2.new(0, x + OFFSET, 0, y + OFFSET)
-		self._tooltip.Visible = true
-		self._tooltip.Tooltip.Text = text
-	end
-
-	local function setTooltipPosition(x: number, y: number)
-		self._tooltip.Position = UDim2.new(0, x, 0, y)
-	end
-
-	local function hideTooltip()
-		self._tooltip.Position = UDim2.new(0.5,0,0.5,0)
-		self._tooltip.Tooltip.Text = ""
-		self._tooltip.Visible = false
-	end
-
 	-------------------Listeners-----------------
 	----Sidebar Left----
 	--Avatar
 	self._connectionManager:ConnectToEvent(self._avatarButton.MouseButton1Click, function()
 		self.AvatarButtonEvent:Fire()
 	end)
-	self._connectionManager:ConnectToEvent(self._avatarButton.MouseEnter, function(x, y)
-		showTooltip(x, y, "Avatar")
-	end)
-	self._connectionManager:ConnectToEvent(self._avatarButton.MouseMoved, setTooltipPosition)
-	self._connectionManager:ConnectToEvent(self._avatarButton.MouseLeave, hideTooltip)
 
 	--Emotes
 	self._connectionManager:ConnectToEvent(self._emotesButton.MouseButton1Click, function()
 		self.EmotesButtonEvent:Fire()
 	end)
-	self._connectionManager:ConnectToEvent(self._emotesButton.MouseEnter, function(x, y)
-		showTooltip(x, y, "Emotes")
-	end)
-	self._connectionManager:ConnectToEvent(self._emotesButton.MouseMoved, setTooltipPosition)
-	self._connectionManager:ConnectToEvent(self._emotesButton.MouseLeave, hideTooltip)
 
 	--Lifeguard
 	self._connectionManager:ConnectToEvent(self._lifeguardButton.MouseButton1Click, function()
 		MarketplaceService:PromptGamePassPurchase(LocalPlayer, LIFEGUARD_GAMEPASS_ID)
 	end)
 
+	self._lifeguardSpinTween:Play()
+
 	--Settings
 	self._connectionManager:ConnectToEvent(self._settingsButton.MouseButton1Click, function()
 		self.SettingsButtonEvent:Fire()
 	end)
-	-- self._connectionManager:ConnectToEvent(self._settingsButton.MouseEnter, function(x, y)
-	-- 	showTooltip(x, y, "Settings")
-	-- end)
-	-- self._connectionManager:ConnectToEvent(self._settingsButton.MouseMoved, setTooltipPosition)
-	-- self._connectionManager:ConnectToEvent(self._settingsButton.MouseLeave, hideTooltip)
 
 	--Shops
 	self._connectionManager:ConnectToEvent(self._shopsButton.MouseButton1Click, function()
 		self.ShopsButtonEvent:Fire()
 	end)
-	-- self._connectionManager:ConnectToEvent(self._shopsButton.MouseEnter, function(x, y)
-	-- 	showTooltip(x, y, "Shops")
-	-- end)
-	-- self._connectionManager:ConnectToEvent(self._shopsButton.MouseMoved, setTooltipPosition)
-	-- self._connectionManager:ConnectToEvent(self._shopsButton.MouseLeave, hideTooltip)
 end
 
 function _connectMeterHandlers(self)

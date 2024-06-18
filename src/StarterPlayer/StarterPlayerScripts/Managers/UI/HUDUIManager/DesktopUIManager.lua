@@ -13,11 +13,9 @@ local UserInputService = game:GetService("UserInputService")
 
 --Modules
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
-local Event = require(ReplicatedStorage.Utils.Event)
-
 
 local BindableEvents: Folder = ReplicatedStorage:WaitForChild("BindableEvents")
-local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
+--local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
 
 local LocalPlayer = Players.LocalPlayer
 local LocalChar = LocalPlayer.Character
@@ -69,9 +67,11 @@ function new(screenGui)
 	self._shopsButton = self._sidebarLeft:WaitForChild("ShopsButton"):WaitForChild("Button")
 
 	local drownTweenInfo : TweenInfo = TweenInfo.new(3, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+	local lifeguardButtonTweenInfo: TweenInfo = TweenInfo.new(8, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, -1)
 
 	self._drownAnimA = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 0})
 	self._drownAnimB = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 1})
+	self._lifeguardSpinTween = TweenService:Create(self._lifeguardButton, lifeguardButtonTweenInfo, {Rotation = 360})
 
 	_connectAnimationHandlers(self)
 	_connectButtonHandlers(self)
@@ -207,6 +207,8 @@ function _connectButtonHandlers(self)
 	self._connectionManager:ConnectToEvent(self._lifeguardButton.MouseButton1Click, function()
 		MarketplaceService:PromptGamePassPurchase(LocalPlayer, LIFEGUARD_GAMEPASS_ID)
 	end)
+
+	self._lifeguardSpinTween:Play()
 
 	--Settings
 	self._connectionManager:ConnectToEvent(self._settingsButton.MouseButton1Click, function()
