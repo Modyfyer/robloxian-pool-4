@@ -54,6 +54,7 @@ function new(hudUIManager, platformDetectionManager)
 	self._screenGui = screenGui
 
 	self.ShopsButtonPressed = BindableEvents:WaitForChild("ShopsButtonPressed") :: BindableEvent
+	self.ShopsMenuClosed = BindableEvents:WaitForChild("ShopsMenuClosed") :: BindableEvent
 	self.State = false
 
 	_connectHandlers(self)
@@ -92,8 +93,8 @@ function _connectHandlers(self)
 		end
 	end
 
-	local function onShopsButtonPressed()
-		if not self.State then
+	local function onShopsButtonPressed(state: boolean?)
+		if state then
 			self:Show()
 		else
 			self:Hide()
@@ -103,6 +104,9 @@ function _connectHandlers(self)
 	--Listeners
 	self._connectionManager:ConnectToEvent(self._platformDetectionManager.DetectedPlatformTypeChanged, onDetectedPlatformTypeChanged)
 	self._connectionManager:ConnectToEvent(self.ShopsButtonPressed.Event, onShopsButtonPressed)
+	self._connectionManager:ConnectToEvent(self.ShopsMenuClosed.Event, function()
+		onShopsButtonPressed(false)
+	end)
 end
 
 --Helper function for applying a function to every platform specific UI manager

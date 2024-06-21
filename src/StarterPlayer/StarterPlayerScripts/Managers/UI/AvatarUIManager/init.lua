@@ -51,9 +51,10 @@ function new(hudUIManager, platformDetectionManager)
 	self._platformDetectionManager = platformDetectionManager
 	self._platformSpecificUIManagers = platformSpecificUIManagers
 	self._screenGui = screenGui
-	
+
 	self.State = false
 	self.AvatarButtonPressed = BindableEvents:WaitForChild("AvatarButtonPressed") :: BindableEvent
+	self.AvatarMenuClosed = BindableEvents:WaitForChild("AvatarMenuClosed") :: BindableEvent
 
 	_connectHandlers(self)
 
@@ -69,6 +70,8 @@ function AvatarUIManager:Hide()
 	_iterateOverAllPlatformSpecificUIManagers(self, function (_, platformSpecificUIManager)
 		platformSpecificUIManager:Hide()
 	end)
+
+	self.State = false
 end
 
 --[[**
@@ -77,6 +80,7 @@ end
 function AvatarUIManager:Show()
 	self._screenGui.Enabled = true
 	_showAppropriatePlatformSpecificUIManager(self)
+	self.State = true
 end
 
 --[[ Private functions ]]--
@@ -92,8 +96,8 @@ function _connectHandlers(self)
 		end
 	end
 
-	local function onAvatarButtonPressed()
-		if not self.State then
+	local function onAvatarButtonPressed(state: boolean?)
+		if state then
 			self:Show()
 		else
 			self:Hide()
@@ -103,6 +107,9 @@ function _connectHandlers(self)
 	--Listeners
 	self._connectionManager:ConnectToEvent(self._platformDetectionManager.DetectedPlatformTypeChanged, onDetectedPlatformTypeChanged)
 	self._connectionManager:ConnectToEvent(self.AvatarButtonPressed.Event, onAvatarButtonPressed)
+	self._connectionManager:ConnectToEvent(self.AvatarMenuClosed.Event, function()
+		onAvatarButtonPressed(false)
+	end)
 end
 
 --Helper function for applying a function to every platform specific UI manager
