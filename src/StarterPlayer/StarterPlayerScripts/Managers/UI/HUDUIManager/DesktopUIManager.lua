@@ -194,12 +194,32 @@ function _connectButtonHandlers(self)
 		self._tooltip.Visible = false
 	end
 
+	--Menus
+	local function hideUIs(uiToShow: string)
+		for ui: string, state: boolean in pairs(self.States) do
+			if (ui ~= uiToShow) and state then
+				self.States[ui] = false
+				if ui == "avatar" then
+					self.AvatarButtonPressed:Fire(self.States[ui])
+				elseif ui == "emotes" then
+					self.EmotesButtonPressed:Fire(self.States[ui])
+				elseif ui == "settings" then
+					self.SettingsButtonPressed:Fire(self.States[ui])
+				elseif ui == "shops" then
+					self.ShopsButtonPressed:Fire(self.States[ui])
+				end
+			end
+		end
+	end
+
 	-------------------Listeners-----------------
 	----Sidebar Left----
 	--Avatar
 	self._connectionManager:ConnectToEvent(self._avatarButton.MouseButton1Click, function()
-		self.States["avatar"] = not self.States["avatar"]
-		self.AvatarButtonPressed:Fire(self.States["avatar"])
+		local menu: string = "avatar"
+		self.States[menu] = not self.States[menu]
+		self.AvatarButtonPressed:Fire(self.States[menu])
+		hideUIs(menu)
 	end)
 	self._connectionManager:ConnectToEvent(self._avatarButton.MouseEnter, function(x, y)
 		showTooltip(x, y, "Avatar")
@@ -212,8 +232,10 @@ function _connectButtonHandlers(self)
 
 	--Emotes
 	self._connectionManager:ConnectToEvent(self._emotesButton.MouseButton1Click, function()
-		self.States["emotes"] = not self.States["emotes"]
-		self.EmotesButtonPressed:Fire(self.States["emotes"])
+		local menu: string = "emotes"
+		self.States[menu] = not self.States[menu]
+		self.EmotesButtonPressed:Fire(self.States[menu])
+		hideUIs(menu)
 	end)
 	self._connectionManager:ConnectToEvent(self._emotesButton.MouseEnter, function(x, y)
 		showTooltip(x, y, "Emotes")
@@ -233,8 +255,10 @@ function _connectButtonHandlers(self)
 
 	--Settings
 	self._connectionManager:ConnectToEvent(self._settingsButton.MouseButton1Click, function()
-		self.States["settings"] = not self.States["settings"]
-		self.SettingsButtonPressed:Fire(self.States["settings"])
+		local menu: string = "settings"
+		self.States[menu] = not self.States[menu]
+		self.SettingsButtonPressed:Fire(self.States[menu])
+		hideUIs(menu)
 	end)
 	self._connectionManager:ConnectToEvent(self.SettingsMenuClosed.Event, function()
 		self.States["settings"] = false
@@ -247,8 +271,10 @@ function _connectButtonHandlers(self)
 
 	--Shops
 	self._connectionManager:ConnectToEvent(self._shopsButton.MouseButton1Click, function()
-		self.States["shops"] = not self.States["shops"]
-		self.ShopsButtonPressed:Fire(self.States["shops"])
+		local menu: string = "shops"
+		self.States[menu] = not self.States[menu]
+		self.ShopsButtonPressed:Fire(self.States[menu])
+		hideUIs(menu)
 	end)
 	self._connectionManager:ConnectToEvent(self.ShopsMenuClosed.Event, function()
 		self.States["shops"] = false
