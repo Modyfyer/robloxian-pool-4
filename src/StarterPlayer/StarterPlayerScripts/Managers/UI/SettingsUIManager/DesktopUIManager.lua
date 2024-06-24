@@ -32,23 +32,19 @@ function new(screenGui)
 
 	self._screenGui = screenGui
 
-	self._mainFrame = screenGui:WaitForChild("Desktop")
+	self._mainFrame = screenGui:WaitForChild("Desktop") :: Frame
 
 	self._connectionManager = ConnectionManager.new()
 	local playerSettings: SharedSettings.hudSettings = {}
 	self._settings = playerSettings
 
-	self._background = self._mainFrame:WaitForChild("BG")
+	self._background = self._mainFrame:WaitForChild("BG") :: Frame
 
-	self._closeButton = self._background:WaitForChild("CloseButton")
-	self._settingsContainer = self._background:WaitForChild("ScrollingFrame")
+	self._closeButton = self._background:WaitForChild("CloseButton") :: GuiButton
+	self._settingsContainer = self._background:WaitForChild("ScrollingFrame") :: ScrollingFrame
 
-	self.SettingsButtonPressed = BindableEvents:WaitForChild("SettingsButtonPressed")
-
-	local openTween: Tween = TweenService:Create(self._background.UIScale, menuTween, {Scale = 1})
-	local closeTween: Tween = TweenService:Create(self._background.UIScale, menuTween, {Scale = 0})
-	self._openTween = openTween
-	self._closeTween = closeTween
+	self.SettingsButtonPressed = BindableEvents:WaitForChild("SettingsButtonPressed") :: BindableEvent
+	self.SettingsMenuClosed = BindableEvents:WaitForChild("SettingsMenuClosed") :: BindableEvent
 
 	_connectHandlers(self)
 
@@ -57,41 +53,45 @@ end
 
 --Hides UI and removes connections
 function UIManager:Hide()
-	self._connectionManager:ConnectToEvent(self._closeTween.Completed, function()
-		self._mainFrame.Visible = false
-		self._connectionManager:DisconnectAll()
-	end)
-	self._closeTween:Play()
+	self._mainFrame.Visible = false
 end
 
 --Shows UI and creates connections
 function UIManager:Show()
-	self._connectionManager:ConnectAll()
 	self._mainFrame.Visible = true
-	self._openTween:Play()
-end
-
-
-function UIManager:Clear()
-	self._mainFrame.Visible = false
-	self._background.UIScale.Scale = 0
-end
-
-function UIManager:GetState()
-	return self._mainFrame.Visible
 end
 
 --[[ Private functions ]]--
 
 -- Handles event connections
 function _connectHandlers(self)
-	self._connectionManager:ConnectToEvent(self._closeTween.Completed, function()
-		self._mainFrame.Visible = false
-	end)
+	local debounce: boolean = false
+	local openTween = TweenService:Create(self._background.UIScale, menuTween, {Scale = 1})
+	local closeTween = TweenService:Create(self._background.UIScale, menuTween, {Scale = 0})
+
+	local function onSettingsButtonPressed(state: boolean?)
+		if debounce then return end
+		debounce = true
+		if state then
+			openTween:Play()
+		else
+			closeTween:Play()
+		end
+		task.wait(0.1)
+		debounce = false
+	end
+
+	self._connectionManager:ConnectToEvent(self.SettingsButtonPressed.Event, onSettingsButtonPressed)
+
 	self._connectionManager:ConnectToEvent(self._closeButton.MouseButton1Click, function()
-		self:Hide()
+		onSettingsButtonPressed()
 		_saveSettings(self)
 	end)
+
+	self._connectionManager:ConnectToEvent(closeTween.Completed, function()
+		self.SettingsMenuClosed:Fire()
+	end)
+
 	self._connectionManager:ConnectToEvent(RemoteEvents.LoadHUDSettings.OnClientEvent, function(settings)
 		self._settings = settings
 		_loadSettings(self)

@@ -35,44 +35,56 @@ function new(screenGui)
 	local self = setmetatable({}, UIManager)
 
 	-- Dependency group 0
-	self._mainFrame = screenGui:WaitForChild(UI_NAME)
+	self._mainFrame = screenGui:WaitForChild(UI_NAME) :: Frame
 	self._connectionManager = ConnectionManager.new()
 
 	-- Dependency group 1
-	self._actionsMenu = self._mainFrame:WaitForChild("ActionsMenu")
-	self._drownFrame = self._mainFrame:WaitForChild("DrownAnim")
-	self._progressBars = self._mainFrame:WaitForChild("ProgressBars")
-	self._sidebarLeft = self._mainFrame:WaitForChild("SidebarLeft")
-	self._sidebarRight = self._mainFrame:WaitForChild("SidebarRight")
-	self._tooltip = self._mainFrame:WaitForChild("ButtonTooltip")
+	self._actionsMenu = self._mainFrame:WaitForChild("ActionsMenu") :: Frame
+	self._drownFrame = self._mainFrame:WaitForChild("DrownAnim") :: Frame
+	self._progressBars = self._mainFrame:WaitForChild("ProgressBars") :: Frame
+	self._sidebarLeft = self._mainFrame:WaitForChild("SidebarLeft") :: Frame
+	self._sidebarRight = self._mainFrame:WaitForChild("SidebarRight") :: Frame
 
-	self._oxygenBar = self._progressBars:WaitForChild("OxygenMeter"):WaitForChild("BG"):WaitForChild("Amount")
+	self._oxygenBar = self._progressBars:WaitForChild("OxygenMeter"):WaitForChild("BG"):WaitForChild("Amount") :: ImageLabel
 	self._oxygenVal = LocalChar:WaitForChild("Oxygen")
 
-	self._waterBar = self._progressBars:WaitForChild("WaterMeter"):WaitForChild("BG"):WaitForChild("Amount")
+	self._waterBar = self._progressBars:WaitForChild("WaterMeter"):WaitForChild("BG"):WaitForChild("Amount") :: ImageLabel
 	self._waterVal = LocalChar:WaitForChild("Water")
 
-	self.AvatarButtonEvent = BindableEvents:WaitForChild("AvatarButtonPressed")
-	self.EmotesButtonEvent = BindableEvents:WaitForChild("EmotesButtonPressed")
-	self.SettingsButtonEvent = BindableEvents:WaitForChild("SettingsButtonPressed")
-	self.ShopsButtonEvent = BindableEvents:WaitForChild("ShopsButtonPressed")
+	self.AvatarButtonPressed = BindableEvents:WaitForChild("AvatarButtonPressed") :: BindableEvent
+	self.EmotesButtonPressed = BindableEvents:WaitForChild("EmotesButtonPressed") :: BindableEvent
+	self.SettingsButtonPressed = BindableEvents:WaitForChild("SettingsButtonPressed") :: BindableEvent
+	self.ShopsButtonPressed = BindableEvents:WaitForChild("ShopsButtonPressed") :: BindableEvent
+
+	self.AvatarMenuClosed = BindableEvents:WaitForChild("AvatarMenuClosed") :: BindableEvent
+	self.EmotesMenuClosed = BindableEvents:WaitForChild("EmotesMenuClosed") :: BindableEvent
+	self.SettingsMenuClosed = BindableEvents:WaitForChild("SettingsMenuClosed") :: BindableEvent
+	self.ShopsMenuClosed = BindableEvents:WaitForChild("ShopsMenuClosed") :: BindableEvent
 
 	-- Dependency group 2
 	-- self._actions = self._actionsMenu:WaitForChild("BG"):WaitForChild("Actions")
-	self._actionsAnimations = self._actionsMenu:WaitForChild("Animations")
+	self._actionsAnimations = self._actionsMenu:WaitForChild("Animations") :: Folder
 
-	self._avatarButton = self._sidebarLeft:WaitForChild("AvatarButton"):WaitForChild("Button")
-	self._emotesButton = self._sidebarLeft:WaitForChild("EmotesButton"):WaitForChild("Button")
-	self._lifeguardButton = self._sidebarRight:WaitForChild("LifeguardButton"):WaitForChild("Button")
-	self._settingsButton = self._sidebarLeft:WaitForChild("SettingsButton"):WaitForChild("Button")
-	self._shopsButton = self._sidebarLeft:WaitForChild("ShopsButton"):WaitForChild("Button")
+	self._avatarButton = self._sidebarLeft:WaitForChild("AvatarButton"):WaitForChild("Button") :: GuiButton
+	self._emotesButton = self._sidebarLeft:WaitForChild("EmotesButton"):WaitForChild("Button") :: GuiButton
+	self._lifeguardButton = self._sidebarRight:WaitForChild("LifeguardButton"):WaitForChild("Button") :: GuiButton
+	self._settingsButton = self._sidebarLeft:WaitForChild("SettingsButton"):WaitForChild("Button") :: GuiButton
+	self._shopsButton = self._sidebarLeft:WaitForChild("ShopsButton"):WaitForChild("Button") :: GuiButton
 
 	local drownTweenInfo : TweenInfo = TweenInfo.new(3, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
 	local lifeguardButtonTweenInfo: TweenInfo = TweenInfo.new(8, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, -1)
 
-	self._drownAnimA = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 0})
-	self._drownAnimB = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 1})
-	self._lifeguardSpinTween = TweenService:Create(self._lifeguardButton, lifeguardButtonTweenInfo, {Rotation = 360})
+	self._drownAnimA = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 0}) :: Tween
+	self._drownAnimB = TweenService:Create(self._drownFrame, drownTweenInfo, {BackgroundTransparency = 1}) :: Tween
+	self._lifeguardSpinTween = TweenService:Create(self._lifeguardButton, lifeguardButtonTweenInfo, {Rotation = 360}) :: Tween
+
+	local states: {string: boolean} = {
+		avatar = false,
+		emotes = false,
+		shops = false,
+		settings = false
+	}
+	self.States = states
 
 	_connectAnimationHandlers(self)
 	_connectButtonHandlers(self)
@@ -146,16 +158,47 @@ function _connectAnimationHandlers(self)
 end
 
 function _connectButtonHandlers(self)
+	--Menus
+	local function hideUIs(uiToShow: string)
+		for ui: string, state: boolean in pairs(self.States) do
+			if (ui ~= uiToShow) and state then
+				print(self.States[ui])
+				self.States[ui] = false
+				if ui == "avatar" then
+					self.AvatarButtonPressed:Fire(self.States[ui])
+				elseif ui == "emotes" then
+					self.EmotesButtonPressed:Fire(self.States[ui])
+				elseif ui == "settings" then
+					self.SettingsButtonPressed:Fire(self.States[ui])
+				elseif ui == "shops" then
+					self.ShopsButtonPressed:Fire(self.States[ui])
+				end
+			end
+		end
+	end
+
 	-------------------Listeners-----------------
 	----Sidebar Left----
 	--Avatar
 	self._connectionManager:ConnectToEvent(self._avatarButton.MouseButton1Click, function()
-		self.AvatarButtonEvent:Fire()
+		local menu: string = "avatar"
+		self.States[menu] = not self.States[menu]
+		self.AvatarButtonPressed:Fire(self.States[menu])
+		hideUIs(menu)
+	end)
+	self._connectionManager:ConnectToEvent(self.AvatarMenuClosed.Event, function()
+		self.States["avatar"] = false
 	end)
 
 	--Emotes
 	self._connectionManager:ConnectToEvent(self._emotesButton.MouseButton1Click, function()
-		self.EmotesButtonEvent:Fire()
+		local menu: string = "emotes"
+		self.States[menu] = not self.States[menu]
+		self.EmotesButtonPressed:Fire(self.States[menu])
+		hideUIs(menu)
+	end)
+	self._connectionManager:ConnectToEvent(self.EmotesMenuClosed.Event, function()
+		self.States["emotes"] = false
 	end)
 
 	--Lifeguard
@@ -167,12 +210,24 @@ function _connectButtonHandlers(self)
 
 	--Settings
 	self._connectionManager:ConnectToEvent(self._settingsButton.MouseButton1Click, function()
-		self.SettingsButtonEvent:Fire()
+		local menu: string = "settings"
+		self.States[menu] = not self.States[menu]
+		self.SettingsButtonPressed:Fire(self.States[menu])
+		hideUIs(menu)
+	end)
+	self._connectionManager:ConnectToEvent(self.SettingsMenuClosed.Event, function()
+		self.States["settings"] = false
 	end)
 
 	--Shops
 	self._connectionManager:ConnectToEvent(self._shopsButton.MouseButton1Click, function()
-		self.ShopsButtonEvent:Fire()
+		local menu: string = "shops"
+		self.States[menu] = not self.States[menu]
+		self.ShopsButtonPressed:Fire(self.States[menu])
+		hideUIs(menu)
+	end)
+	self._connectionManager:ConnectToEvent(self.ShopsMenuClosed.Event, function()
+		self.States["shops"] = false
 	end)
 end
 

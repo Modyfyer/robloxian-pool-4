@@ -34,57 +34,55 @@ function new(screenGui)
 	self._connectionManager = ConnectionManager.new()
 	self._mainFrame = screenGui:WaitForChild(UI_NAME) :: Frame
 	self.EmotesButtonPressed = BindableEvents:WaitForChild("EmotesButtonPressed") :: BindableEvent
+	self.EmotesMenuClosed = BindableEvents:WaitForChild("EmotesMenuClosed") :: BindableEvent
 
 	self._background = self._mainFrame:WaitForChild("BG") :: Frame
 
 	self._closeButton = self._background:WaitForChild("CloseButton") :: ImageButton
 
-	local openTween: Tween = TweenService:Create(self._background.UIScale, menuTween, {Scale = 1})
-	local closeTween: Tween = TweenService:Create(self._background.UIScale, menuTween, {Scale = 0})
-	self._openTween = openTween
-	self._closeTween = closeTween
-
 	_connectHandlers(self)
+
+	--self._connectionManager:ConnectAll()
 
 	return self
 end
 
 --Hides UI and removes connections
 function UIManager:Hide()
-	self._connectionManager:ConnectToEvent(self._closeTween.Completed, function()
-		self._mainFrame.Visible = false
-		self._connectionManager:DisconnectAll()
-	end)
-	self._closeTween:Play()
+	--self._connectionManager:DisconnectAll()
+	self._mainFrame.Visible = false
 end
 
 --Shows UI and creates connections
 function UIManager:Show()
-	self._connectionManager:ConnectAll()
+	--self._connectionManager:ConnectAll()
 	self._mainFrame.Visible = true
-	self._openTween:Play()
-end
-
---Hides UI and resets to default values
-function UIManager:Clear()
-	self._mainFrame.Visible = false
-	self._background.UIScale.Scale = 0
-end
-
---Returns the visibility of the main UI frame
-function UIManager:GetState()
-	return self._mainFrame.Visible
 end
 
 --[[ Private functions ]]--
 
 -- Handles event connections
 function _connectHandlers(self)
-	self._connectionManager:ConnectToEvent(self._closeTween.Completed, function()
-		self._mainFrame.Visible = false
-	end)
-	self._connectionManager:ConnectToEvent(self._closeButton.MouseButton1Click, function()
-		self:Hide()
+	local debounce: boolean = false
+	local openTween = TweenService:Create(self._background.UIScale, menuTween, {Scale = 1})
+	local closeTween = TweenService:Create(self._background.UIScale, menuTween, {Scale = 0})
+
+	local function onEmotesButtonPressed(state: boolean?)
+		if debounce then return end
+		debounce = true
+		if state then
+			openTween:Play()
+		else
+			closeTween:Play()
+		end
+		task.wait(0.1)
+		debounce = false
+	end
+
+	self._connectionManager:ConnectToEvent(self.EmotesButtonPressed.Event, onEmotesButtonPressed)
+	self._connectionManager:ConnectToEvent(self._closeButton.MouseButton1Click, onEmotesButtonPressed)
+	self._connectionManager:ConnectToEvent(closeTween.Completed, function()
+		self.EmotesMenuClosed:Fire()
 	end)
 end
 

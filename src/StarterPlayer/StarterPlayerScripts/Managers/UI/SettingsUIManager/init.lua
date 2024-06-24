@@ -15,8 +15,8 @@ local PlatformType = require(LocalPlayer.PlayerScripts.Managers.PlatformDetectio
 
 --Declarations
 local BindableEvents: Folder = ReplicatedStorage:WaitForChild("BindableEvents")
-local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
-local RemoteFunctions: Folder = ReplicatedStorage:WaitForChild("RemoteFunctions")
+-- local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
+-- local RemoteFunctions: Folder = ReplicatedStorage:WaitForChild("RemoteFunctions")
 
 local UI_NAME = "SettingsGui"
 
@@ -50,6 +50,7 @@ function new(hudUIManager, platformDetectionManager)
 	self._screenGui = screenGui
 
 	self.SettingsButtonPressed = BindableEvents:WaitForChild("SettingsButtonPressed")
+	self.SettingsMenuClosed = BindableEvents:WaitForChild("SettingsMenuClosed") :: BindableEvent
 	self.State = false
 
 	_connectHandlers(self)
@@ -93,8 +94,8 @@ function _connectHandlers(self)
 		end
 	end
 
-	local function onSettingsButtonPressed()
-		if not self.State then
+	local function onSettingsButtonPressed(state: boolean?)
+		if state then
 			self:Show()
 		else
 			self:Hide()
@@ -104,6 +105,9 @@ function _connectHandlers(self)
 	--Listeners
 	self._connectionManager:ConnectToEvent(self._platformDetectionManager.DetectedPlatformTypeChanged, onDetectedPlatformTypeChanged)
 	self._connectionManager:ConnectToEvent(self.SettingsButtonPressed.Event, onSettingsButtonPressed)
+	self._connectionManager:ConnectToEvent(self.SettingsMenuClosed.Event, function()
+		onSettingsButtonPressed(false)
+	end)
 end
 
 --Helper function for applying a function to every platform specific UI manager

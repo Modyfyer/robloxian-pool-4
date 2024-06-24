@@ -53,7 +53,8 @@ function new(hudUIManager, platformDetectionManager)
 	self._platformSpecificUIManagers = platformSpecificUIManagers
 	self._screenGui = screenGui
 
-	self.ShopsButtonPressed = BindableEvents:WaitForChild("ShopsButtonPressed") :: BindableEvent
+	self.EmotesButtonPressed = BindableEvents:WaitForChild("EmotesButtonPressed") :: BindableEvent
+	self.EmotesMenuClosed = BindableEvents:WaitForChild("EmotesMenuClosed") :: BindableEvent
 	self.State = false
 
 	_connectHandlers(self)
@@ -61,7 +62,7 @@ function new(hudUIManager, platformDetectionManager)
 	return self
 end
 
---Hides the Shops UI
+--Hides the Emotes UI
 function EmotesUIManager:Hide()
 	self._screenGui.Enabled = false
 
@@ -72,7 +73,7 @@ function EmotesUIManager:Hide()
 	self.State = false
 end
 
---Shows the Shops UI
+--Shows the Emotes UI
 function EmotesUIManager:Show()
 	self._screenGui.Enabled = true
 	_showAppropriatePlatformSpecificUIManager(self)
@@ -92,8 +93,8 @@ function _connectHandlers(self)
 		end
 	end
 
-	local function onShopsButtonPressed()
-		if not self.State then
+	local function onEmotesButtonPressed(state: boolean?)
+		if state then
 			self:Show()
 		else
 			self:Hide()
@@ -102,7 +103,10 @@ function _connectHandlers(self)
 
 	--Listeners
 	self._connectionManager:ConnectToEvent(self._platformDetectionManager.DetectedPlatformTypeChanged, onDetectedPlatformTypeChanged)
-	self._connectionManager:ConnectToEvent(self.ShopsButtonPressed.Event, onShopsButtonPressed)
+	self._connectionManager:ConnectToEvent(self.EmotesButtonPressed.Event, onEmotesButtonPressed)
+	self._connectionManager:ConnectToEvent(self.EmotesMenuClosed.Event, function()
+		onEmotesButtonPressed(false)
+	end)
 end
 
 --Helper function for applying a function to every platform specific UI manager
@@ -112,6 +116,7 @@ function _iterateOverAllPlatformSpecificUIManagers(self, callback)
 	end
 end
 
+--Shows/Hides UI based on platform
 function _showAppropriatePlatformSpecificUIManager(self)
 	local currentPlatformType = self._platformDetectionManager:GetCurrentPlatformType()
 

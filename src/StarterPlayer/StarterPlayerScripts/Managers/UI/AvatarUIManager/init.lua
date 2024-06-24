@@ -7,11 +7,17 @@ Initialized by: ClientInit
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local LocalPlayer = Players.LocalPlayer
+local LocalPlayer: Player = Players.LocalPlayer
 
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
 local PlatformType = require(LocalPlayer.PlayerScripts.Managers.PlatformDetectionManager.PlatformType)
 
+--Declarations
+local BindableEvents: Folder = ReplicatedStorage:WaitForChild("BindableEvents")
+local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
+local RemoteFunctions: Folder = ReplicatedStorage:WaitForChild("RemoteFunctions")
+
+--Constants
 local UI_NAME = "AvatarGui"
 
 local AvatarUIManager = {}
@@ -46,6 +52,10 @@ function new(hudUIManager, platformDetectionManager)
 	self._platformSpecificUIManagers = platformSpecificUIManagers
 	self._screenGui = screenGui
 
+	self.State = false
+	self.AvatarButtonPressed = BindableEvents:WaitForChild("AvatarButtonPressed") :: BindableEvent
+	self.AvatarMenuClosed = BindableEvents:WaitForChild("AvatarMenuClosed") :: BindableEvent
+
 	_connectHandlers(self)
 
 	return self
@@ -60,6 +70,8 @@ function AvatarUIManager:Hide()
 	_iterateOverAllPlatformSpecificUIManagers(self, function (_, platformSpecificUIManager)
 		platformSpecificUIManager:Hide()
 	end)
+
+	self.State = false
 end
 
 --[[**
@@ -68,6 +80,7 @@ end
 function AvatarUIManager:Show()
 	self._screenGui.Enabled = true
 	_showAppropriatePlatformSpecificUIManager(self)
+	self.State = true
 end
 
 --[[ Private functions ]]--
@@ -83,8 +96,20 @@ function _connectHandlers(self)
 		end
 	end
 
+	local function onAvatarButtonPressed(state: boolean?)
+		if state then
+			self:Show()
+		else
+			self:Hide()
+		end
+	end
+
 	--Listeners
 	self._connectionManager:ConnectToEvent(self._platformDetectionManager.DetectedPlatformTypeChanged, onDetectedPlatformTypeChanged)
+	self._connectionManager:ConnectToEvent(self.AvatarButtonPressed.Event, onAvatarButtonPressed)
+	self._connectionManager:ConnectToEvent(self.AvatarMenuClosed.Event, function()
+		onAvatarButtonPressed(false)
+	end)
 end
 
 --Helper function for applying a function to every platform specific UI manager

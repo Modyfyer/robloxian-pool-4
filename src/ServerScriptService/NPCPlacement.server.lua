@@ -58,5 +58,6 @@ for _, v in pairs(workspace.NPCSpots:GetChildren()) do
 			tpWeld.C0 = CFrame.new(0, 1.5, 0)
 			tpWeld.Parent = talkPart
 		end)
+		task.wait(0.4)
 	end
 end
