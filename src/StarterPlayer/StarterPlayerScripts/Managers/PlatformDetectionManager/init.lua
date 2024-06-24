@@ -11,6 +11,7 @@ Initialized by: ClientInit
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local VRService = game:GetService("VRService")
 
 local Event = require(ReplicatedStorage.Utils.Event)
 local PlatformType = require(script.PlatformType)
@@ -37,6 +38,10 @@ local _USER_INPUT_TYPES_BY_PLATFORM_TYPE = {
 	[PlatformType.Mobile] = {
 		Enum.UserInputType.Touch,
 	},
+	[PlatformType.VR] = {
+		Enum.UserCFrame,
+		Enum.VRTouchpadMode
+	}
 }
 
 local _IS_TESTING_TOUCH = false
@@ -79,6 +84,8 @@ function PlatformDetectionManager:GetCurrentPlatformType()
 			_updateDetectedPlatformType(self, PlatformType.Console)
 		elseif UserInputService.TouchEnabled then
 			_updateDetectedPlatformType(self, PlatformType.Mobile)
+		elseif VRService.VREnabled then
+			_updateDetectedPlatformType(self, PlatformType.VR)
 		else
 			_updateDetectedPlatformType(self, PlatformType.Desktop)
 		end

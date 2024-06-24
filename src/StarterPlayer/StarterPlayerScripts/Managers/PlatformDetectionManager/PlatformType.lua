@@ -9,5 +9,6 @@ local GenerateEnumTable = require(ReplicatedStorage.Utils.GenerateEnumTable)
 return GenerateEnumTable({
     Desktop = 1,
     Mobile = 2,
-    Console = 3
+    Console = 3,
+    VR = 4
 })
