@@ -5,6 +5,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 
 -- Modules
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager).new()
+local DataMigration = require(script.Parent.DataMigration)
 local DataTypes = require(script.Parent.DataTypes)
 local ProfileService = require(ServerScriptService.Data.ProfileService)
 
@@ -46,6 +47,7 @@ local function loadPlayerData(player: Player)
   if success and profile and profile.Data then
       profile:AddUserId(player.UserId) -- GDPR compliance
       profile:Reconcile() -- Fill in missing variables from ProfileTemplate
+      --DataMigration.run(profile.Data)
       profile:ListenToRelease(function() --The profile could've been loaded on another Roblox server:
           Profiles[player] = nil
           player:Kick()

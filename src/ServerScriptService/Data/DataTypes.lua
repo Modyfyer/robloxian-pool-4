@@ -5,14 +5,35 @@ local SharedSettings = require(ReplicatedStorage.Data.SharedSettings)
 
 local DataTypes = {}
 
+export type Outfit = {
+    floaties: {},
+    hats: {},
+    pants: {},
+    swimsuits: {}
+}
+
+export type InventoryItem = {
+    displayName: string,
+    category: string,
+    itemID: string,
+    image: string
+}
+
+export type Inventory = {
+    actions: {InventoryItem},
+    emotes: {InventoryItem},
+    floaties: {InventoryItem},
+    hats: {InventoryItem},
+    outfits: {Outfit},
+    pants: {InventoryItem},
+    swimsuits: {InventoryItem},
+    tools: {InventoryItem}
+}
+
 export type DataTemplate = {
     poolPoints: number,
-    inventory: {
-        actions: {},
-        emotes: {},
-        outfits: {},
-        tools: {}
-    },
+    inventory: Inventory,
+    currentOutfit: Outfit,
     daysLoggedIn: number,
     settings: SharedSettings.hudSettings,
     cabanaSettings: SharedSettings.cabanaSettings,
@@ -35,7 +56,17 @@ export type DataTemplate = {
 
 local ProfileTemplate: DataTemplate = {
     poolPoints = 0,
-    inventory = {},
+    inventory = {
+        actions = {},
+        emotes= {},
+        floaties= {},
+        hats= {},
+        outfits= {},
+        pants= {},
+        swimsuits= {},
+        tools= {}
+    },
+    currentOutfit = {},
     daysLoggedIn = 0,
     settings = SharedSettings.DefaultHUDSettings,
     cabanaSettings = SharedSettings.DefaultCabanaSettings,
