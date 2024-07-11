@@ -17,13 +17,13 @@ local ItemsData = require(ReplicatedStorage.Data.ItemsData)
 local SharedSettings = require(ReplicatedStorage.Data.SharedSettings)
 
 --Constants
+local CABANA_RENTAL_DEV_PRODUCT_ID: number = ItemsData.developerProducts["CabanaRental24h"].developerProductID
 local SECONDS_IN_DAY: number = 86400
 
 --Declarations
 local LocalPlayer = Players.LocalPlayer
-local RemoteEvents = ReplicatedStorage:WaitForChild("RemoteEvents")
+local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
 local RemoteFunctions: Folder = ReplicatedStorage:WaitForChild("RemoteFunctions")
---local UIHelpers = require(LocalPlayer.PlayerScripts.UIHelpers)
 
 local UIManager = {}
 UIManager.__index = UIManager
@@ -34,12 +34,16 @@ function new(screenGui)
 
 	self._connectionManager = ConnectionManager.new()
 
-	self._mainFrame = screenGui:WaitForChild("Desktop")
+	self._mainFrame = screenGui:WaitForChild("Desktop") :: Frame
 
-	self._purchasePrompt = self._mainFrame:WaitForChild("PurchasePrompt")
-	self._settingsFrame = self._mainFrame:WaitForChild("Settings")
+	self._purchasePrompt = self._mainFrame:WaitForChild("PurchasePrompt") :: ImageLabel
+	self._settingsMenu = self._mainFrame:WaitForChild("Settings") :: ImageLabel
 
-	self._settingsListFrame = self._settingsFrame:WaitForChild("Frame"):WaitForChild("SettingsFrame")
+	self._purchasePromptCloseButton = self._purchasePrompt:WaitForChild("CloseButton") :: ImageButton
+	self._purchasePromptPurchaseButton = self._purchasePrompt:WaitForChild("PurchaseButton") :: ImageButton
+	self._settingsCloseButton = self._settingsMenu:WaitForChild("CloseButton") :: ImageButton
+	self._settingsSaveButton = self._settingsMenu:WaitForChild("SaveButton") :: ImageButton
+	self._settingsListFrame = self._settingsMenu:WaitForChild("Frame"):WaitForChild("SettingsFrame") :: Frame
 
 	self._sliderEffectOffTweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
 	self._sliderEffectOnTweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Linear, Enum.EasingDirection.In)
@@ -59,7 +63,6 @@ function new(screenGui)
 	end
 
 	_connectHandlers(self)
-	_initSettings(self)
 
 	return self
 end
@@ -67,13 +70,13 @@ end
 --Hides UI
 function UIManager:Hide()
 	self._mainFrame.Visible = false
-	self._connectionManager:DisconnectAll()
+	--self._connectionManager:DisconnectAll()
 end
 
 --Shows UI
 
 function UIManager:Show()
-	self._connectionManager:ConnectAll()
+	--self._connectionManager:ConnectAll()
 	self._mainFrame.Visible = true
 end
 
@@ -108,28 +111,28 @@ function _isCabanaAlreadyRented(): boolean
 end
 
 function _connectHandlers(self)
+	local closeRentalTween: Tween = TweenService:Create(self._purchasePrompt.UIScale, self._purchasePromptCloseTweenInfo, {Scale = 0})
+	local openRentalTween: Tween = TweenService:Create(self._purchasePrompt.UIScale, self._purchasePromptOpenTweenInfo, {Scale = 1})
+
+	local closeSettingsTween: Tween = TweenService:Create(self._settingsMenu.UIScale, self._settingsTweenInfo, {Scale = 0})
+	local openSettingsTween: Tween = TweenService:Create(self._settingsMenu.UIScale, self._settingsTweenInfo, {Scale = 1})
+
 	--Rental prompts
 	local function closeRentalPrompt()
-		local tween = TweenService:Create(self._purchasePrompt.UIScale, self._purchasePromptCloseTweenInfo, {Scale = 0})
-		tween:Play()
-		self._purchasePrompt.Visible = false
+		closeRentalTween:Play()
 	end
 
 	local function openRentalPrompt()
-		self._purchasePrompt.Visible = true
-		local tween = TweenService:Create(self._purchasePrompt.UIScale, self._purchasePromptOpenTweenInfo, {Scale = 1})
-		tween:Play()
+		openRentalTween:Play()
 	end
 
 	--Settings
 	local function closeSettings()
-		local tween = TweenService:Create(self._settingsFrame.UIScale, self._settingsTweenInfo, {Scale = 0})
-		tween:Play()
+		closeSettingsTween:Play()
 	end
 
 	local function openSettings()
-		local tween = TweenService:Create(self._settingsFrame.UIScale, self._settingsTweenInfo, {Scale = 1})
-		tween:Play()
+		openSettingsTween:Play()
 	end
 
 	--ProximityPrompt
@@ -146,7 +149,6 @@ function _connectHandlers(self)
 				return
 			end
 
-			self:Show()
 			self.Cabana = cabana
 
 			if (self.cabanaRented) and cabana:GetAttribute("Owner") == player.Name then
@@ -154,8 +156,7 @@ function _connectHandlers(self)
 			elseif (cabana:GetAttribute("Owner") == "") or (not cabana:GetAttribute("Owner")) then
 				openRentalPrompt()
 			else
-				warn("Someone else owns this cabana")
-				print(cabana:GetAttribute("Owner"))
+				warn("Someone else owns this cabana:", cabana:GetAttribute("Owner"))
 			end
 		end
 	end
@@ -188,8 +189,8 @@ function _connectHandlers(self)
 	end
 
 	--Purchase
-	local function onProductPurchaseFinished(userID, productID, isPurchased)
-		if userID == LocalPlayer.UserId and productID == ItemsData["CabanaRental"].DeveloperProductId then
+	local function onProductPurchaseFinished(userID: number, productID: number, isPurchased: boolean)
+		if userID == LocalPlayer.UserId and productID == CABANA_RENTAL_DEV_PRODUCT_ID then
 			if isPurchased then
 				self.cabanaRented = true
 				setCabanaAsRented()
@@ -199,23 +200,22 @@ function _connectHandlers(self)
 		end
 	end
 
-	self._connectionManager:ConnectToEvent(self._settingsFrame.CloseButton.MouseButton1Click, closeSettings)
-	self._connectionManager:ConnectToEvent(self._settingsFrame.SaveButton.MouseButton1Click, function()
+	self._connectionManager:ConnectToEvent(self._settingsCloseButton.MouseButton1Click, closeSettings)
+	self._connectionManager:ConnectToEvent(self._settingsSaveButton.MouseButton1Click, function()
 		_saveSettings(self)
 		closeSettings()
 	end)
 
-	self._connectionManager:ConnectToEvent(self._purchasePrompt.CloseButton.MouseButton1Click, closeRentalPrompt)
-	self._connectionManager:ConnectToEvent(self._purchasePrompt.PurchaseButton.MouseButton1Click, function()
+	self._connectionManager:ConnectToEvent(self._purchasePromptCloseButton.MouseButton1Click, closeRentalPrompt)
+	self._connectionManager:ConnectToEvent(self._purchasePromptPurchaseButton.MouseButton1Click, function()
+		closeRentalPrompt()
 		if _isCabanaAlreadyRented() then
 			self.cabanaRented = true
 			setCabanaAsRented()
 			openSettings()
 		else
-			MarketplaceService:PromptProductPurchase(LocalPlayer, ItemsData["CabanaRental"].DeveloperProductId, false, Enum.CurrencyType.Robux)
+			MarketplaceService:PromptProductPurchase(LocalPlayer, CABANA_RENTAL_DEV_PRODUCT_ID, false, Enum.CurrencyType.Robux)
 		end
-
-		closeRentalPrompt()
 	end)
 	self._connectionManager:ConnectToEvent(ProximityPromptService.PromptTriggered, onProximityPromptTriggered)
 	self._connectionManager:ConnectToEvent(MarketplaceService.PromptProductPurchaseFinished, onProductPurchaseFinished)
@@ -228,9 +228,6 @@ function _connectHandlers(self)
 		end
 		self:Clear()
 	end)
-end
-
-function _initSettings(self, settings: SharedSettings.cabanaSettings)
 end
 
 function _loadSettings(self, settings: SharedSettings.cabanaSettings)

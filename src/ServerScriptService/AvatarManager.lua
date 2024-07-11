@@ -13,7 +13,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 --Modules
 local ConnectionManager = require(ReplicatedStorage.ConnectionManager)
 local DataTypes = require(ServerScriptService.Data.DataTypes)
---local ItemsData = require(ReplicatedStorage.Data.ItemsData)
+local ItemsData = require(ReplicatedStorage.Data.ItemsData)
 
 --Declarations
 local BindableEvents: Folder = ReplicatedStorage:WaitForChild("BindableEvents")
@@ -61,20 +61,11 @@ function _connectHandlers(self)
 	end)
 
 	self._connectionManager:ConnectToEvent(BindableEvents.ProfileLoaded.Event, function(player: Player, data: DataTypes.DataTemplate)
-		-- local testItem: DataTypes.InventoryItem = {
-		-- 	itemID = "dfsfdds",
-		-- 	displayName = "Hat",
-		-- 	image = "",
-		-- 	category = "hats"
-		-- }
-		-- _giveItem(self, player, testItem)
+		--TESTING
+		--_giveItem(self, player, ItemsData.hats[1])
 		AvatarManager:LoadAvatar(player, data)
 		AvatarManager:LoadInventory(player, data)
 	end)
-
-	-- self._connectionManager:ConnectToEvent(RemoteFunctions.GetAvatar.OnServerInvoke, function(player: Player)
-	-- 	print()
-	-- end)
 end
 
 function _giveItem(self, player: Player, item: DataTypes.InventoryItem)

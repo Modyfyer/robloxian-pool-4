@@ -5,6 +5,8 @@ local SharedSettings = require(ReplicatedStorage.Data.SharedSettings)
 
 local DataTypes = {}
 
+type currencyType = "Robux" | "PoolPoints"
+
 export type Outfit = {
     floaties: {},
     hats: {},
@@ -13,10 +15,12 @@ export type Outfit = {
 }
 
 export type InventoryItem = {
+	category: string,
+	currencyTypeName: currencyType,
     displayName: string,
-    category: string,
     itemID: string,
-    image: string
+    image: string,
+	price: number,
 }
 
 export type Inventory = {
