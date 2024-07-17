@@ -13,9 +13,6 @@ local snacksFrame: ScrollingFrame = main:WaitForChild("SnacksBG"):WaitForChild("
 local drinksFrame: ScrollingFrame = main:WaitForChild("DrinksBG"):WaitForChild("ScrollingFrame")
 local itemButton = main.itemButton
 
-local fOrder1 = workspace:WaitForChild("fOrder1")
-local fOrder2 = workspace:WaitForChild("fOrder2")
-
 local foods: Folder = ReplicatedStorage:WaitForChild("Foods")
 local drinks: Folder = ReplicatedStorage:WaitForChild("Drinks")
 local event: RemoteEvent = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("OrderFood")
@@ -66,15 +63,19 @@ for _, v in pairs(drinks:GetChildren()) do
 end
 
 while task.wait() do
+	local fOrder1 = workspace:FindFirstChild("fOrder1")
+	local fOrder2 = workspace:FindFirstChild("fOrder2")
 	local playerChar = LocalPlayer.Character
-	local hrp = playerChar:WaitForChild("HumanoidRootPart")
+	local hrp = playerChar:FindFirstChild("HumanoidRootPart")
 
-	local dist1 = (hrp.Position - fOrder1.Position).Magnitude
-	local dist2 = (hrp.Position - fOrder2.Position).Magnitude
+	if fOrder1 and fOrder2 and hrp then
+		local dist1 = (hrp.Position - fOrder1.Position).Magnitude
+		local dist2 = (hrp.Position - fOrder2.Position).Magnitude
 
-	if dist1 <= 5 or dist2 <= 5 then
-		main.Visible = true
-	else
-		main.Visible = false
+		if dist1 <= 5 or dist2 <= 5 then
+			main.Visible = true
+		else
+			main.Visible = false
+		end
 	end
 end

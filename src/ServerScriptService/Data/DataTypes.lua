@@ -7,13 +7,6 @@ local DataTypes = {}
 
 type currencyType = "Robux" | "PoolPoints"
 
-export type Outfit = {
-    floaties: {},
-    hats: {},
-    pants: {},
-    swimsuits: {}
-}
-
 export type InventoryItem = {
 	category: string,
 	currencyTypeName: currencyType,
@@ -21,6 +14,13 @@ export type InventoryItem = {
     itemID: string,
     image: string,
 	price: number,
+}
+
+export type Outfit = {
+    floaties: {InventoryItem},
+    hats: {InventoryItem},
+    pants: {InventoryItem},
+    swimsuits: {InventoryItem}
 }
 
 export type Inventory = {
@@ -70,7 +70,12 @@ local ProfileTemplate: DataTemplate = {
         swimsuits= {},
         tools= {}
     },
-    currentOutfit = {},
+    currentOutfit = {
+        floaties = {},
+		hats = {},
+		pants = {},
+		swimsuits = {}
+    },
     daysLoggedIn = 0,
     settings = SharedSettings.DefaultHUDSettings,
     cabanaSettings = SharedSettings.DefaultCabanaSettings,

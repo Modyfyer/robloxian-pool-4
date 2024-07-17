@@ -1,6 +1,3 @@
---Services
---local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
 --Declarations
 type currencyType = "Robux" | "PoolPoints"
 
@@ -19,6 +16,13 @@ export type DevProductItem = {
 	developerProductID: number,
 	displayName: string,
 	productName: string,
+}
+
+export type Outfit = {
+    floaties: {InventoryItem},
+    hats: {InventoryItem},
+    pants: {InventoryItem},
+    swimsuits: {InventoryItem}
 }
 
 type itemsData = {
@@ -67,6 +71,22 @@ local ItemsData: itemsData = {
 			currencyTypeName = "Robux",
 			displayName = "Hex Goggles",
 			itemID = "dske-iu84-md33",
+			image = "",
+			price = -1
+		},
+		{
+			category = "hats",
+			currencyTypeName = "Robux",
+			displayName = "Hex Goggles Gold",
+			itemID = "dske-iu84-md34",
+			image = "",
+			price = -1
+		},
+		{
+			category = "hats",
+			currencyTypeName = "PoolPoints",
+			displayName = "Silly Straw Black",
+			itemID = "dske-iu84-md35",
 			image = "",
 			price = -1
 		},
