@@ -33,24 +33,25 @@ function new(screenGui)
 
 	self._mainFrame = screenGui:WaitForChild("Desktop") :: Frame
 	self._connectionManager = ConnectionManager.new()
+
+	self._inventory = {}
+
 	local outfit: ItemsData.Outfit = {
 		floaties = {},
 		hats = {},
 		pants = {},
 		swimsuits = {}
 	}
-	self._inventory = {}
 	self._outfit = outfit
 
 	self._background = self._mainFrame:WaitForChild("BG") :: Frame
 
 	self._closeButton = self._background:WaitForChild("CloseButton") :: GuiButton
 	self._inventoryContainer = self._background:WaitForChild("ScrollingFrame") :: ScrollingFrame
+	self._preview = self._background:WaitForChild("PreviewFrame") :: ImageLabel
 	self._tabs = self._background:WaitForChild("Tabs") :: Frame
 
 	self._slotPrefab = self._inventoryContainer:WaitForChild("Slot") :: ImageLabel
-
-	--self._inventorySlots = {}
 
 	self.AvatarButtonPressed = BindableEvents:WaitForChild("AvatarButtonPressed") :: BindableEvent
 	self.AvatarMenuClosed = BindableEvents:WaitForChild("AvatarMenuClosed") :: BindableEvent
@@ -149,7 +150,6 @@ function _createInventoryItemFrames(self)
 		newSlot.Name = "ItemSlot"
 		newSlot.Parent = self._inventoryContainer
 
-		--table.insert(self._inventorySlots, newSlot)
 		selectedSlots[index] = false
 
 		local button: ImageButton = newSlot.Button
@@ -157,6 +157,7 @@ function _createInventoryItemFrames(self)
 		local buttonUpTween = TweenService:Create(newSlot.UIStroke, slotTween, {Color = Color3.fromRGB(0, 0, 0)})
 		local debounce: boolean = false
 
+		--Selection
 		for _, outfitItem in pairs(self._outfit[category]) do
 			if outfitItem.itemID == item.itemID then
 				selectedSlots[index] = true
@@ -164,6 +165,7 @@ function _createInventoryItemFrames(self)
 			end
 		end
 
+		--Button Connections
 		self._connectionManager:ConnectToEvent(button.MouseButton1Down, function()
 			if not debounce then
 				debounce = true
@@ -246,6 +248,16 @@ function _initTabs(self)
 				end
 			end
 		end
+
+		for _, tab in pairs(self._tabs:GetChildren()) do
+			if tab:IsA("ImageButton") then
+				if string.lower(buttonName) == string.lower(tab.Name) then
+					tab.UIStroke.Color = Color3.fromRGB(255, 255, 255)
+				else
+					tab.UIStroke.Color = Color3.fromRGB(14, 82, 167)
+				end
+			end
+		end
 	end
 
 	--Tabs
@@ -256,6 +268,7 @@ function _initTabs(self)
 			end)
 		end
 	end
+	onTabButtonPressed("Swimsuits")
 end
 
 function _loadAvatar(self)
@@ -273,6 +286,22 @@ function _loadAvatar(self)
 		end
 		_equipAccessories(char, accessories)
 	end
+	local vf = self._preview.ViewportFrame
+	local wm = vf.WorldModel
+
+	local viewportCamera = Instance.new("Camera")
+	viewportCamera.Parent = vf
+	viewportCamera.CFrame = CFrame.new(0,0,0)
+
+	vf.CurrentCamera = viewportCamera
+
+	char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+
+	char.Archivable = true
+
+	local clonedChar = char:Clone()
+	clonedChar.Parent = wm
+	clonedChar:PivotTo(CFrame.new(Vector3.new(0,0,-9.5), Vector3.new(0,0,0)))
 end
 
 function _saveAvatar(self)
