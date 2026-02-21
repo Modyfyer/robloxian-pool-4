@@ -4,15 +4,15 @@
     "$className": "DataModel",
 
     "ReplicatedStorage": {
-      "Shared": {
-        "$path": "src/ReplicatedStorage"
+      "$ignoreUnknownInstances": true,
+			"$path": "src/ReplicatedStorage",
+      "Packages": {
+        "$path": "Packages"
       }
     },
 
     "ServerScriptService": {
-      "Server": {
         "$path": "src/ServerScriptService"
-      }
     },
 
     "StarterPlayer": {
