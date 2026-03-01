@@ -6,3 +6,16 @@ realm = "shared"
 
 [dependencies]
 Knit = "sleitnick/knit@^1.7"
+Promise = "evaera/promise@4.0.0"
+TableUtil = "sleitnick/table-util@1.2.1"
+Signal = "sleitnick/signal@2.0.3"
+Component = "sleitnick/component@2.4.8"
+Trove = "sleitnick/trove@1.5.1"
+t = "osyrisrblx/t@3.1.1"
+
+comm = "sleitnick/comm@1.0.1"
+spring = "sleitnick/spring@1.0.0"
+
+[server-dependencies]
+ProfileStore = "lm-loleris/profilestore@1.0.3"
+Cmdr = "evaera/cmdr@1.12.0"

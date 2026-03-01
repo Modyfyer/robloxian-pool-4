@@ -1,10 +1,17 @@
 # Project place file
 /robloxian-pool-4.rbxlx
+*.rbxl
+*.rbxlx
+*.rbxm
+*.rbxmx
 
 # Roblox Studio lock files
 /*.rbxlx.lock
 /*.rbxl.lock
 
-/sourcemap.json
-/Packages
-/wally.lock
+# Rojo
+sourcemap.json
+
+# Wally
+Packages
+ServerPackages
