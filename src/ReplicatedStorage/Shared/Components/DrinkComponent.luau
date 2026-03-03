@@ -39,7 +39,7 @@ function DrinkComponent:Start()
 			:andThenCall(self.sound.Play, self.sound)
 			:andThenCall(Promise.delay, 1.5)
 			:andThenCall(self.sound.Stop, self.sound)
-			:andThenCall(function()
+			:finallyCall(function()
 				self.isDrinking = false
 			end)
 	end)
