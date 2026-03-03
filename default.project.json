@@ -2,27 +2,21 @@
   "name": "robloxian-pool-4",
   "tree": {
     "$className": "DataModel",
-
     "ReplicatedStorage": {
       "$ignoreUnknownInstances": true,
-			"$path": "src/ReplicatedStorage",
+      "$path": "src/ReplicatedStorage",
       "Packages": {
         "$path": "Packages"
       }
     },
-
     "ServerScriptService": {
-        "$path": "src/ServerScriptService"
+      "$path": "src/ServerScriptService"
     },
-
     "StarterPlayer": {
       "StarterPlayerScripts": {
-        "Client": {
-          "$path": "src/StarterPlayer/StarterPlayerScripts"
-        }
+        "$path": "src/StarterPlayer/StarterPlayerScripts"
       }
     },
-
     "Workspace": {
       "$properties": {
         "FilteringEnabled": true
