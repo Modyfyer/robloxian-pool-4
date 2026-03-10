@@ -9,8 +9,8 @@ local DataTypes = require(script.Parent.DataTypes)
 local ProfileService = require(ServerScriptService.Data.ProfileService)
 
 -- Declarations
-local BindableEvents: Folder = ReplicatedStorage:WaitForChild("BindableEvents")
-local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
+-- local BindableEvents: Folder = ReplicatedStorage:WaitForChild("BindableEvents")
+-- local RemoteEvents: Folder = ReplicatedStorage:WaitForChild("RemoteEvents")
 
 --Module
 local DataManager = {}
@@ -23,8 +23,8 @@ local Profiles: {[Player]: DataTypes.DataTemplate} = {}
 
 ----- Private Functions -----
 local function onLoadedProfile(player: Player, profile: DataTypes.DataTemplate)
-  BindableEvents.ProfileLoaded:Fire(player, profile.Data)
-  RemoteEvents.ProfileLoaded:FireClient(player, profile.Data)
+  -- BindableEvents.ProfileLoaded:Fire(player, profile.Data)
+  -- RemoteEvents.ProfileLoaded:FireClient(player, profile.Data)
 end
 
 local function loadPlayerData(player: Player)
@@ -57,7 +57,7 @@ local function loadPlayerData(player: Player)
           profile:Release()
       end
   else -- The profile couldn't be loaded possibly due to other Roblox servers trying to load this profile at the same time
-      player:Kick("Error loading profile:", tostring(err))
+      player:Kick(`Error loading profile: {tostring(err)}`)
       warn("Unable to load profile for", player.Name, ":", tostring(err))
   end
 end
