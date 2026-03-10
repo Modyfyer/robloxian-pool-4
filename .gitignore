@@ -9,9 +9,14 @@
 /*.rbxlx.lock
 /*.rbxl.lock
 
-# Rojo
-sourcemap.json
+
+
 
 # Wally
 Packages
 ServerPackages
+
+# Rojo
+sourcemap.json
+/*.sourcemap.json
+sourcemap.json
