@@ -1,5 +1,4 @@
 -- Services
-local Debris = game:GetService("Debris")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -40,7 +39,9 @@ function SplashService:_canSplash(hrp, pos)
 
 		particle.Parent = particlePart
 
-		Debris:AddItem(particlePart, 1)
+		task.delay(1, function()
+			particlePart:Destroy()
+		end)
 	end
 end
 
