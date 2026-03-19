@@ -5,18 +5,12 @@
 *.rbxm
 *.rbxmx
 
-# Roblox Studio lock files
-/*.rbxlx.lock
-/*.rbxl.lock
+# Roblox Studio lock file
+*.lock
 
-
-
+# Rojo
+sourcemap.json
 
 # Wally
 Packages
 ServerPackages
-
-# Rojo
-sourcemap.json
-/*.sourcemap.json
-sourcemap.json
