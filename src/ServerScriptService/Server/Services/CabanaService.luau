@@ -1,13 +1,17 @@
 --Services
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
 
 -- Packages
+local Component = require(ReplicatedStorage.Packages.Component)
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local Trove = require(ReplicatedStorage.Packages.Trove)
 
 -- Data
 local SharedSettings = require(ReplicatedStorage.Data.SharedSettings)
+
+local CabanaComponent = require(ServerScriptService.Server.Components.CabanaComponent)
 
 local CabanaService = Knit.CreateService({
 	Name = "CabanaService",
@@ -24,18 +28,6 @@ function CabanaService:_clearCabana(cabana: Instance, index: number)
 	cabana:SetAttribute("Owner", "")
 	cabana:SetAttribute("Rented", false)
 	cabana:SetAttribute("Index", index)
-
-	local roof = cabana:FindFirstChild("Roof")
-	assert(roof, "Unable to clear cabana: cannot find roof")
-
-	local statusGui = roof:FindFirstChild("RentalStatusGui") :: GuiObject
-
-	local label = statusGui:WaitForChild("Frame"):WaitForChild("TextLabel") :: TextLabel
-	label.Text = "RENT THIS CABANA"
-
-	local floor = cabana:FindFirstChild("Floor") :: Instance
-	local proxPrompt = floor:FindFirstChildOfClass("ProximityPrompt") :: ProximityPrompt
-	proxPrompt.ActionText = "Rent Cabana"
 end
 
 function CabanaService:ClearAllCabanaRentals()
@@ -55,10 +47,16 @@ end
 
 function CabanaService:InitializeCabanas()
 	for _, cabanaModel in pairs(self.CabanaFolder:GetChildren()) do
-		if cabanaModel.Name == "Cabana" then
+		local componentInstance = CabanaComponent:FromInstance(cabanaModel)
+		if componentInstance then
 			table.insert(
 				self._cabanas,
-				{ owner = "", cabanaBuilding = cabanaModel, index = cabanaModel:GetAttribute("Index") }
+				{
+					owner = "",
+					cabanaBuilding = cabanaModel,
+					index = cabanaModel:GetAttribute("Index"),
+					cabanaInstance = componentInstance,
+				}
 			)
 		end
 	end
@@ -98,7 +96,7 @@ function CabanaService:KnitStart()
 		self:ClearCabanaRental(player)
 	end)
 
-	-- self._connectionManager:ConnectToEvent(PurchaseService.CabanaRented.Event, function(player: Player)
+	-- self._trove:Connect(PurchaseService.CabanaRented.Event, function(player: Player)
 	-- 	table.insert(self._playersWithRentalPass, player.UserId)
 	-- end)
 end
