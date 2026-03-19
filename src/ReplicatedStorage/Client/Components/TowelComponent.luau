@@ -12,7 +12,6 @@ local ToolService
 
 local TowelComponent = Component.new({
 	Tag = "TowelComponent",
-	Ancestors = { workspace },
 })
 
 function TowelComponent:Construct()
@@ -25,10 +24,11 @@ function TowelComponent:Construct()
 
 	self.towelEvent = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("PlaceTowel")
 	self.deb = false
-	ToolService = Knit.GetService("ToolService")
 end
 
 function TowelComponent:Start()
+	ToolService = Knit.GetService("ToolService")
+
 	self._trove:Connect(self.Instance.Activated, function()
 		if self.deb then
 			return
@@ -49,7 +49,6 @@ function TowelComponent:Start()
 
 				local raycastResult = workspace:Raycast(hrp.Position, hrp.CFrame.LookVector * 8, raycastParams)
 				if raycastResult == nil then
-					self.towelEvent:FireServer()
 					ToolService:PlaceTowel()
 				end
 			end)

@@ -74,19 +74,18 @@ function ToolService:_placeTowel(player)
 		local yOffset = towel.Size.Y / 2
 		towel.CFrame = CFrame.new(hitPos + hitNormal * yOffset, hitPos)
 		towel.Orientation = towelOrientation
+
+		return true
 	end
+	return false
 end
 
-function ToolService.Client:PlaceTowel()
-	self:_placeTowel()
+function ToolService.Client:PlaceTowel(player: Player)
+	return ToolService:_placeTowel(player)
 end
 
 function ToolService:KnitStart()
 	self:RegisterTowelTemplates()
-	local placeTowel = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("PlaceTowel")
-	placeTowel.OnServerEvent:Connect(function(player)
-		self:_placeTowel(player)
-	end)
 end
 
 return ToolService
