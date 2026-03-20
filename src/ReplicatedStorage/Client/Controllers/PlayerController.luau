@@ -5,6 +5,21 @@ local ADJUSTMENT_VAL: number = 5
 local MAX_VAL: number = 100
 local WATER_LEVEL: number = 28
 
+local uis = game:GetService("UserInputService")
+local cam = workspace.CurrentCamera
+local ts = game:GetService("TweenService")
+local blur = game.Lighting:WaitForChild("RunBlur")
+
+local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+
+local blurOn = ts:Create(blur, tweenInfo, { Size = 5 })
+local blurOff = ts:Create(blur, tweenInfo, { Size = 0 })
+local tweenOn = ts:Create(cam, tweenInfo, { FieldOfView = 90 })
+local tweenOff = ts:Create(cam, tweenInfo, { FieldOfView = 70 })
+
+local running = false
+local hum
+
 local PlayerController = Knit.CreateController({
 	Name = "PlayerController",
 })
@@ -16,12 +31,39 @@ function PlayerController:KnitStart()
 	local pl = Knit.Player
 	self.currentTask = nil
 
+	uis.InputBegan:Connect(function(input)
+		if running == false and hum then
+			if input.KeyCode == Enum.KeyCode.LeftShift then
+				blurOff:Pause()
+				blurOn:Play()
+				tweenOff:Pause()
+				tweenOn:Play()
+				hum.WalkSpeed = 45
+				running = true
+			end
+		end
+	end)
+
+	uis.InputEnded:Connect(function(input)
+		if running == true and hum then
+			if input.KeyCode == Enum.KeyCode.LeftShift then
+				blurOn:Pause()
+				blurOff:Play()
+				tweenOn:Pause()
+				tweenOff:Play()
+				hum.WalkSpeed = 16
+				running = false
+			end
+		end
+	end)
+
 	local function setupCharacter(ch)
 		if self.currentTask then
 			task.cancel(self.currentTask)
 		end
 
 		local head = ch:WaitForChild("Head")
+		hum = ch:WaitForChild("Humanoid")
 
 		self.currentTask = task.spawn(function()
 			while task.wait(1) do
