@@ -1,3 +1,4 @@
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
@@ -5,19 +6,47 @@ local ToolService = Knit.CreateService({
 	Name = "ToolService",
 	Client = {
 		PlaceTowel = Knit.CreateSignal(),
+		PlaceFloaty = Knit.CreateSignal(),
 	},
 })
 
 function ToolService:KnitInit()
+	local toolsFolder = ReplicatedStorage:WaitForChild("Tools")
+	self._towelFolder = toolsFolder:WaitForChild("TowelModels")
+	self._floatyFolder = toolsFolder:WaitForChild("Floaties") :: Folder
 	self._towelTemplates = {}
+	self._floatyTemplates = {}
 end
 
 function ToolService:RegisterTowelTemplates()
-	local towelTemplates = ReplicatedStorage:WaitForChild("Tools"):WaitForChild("TowelModels")
-	self._towelTemplates = towelTemplates:GetChildren()
+	self._towelTemplates = self._towelFolder:GetChildren()
 end
 
-function ToolService:_placeTowel(player)
+function ToolService:_placeFloaty(player: Player)
+	local char = player.Character
+	local existingFloaty = char:FindFirstChild("Floaty")
+	if existingFloaty then
+		local floatyKind = player:GetAttribute("FloatyType")
+		if floatyKind then
+			local floatyModel = self._floatyFolder:FindFirstChild(floatyKind)
+			if floatyModel then
+				local floatyClone = floatyModel:Clone()
+				floatyClone.Name = "Floaty"
+				floatyClone.Parent = char
+				floatyClone:SetPrimaryPartCFrame(char.HumanoidRootPart.CFrame * CFrame.new(0, 0, -8))
+			end
+		end
+	else
+		existingFloaty:Destroy()
+	end
+end
+
+function ToolService:_placeTowel(player: Player)
+	if #self._towelTemplates == 0 then
+		warn("ToolService: no towel templates registered")
+		return
+	end
+
 	local character = player.Character
 	if not character then
 		return
@@ -30,16 +59,10 @@ function ToolService:_placeTowel(player)
 
 	if character:FindFirstChild("PoolTowel") then
 		character.PoolTowel:Destroy()
-		return
 	end
 
 	local color = character:FindFirstChild("Color")
 	if not color then
-		return
-	end
-
-	if #self._towelTemplates == 0 then
-		warn("ToolService: no towel templates registered")
 		return
 	end
 
@@ -74,18 +97,28 @@ function ToolService:_placeTowel(player)
 		local yOffset = towel.Size.Y / 2
 		towel.CFrame = CFrame.new(hitPos + hitNormal * yOffset, hitPos)
 		towel.Orientation = towelOrientation
-
-		return true
 	end
-	return false
 end
 
 function ToolService.Client:PlaceTowel(player: Player)
-	return ToolService:_placeTowel(player)
+	ToolService:_placeTowel(player)
+end
+
+function ToolService.Client:PlaceFloaty(player: Player)
+	ToolService:_placeFloaty(player)
 end
 
 function ToolService:KnitStart()
 	self:RegisterTowelTemplates()
+
+	Players.PlayerAdded:Connect(function(player)
+		local FloatyTypeValue = Instance.new("StringValue")
+		FloatyTypeValue.Name = "FloatyType"
+		FloatyTypeValue.Value = "Default"
+		FloatyTypeValue.Parent = player
+
+		player:SetAttribute("FloatyType", "Default") -- TODO: read off player data
+	end)
 end
 
 return ToolService
