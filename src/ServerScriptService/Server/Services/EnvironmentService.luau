@@ -1,4 +1,5 @@
 -- Services
+local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
@@ -13,6 +14,7 @@ local EnvironmentService = Knit.CreateService({
 		WeatherChanged = Knit.CreateSignal(),
 	},
 	WeatherChanged = Signal.new(),
+	TreesPlaced = Signal.new(),
 })
 
 -- Weather Constants
@@ -26,7 +28,6 @@ local WEATHER_STATES = {
 local currentWeather = WEATHER_STATES.CLEAR
 local lastWeather = WEATHER_STATES.CLEAR
 local clouds = nil
-local isRaining = nil
 local tweenInfo = TweenInfo.new(10, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
 local cloudsTweens = {}
 
@@ -47,12 +48,12 @@ end
 function EnvironmentService:_setRain()
 	self:_setOvercast()
 	task.wait(10)
-	isRaining.Value = true
+	self._isRaining.Value = true
 	lastWeather = WEATHER_STATES.RAIN
 end
 
 function EnvironmentService:_setClear()
-	isRaining.Value = false
+	self._isRaining.Value = false
 	cloudsTweens.normal:Play()
 	cloudsTweens.light:Play()
 	task.wait(120)
@@ -86,9 +87,8 @@ end
 
 function EnvironmentService:_weatherCycle()
 	task.wait(100)
-	while true do
+	while task.wait(math.random(15, 25)) do
 		self:_updateWeather()
-		task.wait(math.random(15, 25))
 	end
 end
 
@@ -109,10 +109,52 @@ function EnvironmentService:GetWeatherState(state: number): string
 end
 
 ----- Initialize -----
+local function placeTrees()
+	local treeSpots: { Instance } = CollectionService:GetTagged("TreeSpot")
+	local treeFolder: Folder = ReplicatedStorage:FindFirstChild("Trees")
+
+	if not treeSpots or not treeFolder then
+		warn("EnvironmentService: missing TreeSpots or TreeFolder")
+		return
+	end
+
+	local treeList = treeFolder:GetChildren()
+	if #treeList == 0 then
+		warn("EnvironmentService: no templates found in TreeFolder")
+		return
+	end
+
+	if workspace:FindFirstChild("Trees") then
+		workspace.Trees:Destroy()
+	end
+
+	local treeModel = Instance.new("Model")
+	treeModel.Name = "Trees"
+	treeModel.Parent = workspace
+
+	for _, spot in pairs(treeSpots) do
+		if spot:IsA("BasePart") or spot:IsA("Model") then
+			if spot:IsA("BasePart") then
+				spot.Transparency = 1
+			elseif spot:IsA("Model") and spot.PrimaryPart then
+				spot.PrimaryPart.Transparency = 1
+			end
+
+			local template = treeList[math.random(1, #treeList)]:Clone()
+			template.Parent = treeModel
+
+			if template.PrimaryPart then
+				template:SetPrimaryPartCFrame(spot.CFrame * CFrame.Angles(0, math.rad(math.random(-360, 360)), 0))
+			end
+		end
+	end
+end
+
 function EnvironmentService:KnitStart()
 	clouds = workspace:WaitForChild("Terrain"):WaitForChild("Clouds")
-	isRaining = ReplicatedStorage.IsRaining
+	self._isRaining = ReplicatedStorage.IsRaining
 	self:_initializeTweens()
+	placeTrees()
 	self:_weatherCycle()
 end
 
