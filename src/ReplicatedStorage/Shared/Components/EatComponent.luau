@@ -43,7 +43,7 @@ function EatComponent:Start()
 			:andThenCall(anim.Play, anim)
 			:andThenCall(Promise.delay, 0.4)
 			:andThenCall(function()
-				local chip = ASSETS_FOLDER:WaitForChild("Foods"):WaitForChild("Chip"):Clone()
+				local chip = ASSETS_FOLDER:WaitForChild("Chip"):Clone()
 				chip.Parent = char
 				self.chip = chip
 				self._eatingTrove:Add(chip)

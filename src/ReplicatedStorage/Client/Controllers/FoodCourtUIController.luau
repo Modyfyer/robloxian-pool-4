@@ -63,13 +63,15 @@ function FoodCourtUIController:KnitStart()
 	local drinksFolder: Folder = ASSETS_FOLDER:WaitForChild("Drinks") :: Folder
 	local snacksFolder: Folder = ASSETS_FOLDER:WaitForChild("Foods") :: Folder
 	for _, v in pairs(snacksFolder:GetChildren()) do
-		if CollectionService:HasTag(v, "Food") then
+		if CollectionService:HasTag(v, "EatComponent") then
 			self:_addButton(v, self._snacksFrame)
 		end
 	end
 
 	for _, v in pairs(drinksFolder:GetChildren()) do
-		self:_addButton(v, self._drinksFrame)
+		if CollectionService:HasTag(v, "DrinkComponent") then
+			self:_addButton(v, self._drinksFrame)
+		end
 	end
 end
 
