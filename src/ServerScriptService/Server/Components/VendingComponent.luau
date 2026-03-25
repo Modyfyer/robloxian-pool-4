@@ -29,9 +29,9 @@ function VendingComponent:Construct()
 	for _, button in pairs(self.Instance:GetChildren()) do
 		if button.Name == "Button" then
 			table.insert(self.buttons, button)
+			self._trove:Add(button)
 		end
 	end
-	self._trove:Add(self.buttons)
 end
 
 function VendingComponent:_vendItem(player: Player, button)
