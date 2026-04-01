@@ -6,6 +6,7 @@ local Players = game:GetService("Players")
 local Component = require(ReplicatedStorage.Packages.Component)
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local Promise = require(ReplicatedStorage.Packages.Promise)
+local Signal = require(ReplicatedStorage.Packages.Signal)
 local Trove = require(ReplicatedStorage.Packages.Trove)
 
 local PlayerService
@@ -18,9 +19,15 @@ local WaterBalloonComponent = Component.new({
 
 function WaterBalloonComponent:Construct()
 	self._trove = Trove.new()
-	self.Tool = self.Instance
-	self.Handle = self.Tool:WaitForChild("Handle")
-	self.BalloonEvent = self.Tool:WaitForChild("FireBalloon")
+	self._fireTrove = Trove.new()
+
+	if not self.Instance:IsA("Tool") then
+		warn("WaterBalloonComponent is not a Tool")
+		return
+	end
+
+	self.Handle = self.Instance:WaitForChild("Handle")
+	self.BalloonEvent = Signal.new()
 end
 
 function WaterBalloonComponent:Start()
@@ -30,42 +37,44 @@ function WaterBalloonComponent:Start()
 	elseif RunService:IsClient() then
 		self:StartClient()
 	end
-end
 
-function WaterBalloonComponent:StartServer()
-	self.BalloonEvent.OnServerEvent:Connect(function(player: Player, target)
-		self:FireBalloon(player, target)
+	self.BalloonEvent:Connect(function(target: Vector3)
+		self:FireBalloon(target)
 	end)
 end
 
-function WaterBalloonComponent:FireBalloon(_, target)
+function WaterBalloonComponent:StartServer() end
+
+function WaterBalloonComponent:FireBalloon(target: Vector3)
 	local projectile = self.Handle:Clone()
 	projectile.CFrame = self.Handle.CFrame
 	projectile.Parent = workspace
 
-	self.Handle.Transparency = 1
+	Promise.resolve()
+		:andThenCall(function()
+			self.Handle.Transparency = 1
+			local bodyVelocity = Instance.new("BodyVelocity")
+			bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+			bodyVelocity.Velocity = (target - projectile.Position).unit * 100
+			bodyVelocity.Parent = projectile
 
-	local bodyVelocity = Instance.new("BodyVelocity")
-	bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-	bodyVelocity.Velocity = (target - projectile.Position).unit * 100
-	bodyVelocity.Parent = projectile
-
-	local bodyAngularVelocity = Instance.new("BodyAngularVelocity")
-	bodyAngularVelocity.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-	bodyAngularVelocity.AngularVelocity = Vector3.new(math.random(), math.random(), math.random()) * 10
-	bodyAngularVelocity.Parent = projectile
-
-	task.wait(0.3)
-
-	self:BalloonHit(projectile)
-
-	task.wait(5)
-
-	self.Handle.Transparency = 0.15
+			local bodyAngularVelocity = Instance.new("BodyAngularVelocity")
+			bodyAngularVelocity.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+			bodyAngularVelocity.AngularVelocity = Vector3.new(math.random(), math.random(), math.random()) * 10
+			bodyAngularVelocity.Parent = projectile
+		end)
+		:andThenCall(Promise.delay, 0.3)
+		:andThenCall(function()
+			self:BalloonHit(projectile)
+		end)
+		:andThenCall(Promise.delay, 5)
+		:finallyCall(function()
+			self.Handle.Transparency = 0.15
+		end)
 end
 
-function WaterBalloonComponent:BalloonHit(balloon)
-	balloon.Touched:Connect(function(p)
+function WaterBalloonComponent:BalloonHit(balloon: BasePart)
+	self._fireTrove:Connect(balloon.Touched, function(p)
 		if p.Name ~= "Handle" then
 			balloon.Anchored = true
 			local emitPos = balloon.Position
@@ -77,10 +86,10 @@ function WaterBalloonComponent:BalloonHit(balloon)
 			emitterPart.CanCollide = false
 			emitterPart.CFrame = CFrame.new(emitPos)
 
-			local emitter = self.Tool:WaitForChild("Particle"):Clone()
+			local emitter = self.Instance:WaitForChild("Particle"):Clone()
 			emitter.Parent = emitterPart
 
-			local snd = self.Tool:WaitForChild("Splat"):Clone() :: Sound
+			local snd = self.Instance:WaitForChild("Splat"):Clone() :: Sound
 			snd.Parent = emitterPart
 
 			emitterPart.Parent = workspace
@@ -91,13 +100,16 @@ function WaterBalloonComponent:BalloonHit(balloon)
 			snd:Play()
 			balloon:Destroy()
 
-			local plTarg = Players:GetPlayerFromCharacter(p.Parent)
-			if plTarg then
-				local oxygen = plTarg:GetAttribute("Oxygen")
-				if oxygen then
-					oxygen -= ADJUSTMENT_VAL
-				end
-			end
+			-- TODO: use PlayerService
+			-- local plTarg = Players:GetPlayerFromCharacter(p.Parent)
+			-- if plTarg then
+			-- 	local oxygen = plTarg:GetAttribute("Oxygen")
+			-- 	if oxygen then
+			-- 		oxygen -= ADJUSTMENT_VAL
+			-- 	end
+			-- end
+
+			self._fireTrove:Clean()
 		end
 	end)
 end
@@ -106,17 +118,17 @@ function WaterBalloonComponent:StartClient()
 	local LocalPlayer = Players.LocalPlayer
 	local Character = LocalPlayer.Character
 	local Humanoid = Character:WaitForChild("Humanoid")
-	local Mouse = LocalPlayer:GetMouse()
+	local Mouse: Mouse = LocalPlayer:GetMouse()
 
 	local waterAmount = LocalPlayer:GetAttribute("Water")
 
-	local hold = self.Tool:WaitForChild("Hold")
-	local throw = self.Tool:WaitForChild("Throw")
+	local hold = self.Instance:WaitForChild("Hold")
+	local throw = self.Instance:WaitForChild("Throw")
 	local holdAnim = Humanoid:LoadAnimation(hold)
 	local throwAnim = Humanoid:LoadAnimation(throw)
 
-	local debounce = false
-	local thrown = false
+	local debounce: boolean = false
+	local thrown: boolean = false
 
 	local function onActivated()
 		if waterAmount >= ADJUSTMENT_VAL then
@@ -131,7 +143,7 @@ function WaterBalloonComponent:StartClient()
 		if waterAmount >= ADJUSTMENT_VAL and debounce and not thrown then
 			holdAnim:Stop()
 			throwAnim:Play()
-			self.BalloonEvent:FireServer(Mouse.Hit.Position)
+			self.BalloonEvent:Fire(Mouse.Hit.Position)
 			PlayerService:ChangeWater(-ADJUSTMENT_VAL)
 			thrown = true
 			task.wait(5)
@@ -140,12 +152,13 @@ function WaterBalloonComponent:StartClient()
 		end
 	end
 
-	self._trove:Connect(self.Tool.Activated, onActivated)
-	self._trove:Connect(self.Tool.Deactivated, onDeactivated)
+	self._trove:Connect(self.Instance.Activated, onActivated)
+	self._trove:Connect(self.Instance.Deactivated, onDeactivated)
 end
 
 function WaterBalloonComponent:Stop()
 	self._trove:Destroy()
+	self._fireTrove:Destroy()
 end
 
 return WaterBalloonComponent
