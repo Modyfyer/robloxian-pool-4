@@ -111,8 +111,6 @@ end
 
 ----- Initialize -----
 function MarketService:KnitInit()
-	DataService = Knit.GetService("DataService")
-
 	self.Products[1555280575] = function(profile, player: Player)
 		local now: DateTime = DateTime.now()
 		profile.Data.cabanaRentalTime = now:ToIsoDate()
@@ -131,7 +129,7 @@ function MarketService:KnitInit()
 end
 
 function MarketService:KnitStart()
-	-- No additional startup needed
+	DataService = Knit.GetService("DataService")
 end
 
 return MarketService
