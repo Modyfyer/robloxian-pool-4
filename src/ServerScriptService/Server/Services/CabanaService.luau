@@ -13,6 +13,9 @@ local SharedSettings = require(ReplicatedStorage.Data.SharedSettings)
 
 local CabanaComponent = require(ServerScriptService.Server.Components.CabanaComponent)
 
+local DataService
+local MarketService
+
 local CabanaService = Knit.CreateService({
 	Name = "CabanaService",
 	Client = {
@@ -49,15 +52,12 @@ function CabanaService:InitializeCabanas()
 	for _, cabanaModel in pairs(self.CabanaFolder:GetChildren()) do
 		local componentInstance = CabanaComponent:FromInstance(cabanaModel)
 		if componentInstance then
-			table.insert(
-				self._cabanas,
-				{
-					owner = "",
-					cabanaBuilding = cabanaModel,
-					index = cabanaModel:GetAttribute("Index"),
-					cabanaInstance = componentInstance,
-				}
-			)
+			table.insert(self._cabanas, {
+				owner = "",
+				cabanaBuilding = cabanaModel,
+				index = cabanaModel:GetAttribute("Index"),
+				cabanaInstance = componentInstance,
+			})
 		end
 	end
 end
@@ -71,13 +71,12 @@ function CabanaService:RentCabana(player: Player, cabana: Instance)
 	cabana:SetAttribute("Owner", player.Name)
 	cabana:SetAttribute("Rented", true)
 
-	-- local settings = self._dataManager.getKey(player, "cabanaSettings")
-	-- self.Client.UpdatedCabanaSettings:Fire(player, settings)
+	local settings = DataService:GetKey(player, "cabanaSettings")
+	self.Client.UpdatedCabanaSettings:Fire(player, settings)
 end
 
 function CabanaService.Client:GetLastCabanaRentalTime(player: Player)
-	-- local rentalTime = self._dataManager.getKey(player, "cabanaRentalTime")
-	-- return rentalTime
+	return DataService:GetKey(player, "cabanaRentalTime")
 end
 
 function CabanaService.Client:RequestCabanaRental(player: Player, cabana: Instance)
@@ -85,20 +84,24 @@ function CabanaService.Client:RequestCabanaRental(player: Player, cabana: Instan
 end
 
 function CabanaService.Client:SaveCabanaSettings(player: Player, settings: SharedSettings.cabanaSettings)
-	--local saved = self._dataManager.setKey(player, "cabanaSettings", settings)
-	--warn("Data saved for", player.Name, ":", saved)
+	local saved = DataService:SetKey(player, "cabanaSettings", settings)
+	warn("Data saved for", player.Name, ":", saved)
 end
 
 function CabanaService:KnitStart()
+	DataService = Knit.GetService("DataService")
+	MarketService = Knit.GetService("MarketService")
 	self:InitializeCabanas()
 
 	self._trove:Connect(Players.PlayerRemoving, function(player: Player)
 		self:ClearCabanaRental(player)
 	end)
 
-	-- self._trove:Connect(PurchaseService.CabanaRented.Event, function(player: Player)
-	-- 	table.insert(self._playersWithRentalPass, player.UserId)
-	-- end)
+	self._trove:Connect(MarketService.PurchaseGranted, function(player: Player, itemName: string)
+		if itemName == "Cabana" then
+			table.insert(self._playersWithRentalPass, player.UserId)
+		end
+	end)
 end
 
 function CabanaService:KnitInit()
