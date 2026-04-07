@@ -16,12 +16,6 @@ local SettingsService = Knit.CreateService({
 
 local DataService = nil
 
------ Private Functions -----
-function SettingsService:_loadSettings(player: Player, data)
-	local settings = data.settings
-	self.Client.HUDSettingsLoaded:Fire(player, settings)
-end
-
 ----- Public Functions -----
 function SettingsService:SaveSettings(player: Player, settings: SharedSettings.hudSettings)
 	local saved = DataService:SetKey(player, "settings", settings)
@@ -34,15 +28,13 @@ function SettingsService.Client:SaveSettings(player: Player, settings: SharedSet
 end
 
 ----- Initialize -----
-function SettingsService:KnitInit()
-	DataService = Knit.GetService("DataService")
-	DataService.ProfileLoaded:Connect(function(player: Player, data)
-		self:_loadSettings(player, data)
-	end)
-end
+function SettingsService:KnitInit() end
 
 function SettingsService:KnitStart()
-	-- No additional startup needed
+	DataService = Knit.GetService("DataService")
+	DataService.ProfileLoaded:Connect(function(player: Player, data)
+		self.Client.HUDSettingsLoaded:Fire(player, data.settings)
+	end)
 end
 
 return SettingsService
