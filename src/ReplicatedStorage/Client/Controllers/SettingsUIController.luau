@@ -119,16 +119,14 @@ end
 
 function SettingsUIController:KnitInit()
 	self._isMobile = UserInputService.TouchEnabled
+	self._settings = {}
 
 	self._screenGui = PlayerGui:WaitForChild("SettingsGui") :: ScreenGui
 
 	self._mainFrame = self._screenGui:WaitForChild("MainFrame") :: Frame
 
-	self._settings = {}
-
 	self._background = self._mainFrame:WaitForChild("BG") :: Frame
 
-	self._closeButton = self._background:WaitForChild("CloseButton") :: GuiButton
 	self._settingsContainer = self._background:WaitForChild("ScrollingFrame") :: ScrollingFrame
 end
 
