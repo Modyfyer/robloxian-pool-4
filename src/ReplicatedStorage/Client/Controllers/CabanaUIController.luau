@@ -32,7 +32,7 @@ function CabanaUIController:_isCabanaAlreadyRented(): boolean
 	if not rentalTime then --player has never rented a cabana
 		return false
 	end
-	local rentalDT: DateTime? = DateTime.fromIsoDate(rentalTime)
+	local rentalDT: DateTime = DateTime.fromIsoDate(rentalTime)
 
 	if rentalDT then
 		local rentalTimestamp = rentalDT.UnixTimestamp
@@ -192,6 +192,10 @@ end
 
 function CabanaUIController:KnitStart()
 	CabanaService = Knit.GetService("CabanaService")
+
+	-- if self:_isCabanaAlreadyRented() then
+	-- 	self.cabanaRented = true
+	-- end
 	local function closeRentalPrompt()
 		local tween =
 			TweenService:Create(self._purchasePrompt.UIScale, self._purchasePromptCloseTweenInfo, { Scale = 0 })
@@ -317,10 +321,6 @@ function CabanaUIController:KnitInit()
 	self.cabanaClaimed = false
 
 	self._mainFrame.Visible = false
-
-	if self:_isCabanaAlreadyRented() then
-		self.cabanaRented = true
-	end
 end
 
 return CabanaUIController
