@@ -21,6 +21,8 @@ local LIFEGUARD_GAMEPASS_ID = 703084245
 local MAX_OXYGEN: number = 100
 local MAX_WATER: number = 100
 
+local MenuVisibilityComponent = require(ReplicatedStorage.Client.Components.MenuVisibilityComponent)
+
 local HUDUIController = Knit.CreateController({
 	Name = "HUDUIController",
 })
@@ -108,6 +110,30 @@ function HUDUIController:KnitStart()
 		self._tooltip.Tooltip.Text = ""
 		self._tooltip.Visible = false
 	end
+
+	MenuVisibilityComponent:WaitForInstance(self._avatarMenu):andThen(function(myInstance)
+		self._trove:Connect(self._avatarButton.Activated, function()
+			myInstance:ToggleVisibility()
+		end)
+	end)
+
+	MenuVisibilityComponent:WaitForInstance(self._emotesMenu):andThen(function(myInstance)
+		self._trove:Connect(self._emotesButton.Activated, function()
+			myInstance:ToggleVisibility()
+		end)
+	end)
+
+	MenuVisibilityComponent:WaitForInstance(self._settingsMenu):andThen(function(myInstance)
+		self._trove:Connect(self._settingsButton.Activated, function()
+			myInstance:ToggleVisibility()
+		end)
+	end)
+
+	MenuVisibilityComponent:WaitForInstance(self._shopsMenu):andThen(function(myInstance)
+		self._trove:Connect(self._shopsButton.Activated, function()
+			myInstance:ToggleVisibility()
+		end)
+	end)
 
 	self._trove:Connect(self._avatarButton.MouseEnter, function(x, y)
 		showTooltip(x, y, "Avatar")
@@ -199,6 +225,11 @@ end
 
 function HUDUIController:KnitInit()
 	self._screenGui = PlayerGui:WaitForChild("HUDGui") :: ScreenGui
+
+	self._avatarMenu = PlayerGui:WaitForChild("AvatarGui") :: ScreenGui
+	self._emotesMenu = PlayerGui:WaitForChild("EmotesGui") :: ScreenGui
+	self._shopsMenu = PlayerGui:WaitForChild("ShopsGui") :: ScreenGui
+	self._settingsMenu = PlayerGui:WaitForChild("SettingsGui") :: ScreenGui
 
 	self._mainFrame = self._screenGui:WaitForChild("MainFrame") :: Frame
 
