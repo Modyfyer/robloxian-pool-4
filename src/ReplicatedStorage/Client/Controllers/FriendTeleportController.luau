@@ -17,9 +17,6 @@ FriendTeleportController._trove = Trove.new()
 FriendTeleportController._playerBillboards = {}
 
 function FriendTeleportController:KnitInit()
-	self._character = Knit.Player.Character or Knit.Player:WaitForChild("Character")
-	self._hrp = self._character:WaitForChild("HumanoidRootPart")
-	self._humanoid = self._character:WaitForChild("Humanoid")
 	self._camera = game.Workspace.CurrentCamera
 
 	local playerGui = Knit.Player:WaitForChild("PlayerGui")
@@ -64,6 +61,9 @@ function FriendTeleportController:KnitStart()
 
 		-- Handle teleport button click
 		self._trove:Connect(billboard.Button.MouseButton1Click, function()
+			local char = Knit.Player.Character
+			self._hrp = char:WaitForChild("HumanoidRootPart")
+			self._humanoid = char:WaitForChild("Humanoid")
 			if self._humanoid.Sit == false then
 				self._hrp.CFrame = targetHrp.CFrame
 			end
