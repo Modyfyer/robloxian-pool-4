@@ -23,6 +23,8 @@ local MAX_WATER: number = 100
 
 local MenuVisibilityComponent = require(ReplicatedStorage.Client.Components.MenuVisibilityComponent)
 
+local ColorPickerUIController
+
 local HUDUIController = Knit.CreateController({
 	Name = "HUDUIController",
 })
@@ -95,6 +97,8 @@ function HUDUIController:_connectAnimationHandlers()
 end
 
 function HUDUIController:KnitStart()
+	ColorPickerUIController = Knit.GetController("ColorPickerUIController")
+
 	local function showTooltip(x: number, y: number, text: string)
 		self._tooltip.Position = UDim2.new(0, x + OFFSET, 0, y + OFFSET)
 		self._tooltip.Visible = true
@@ -126,6 +130,12 @@ function HUDUIController:KnitStart()
 	MenuVisibilityComponent:WaitForInstance(self._settingsMenu):andThen(function(myInstance)
 		self._trove:Connect(self._settingsButton.Activated, function()
 			myInstance:ToggleVisibility()
+			if not myInstance.MenuVisible then
+				ColorPickerUIController:Hide()
+			end
+		end)
+		self._trove:Connect(myInstance.MenuClosed, function()
+			ColorPickerUIController:Hide()
 		end)
 	end)
 

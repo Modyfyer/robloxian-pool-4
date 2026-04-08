@@ -15,7 +15,7 @@ local MenuVisibilityComponent = Component.new({
 })
 MenuVisibilityComponent._debounce = false
 MenuVisibilityComponent.MenuVisible = false
-MenuVisibilityComponent.ToggleSignal = Signal.new()
+MenuVisibilityComponent.MenuClosed = Signal.new()
 
 function MenuVisibilityComponent:Construct()
 	self._trove = Trove.new()
@@ -80,10 +80,7 @@ end
 function MenuVisibilityComponent:Start()
 	self._trove:Connect(self._closeButton.Activated, function()
 		self:ToggleVisibility()
-	end)
-
-	self._trove:Connect(self.ToggleSignal, function()
-		self:ToggleVisibility()
+		self.MenuClosed:Fire()
 	end)
 end
 
