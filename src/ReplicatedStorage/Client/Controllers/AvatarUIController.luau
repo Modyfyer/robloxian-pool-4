@@ -15,7 +15,8 @@ local AvatarUIController = Knit.CreateController({
 function AvatarUIController:KnitStart() end
 
 function AvatarUIController:KnitInit()
-	-- self._mainFrame = PlayerGui:WaitForChild("MainFrame") :: Frame
+	self._screenGui = PlayerGui:WaitForChild("AvatarGui") :: ScreenGui
+	self._mainFrame = self._screenGui:WaitForChild("MainFrame") :: Frame
 
 	-- self._background = self._mainFrame:WaitForChild("BG") :: ImageLabel
 end

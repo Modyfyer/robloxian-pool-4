@@ -3,6 +3,8 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local Trove = require(ReplicatedStorage.Packages.Trove)
 
 local ASSETS_FOLDER = ReplicatedStorage:WaitForChild("Assets") :: Folder
+local minOrbitRadius = 1
+local maxOrbitRadius = 6
 
 local LocalEnvironmentController = Knit.CreateController({
 	Name = "LocalEnvironmentController",
@@ -14,8 +16,6 @@ function LocalEnvironmentController:_spawnButterfly(spawnLocation: SpawnLocation
 	butterfly.Parent = self._butterfliesFolder
 	local plane = butterfly:WaitForChild("Plane")
 
-	local minOrbitRadius = 1
-	local maxOrbitRadius = 6
 	local orbitRadius = math.random(minOrbitRadius, maxOrbitRadius)
 	local theta = math.rad(math.random(0, 360))
 
