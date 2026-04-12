@@ -7,6 +7,8 @@ local Component = require(ReplicatedStorage.Packages.Component)
 local Promise = require(ReplicatedStorage.Packages.Promise)
 local Trove = require(ReplicatedStorage.Packages.Trove)
 
+local ASSETS_FOLDER: Folder = ReplicatedStorage:WaitForChild("Assets")
+
 local EatComponent = Component.new({
 	Tag = "EatComponent",
 	Ancestors = { workspace },
@@ -41,7 +43,7 @@ function EatComponent:Start()
 			:andThenCall(anim.Play, anim)
 			:andThenCall(Promise.delay, 0.4)
 			:andThenCall(function()
-				local chip = ReplicatedStorage:WaitForChild("Foods"):WaitForChild("Chip"):Clone()
+				local chip = ASSETS_FOLDER:WaitForChild("Chip"):Clone()
 				chip.Parent = char
 				self.chip = chip
 				self._eatingTrove:Add(chip)
