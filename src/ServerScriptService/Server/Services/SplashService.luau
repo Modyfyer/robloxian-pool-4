@@ -9,6 +9,8 @@ local Trove = require(ReplicatedStorage.Packages.Trove)
 -- Declarations
 local terr = workspace.Terrain
 
+local ASSETS_FOLDER = ReplicatedStorage:WaitForChild("Assets") :: Folder
+
 -- Constants
 local WATER_LEVEL = 28
 
@@ -65,7 +67,7 @@ function SplashService:KnitStart()
 end
 
 function SplashService:KnitInit()
-	self._splashParticle = ReplicatedStorage:WaitForChild("SplashParticle") :: ParticleEmitter
+	self._splashParticle = ASSETS_FOLDER:WaitForChild("SplashParticle") :: ParticleEmitter
 end
 
 return SplashService
