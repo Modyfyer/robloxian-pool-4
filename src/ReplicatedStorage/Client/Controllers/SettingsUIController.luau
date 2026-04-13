@@ -114,7 +114,7 @@ function SettingsUIController:_saveSettings()
 	if self._settings ~= nil then
 		settings = self._settings
 	end
-	SettingsService.SaveHUDSettings:Fire(settings)
+	SettingsService:SaveHUDSettings(settings)
 end
 
 function SettingsUIController:KnitInit()
@@ -133,10 +133,10 @@ end
 function SettingsUIController:KnitStart()
 	SettingsService = Knit.GetService("SettingsService")
 
-	-- self._trove:Connect(SettingsService.HUDSettingsLoaded, function(settings)
-	-- 	self._settings = settings
-	-- 	self:_loadSettings()
-	-- end)
+	SettingsService.HUDSettingsLoaded:Connect(function(settings)
+		self._settings = settings
+		self:_loadSettings()
+	end)
 end
 
 return SettingsUIController
