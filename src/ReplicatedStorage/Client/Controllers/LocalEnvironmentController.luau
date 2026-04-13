@@ -121,7 +121,7 @@ function LocalEnvironmentController:KnitInit()
 	self._spawn2 = self._butterfliesFolder:WaitForChild("bfSp2") :: SpawnLocation
 	self._butterfly = ASSETS_FOLDER:WaitForChild("Butterfly") :: Model
 
-	ReplicatedStorage.Mountains:Clone().Parent = workspace
+	ASSETS_FOLDER.Mountains:Clone().Parent = workspace
 
 	self._rainSound = ASSETS_FOLDER:WaitForChild("Sounds"):WaitForChild("Rain")
 	self._rainPart = ASSETS_FOLDER:WaitForChild("RainPart"):Clone()
