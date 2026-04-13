@@ -5,6 +5,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 
 -- Packages
 local Knit = require(ReplicatedStorage.Packages.Knit)
+-- local Promise = require(ReplicatedStorage.Packages.Promise)
 local Trove = require(ReplicatedStorage.Packages.Trove)
 
 -- Data
@@ -75,11 +76,12 @@ function CabanaService:RentCabana(player: Player, cabana: Instance)
 end
 
 function CabanaService.Client:GetLastCabanaRentalTime(player: Player)
-	return DataService:GetKey(player, "cabanaRentalTime")
+	local ret = DataService:GetKey(player, "cabanaRentalTime")
+	return ret
 end
 
 function CabanaService.Client:RequestCabanaRental(player: Player, cabana: Instance)
-	self:RentCabana(player, cabana)
+	self.Server:RentCabana(player, cabana)
 end
 
 function CabanaService.Client:SaveCabanaSettings(player: Player, settings: SharedSettings.cabanaSettings)
@@ -98,7 +100,7 @@ function CabanaService:KnitStart()
 
 	self._trove:Connect(MarketService.PurchaseGranted, function(player: Player, itemName: string)
 		if itemName == "Cabana" then
-			table.insert(self._playersWithRentalPass, player.UserId)
+			table.insert(self.PlayersWithRentalPass, player.UserId)
 		end
 	end)
 end
