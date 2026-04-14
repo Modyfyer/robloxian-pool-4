@@ -1,24 +1,27 @@
+-- Services
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+-- Packages
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
+-- Declarations
 local ADJUSTMENT_VAL: number = 5
 local MAX_VAL: number = 100
 local WATER_LEVEL: number = 28
 
-local uis = game:GetService("UserInputService")
 local cam = workspace.CurrentCamera
-local ts = game:GetService("TweenService")
 local blur = game.Lighting:WaitForChild("RunBlur")
+local running = false
+local hum
 
 local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
 
-local blurOn = ts:Create(blur, tweenInfo, { Size = 5 })
-local blurOff = ts:Create(blur, tweenInfo, { Size = 0 })
-local tweenOn = ts:Create(cam, tweenInfo, { FieldOfView = 90 })
-local tweenOff = ts:Create(cam, tweenInfo, { FieldOfView = 70 })
-
-local running = false
-local hum
+local blurOn = TweenService:Create(blur, tweenInfo, { Size = 5 })
+local blurOff = TweenService:Create(blur, tweenInfo, { Size = 0 })
+local tweenOn = TweenService:Create(cam, tweenInfo, { FieldOfView = 90 })
+local tweenOff = TweenService:Create(cam, tweenInfo, { FieldOfView = 70 })
 
 local PlayerController = Knit.CreateController({
 	Name = "PlayerController",
@@ -31,7 +34,7 @@ function PlayerController:KnitStart()
 	local pl = Knit.Player
 	self.currentTask = nil
 
-	uis.InputBegan:Connect(function(input)
+	UserInputService.InputBegan:Connect(function(input)
 		if running == false and hum then
 			if input.KeyCode == Enum.KeyCode.LeftShift then
 				blurOff:Pause()
@@ -44,7 +47,7 @@ function PlayerController:KnitStart()
 		end
 	end)
 
-	uis.InputEnded:Connect(function(input)
+	UserInputService.InputEnded:Connect(function(input)
 		if running == true and hum then
 			if input.KeyCode == Enum.KeyCode.LeftShift then
 				blurOn:Pause()

@@ -10,7 +10,6 @@ local SettingsService = Knit.CreateService({
 	Name = "SettingsService",
 	Client = {
 		HUDSettingsLoaded = Knit.CreateSignal(),
-		SaveSettings = Knit.CreateSignal(),
 	},
 })
 
