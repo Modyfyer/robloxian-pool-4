@@ -64,37 +64,37 @@ function NPCSpotComponent:Start()
 			dia.Parent = playerModel
 			playerModel.HumanoidRootPart.CFrame = self.Instance.CFrame + Vector3.new(0, 3.2, 0)
 
+			playerModel:AddTag("NPCComponent")
+
 			return playerModel
 		end)
+		:andThenCall(Promise.delay, 2)
 		:andThen(function(playerModel)
-			task.delay(2, function()
-				if not self._isWalker then
-					playerModel.HumanoidRootPart.Anchored = true
-				else
-					local walkScript = ServerStorage.NPCStuff.Walk:Clone()
-					walkScript.Parent = playerModel
-					walkScript.Disabled = false
-					local walkVal = Instance.new("BoolValue")
-					walkVal.Name = "Walker"
-					walkVal.Parent = playerModel
-				end
+			if not self._isWalker then
+				playerModel.HumanoidRootPart.Anchored = true
+			else
+				local walkScript = ServerStorage.NPCStuff.Walk:Clone()
+				walkScript.Parent = playerModel
+				walkScript.Disabled = false
+				local walkVal = Instance.new("BoolValue")
+				walkVal.Name = "Walker"
+				walkVal.Parent = playerModel
+			end
 
-				local talkPart = Instance.new("Part")
-				talkPart.Transparency = 1
-				talkPart.CanCollide = false
-				talkPart.Name = "TalkPart"
-				talkPart.Size = Vector3.new(1, 1, 1)
-				talkPart.Parent = playerModel
+			local talkPart = Instance.new("Part")
+			talkPart.Transparency = 1
+			talkPart.CanCollide = false
+			talkPart.Name = "TalkPart"
+			talkPart.Size = Vector3.new(1, 1, 1)
+			talkPart.Parent = playerModel
 
-				local tpWeld = Instance.new("Weld")
-				tpWeld.Part0 = playerModel.Head
-				tpWeld.Part1 = talkPart
-				tpWeld.C0 = CFrame.new(0, 1.5, 0)
-				tpWeld.Parent = talkPart
+			local tpWeld = Instance.new("Weld")
+			tpWeld.Part0 = playerModel.Head
+			tpWeld.Part1 = talkPart
+			tpWeld.C0 = CFrame.new(0, 1.5, 0)
+			tpWeld.Parent = talkPart
 
-				self._trove:Add(playerModel)
-				self._trove:Add(talkPart)
-			end)
+			self._trove:Add(playerModel)
 		end)
 end
 

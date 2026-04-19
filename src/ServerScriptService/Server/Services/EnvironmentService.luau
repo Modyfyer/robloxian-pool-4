@@ -150,12 +150,23 @@ local function placeTrees()
 	end
 end
 
+local function playMusicBox()
+	local MusicBox = workspace.Decoration.Reginamusicbox.Regina["Sang An Aegir - Music box"]
+	while task.wait(300) do
+		MusicBox.Playing = true
+		MusicBox.Parent.Notes.Enabled = true
+		task.wait(46.163)
+		MusicBox.Parent.Notes.Enabled = false
+	end
+end
+
 function EnvironmentService:KnitStart()
 	clouds = workspace:WaitForChild("Terrain"):WaitForChild("Clouds")
 	self._isRaining = ReplicatedStorage.IsRaining
 	self:_initializeTweens()
 	placeTrees()
 	self:_weatherCycle()
+	playMusicBox()
 end
 
 function EnvironmentService:KnitInit()

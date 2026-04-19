@@ -1,11 +1,13 @@
 -- Services
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ServerStorage = game:GetService("ServerStorage")
 
 -- Packages
 local Component = require(ReplicatedStorage.Packages.Component)
 local Promise = require(ReplicatedStorage.Packages.Promise)
 local Trove = require(ReplicatedStorage.Packages.Trove)
+
+-- Declarations
+local ASSETS_FOLDER: Folder = ReplicatedStorage:WaitForChild("Assets")
 
 local VendingComponent = Component.new({
 	Tag = "VendingComponent",
@@ -41,6 +43,9 @@ function VendingComponent:_vendItem(player: Player, button)
 
 	self.isVending = true
 
+	local sodaPack = ASSETS_FOLDER:WaitForChild("SodaPack") :: Model
+	local sodaTools = ASSETS_FOLDER:WaitForChild("SodaTools") :: Model
+
 	Promise.resolve()
 		:andThenCall(function()
 			button.BrickColor = BrickColor.new("Smoky grey")
@@ -49,13 +54,13 @@ function VendingComponent:_vendItem(player: Player, button)
 		end)
 		:andThenCall(self.sound.Play, self.sound)
 		:andThenCall(function()
-			local fakeSoda = ServerStorage:WaitForChild("SodaPack")[button.SodaType.Value]:Clone()
+			local fakeSoda = sodaPack[button.SodaType.Value]:Clone()
 			fakeSoda.Parent = self.Instance
 			fakeSoda.CFrame = self.machineSpawn.CFrame
 			self._vendingTrove:Add(fakeSoda)
 		end)
 		:andThenCall(function()
-			local tool = ServerStorage:WaitForChild("SodaTools")[button.SodaType.Value]:Clone()
+			local tool = sodaTools[button.SodaType.Value]:Clone()
 			tool.Parent = player.Backpack
 		end)
 		:andThenCall(Promise.delay, 3)
