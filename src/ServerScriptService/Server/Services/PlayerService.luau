@@ -1,6 +1,18 @@
+-- Services
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+-- Packages
 local Knit = require(ReplicatedStorage.Packages.Knit)
+local Trove = require(ReplicatedStorage.Packages.Trove)
+
+-- Types
+export type PlayerStat = {
+	Water: number,
+	Oxygen: number,
+	Color: Color3,
+}
 
 local PlayerService = Knit.CreateService({
 	Name = "PlayerService",
@@ -10,22 +22,33 @@ local PlayerService = Knit.CreateService({
 		UpdateColor = Knit.CreateSignal(),
 	},
 })
+PlayerService.PlayerStats = {} :: { [Player]: PlayerStat }
+PlayerService.PlayerTroves = {}
 
+local DISTANCE: number = 5e7
 local DEFAULT_COLOR: Color3 = Color3.new(0.835294, 0.45098, 0.239216)
+local DEFAULT_WALKSPEED: number = 16
 local MAX_OXYGEN: number = 100
 local MAX_WATER: number = 100
 
 ----- Private Functions -----
-function PlayerService:_equipStats(pl)
+function PlayerService:_equipStats(pl: Player)
 	pl:SetAttribute("Oxygen", MAX_OXYGEN)
 	pl:SetAttribute("Water", MAX_WATER)
 	pl:SetAttribute("Color", DEFAULT_COLOR)
+
+	self.PlayerStats[pl] = {
+		Water = MAX_WATER,
+		Oxygen = MAX_OXYGEN,
+		Color = DEFAULT_COLOR,
+	}
 end
 
-function PlayerService:_getNearestBrick(pl)
-	local Distance = 5e7
+function PlayerService:_getNearestBrick(pl: Player): BasePart
+	local char = pl.Character
+	local Distance = DISTANCE
 	local Part = nil
-	local hrp = pl.Character:WaitForChild("HumanoidRootPart")
+	local hrp = char:WaitForChild("HumanoidRootPart")
 	local drownSpots = workspace:WaitForChild("DrownSpots")
 
 	for _, v in pairs(drownSpots:GetChildren()) do
@@ -42,58 +65,56 @@ function PlayerService:_getNearestBrick(pl)
 	return Part
 end
 
-function PlayerService:_drown(pl)
+function PlayerService:_drown(pl: Player)
 	local drownSpot = self:_getNearestBrick(pl)
-	pl.Character:MoveTo(drownSpot.Position)
+
+	local char = pl.Character
+	char:MoveTo(drownSpot.Position)
+	char.Humanoid.WalkSpeed = DEFAULT_WALKSPEED
+
+	self.PlayerStats[pl].Oxygen = MAX_OXYGEN
 	pl:SetAttribute("Oxygen", MAX_OXYGEN)
-	pl.Character.Humanoid.WalkSpeed = 16
 end
 
-function PlayerService:_doOxygen(pl)
-	task.spawn(function()
-		local function checkOxygen()
-			local oxy = pl:GetAttribute("Oxygen")
-			if oxy <= 0 then
-				local hum = pl.Character:FindFirstChild("Humanoid")
-				hum.WalkSpeed = 0
-				task.wait(3)
-				self:_drown(pl)
-			end
-		end
-
-		pl.AttributeChanged:Connect(function(attr)
-			if attr == "Oxygen" then
-				checkOxygen()
-			end
-		end)
-
-		checkOxygen()
-	end)
+function PlayerService:_checkOxygen(pl: Player)
+	local char = pl.Character
+	if not char then
+		return
+	end
+	if self.PlayerStats[pl].Oxygen <= 0 then
+		local hum = char:FindFirstChild("Humanoid")
+		hum.WalkSpeed = 0
+		task.wait(3)
+		self:_drown(pl)
+	end
 end
 
 function PlayerService:_changeOxygen(pl: Player, amt: number)
-	local current = pl:GetAttribute("Oxygen") or 0
+	local current = self.PlayerStats[pl].Oxygen or 0
 	local newVal = current + amt
 	if newVal > MAX_OXYGEN then
 		newVal = MAX_OXYGEN
 	elseif newVal < 0 then
 		newVal = 0
 	end
+	self.PlayerStats[pl].Oxygen = newVal
 	pl:SetAttribute("Oxygen", newVal)
 end
 
 function PlayerService:_changeWater(pl: Player, amt: number)
-	local current = pl:GetAttribute("Water") or 0
+	local current = self.PlayerStats[pl].Water or 0
 	local newVal = current + amt
 	if newVal > MAX_WATER then
 		newVal = MAX_WATER
 	elseif newVal < 0 then
 		newVal = 0
 	end
+	self.PlayerStats[pl].Water = newVal
 	pl:SetAttribute("Water", newVal)
 end
 
-function PlayerService:_updateColor(pl: Player, color)
+function PlayerService:_updateColor(pl: Player, color: Color3)
+	self.PlayerStats[pl].Color = color
 	pl:SetAttribute("Color", color)
 
 	for _, v in pairs(pl.Backpack:GetChildren()) do
@@ -113,40 +134,48 @@ end
 
 function PlayerService:_characterAdded(player: Player)
 	self:_equipStats(player)
-	self:_doOxygen(player)
+end
+
+function PlayerService:_playerAdded(player: Player)
+	self.PlayerTroves[player] = Trove.new()
+	self.PlayerTroves[player]:Connect(player.CharacterAdded, function()
+		self:_characterAdded(player)
+	end)
+	self.PlayerTroves[player]:Connect(RunService.RenderStepped, function()
+		self:_checkOxygen(player)
+	end)
 end
 
 ----- Client Methods -----
-function PlayerService.Client:ChangeOxygen(pl, amt)
+function PlayerService.Client:ChangeOxygen(pl: Player, amt: number)
 	self.Server:_changeOxygen(pl, amt)
 end
 
-function PlayerService.Client:ChangeWater(pl, amt)
+function PlayerService.Client:ChangeWater(pl: Player, amt: number)
 	self.Server:_changeWater(pl, amt)
 end
 
-function PlayerService.Client:UpdateColor(pl, color)
+function PlayerService.Client:UpdateColor(pl: Player, color: Color3)
 	self.Server:_updateColor(pl, color)
 end
 
 ----- Initialize -----
 function PlayerService:KnitStart()
-	Players.PlayerAdded:Connect(function(pl)
-		pl.CharacterAdded:Connect(function()
-			self:_characterAdded(pl)
-		end)
+	Players.PlayerAdded:Connect(function(pl: Player)
+		self:_playerAdded(pl)
+	end)
+
+	Players.PlayerRemoving:Connect(function(pl: Player)
+		if self.PlayerTroves[pl] then
+			self.PlayerTroves[pl]:Destroy()
+		end
 	end)
 end
 
 function PlayerService:KnitInit()
-	for _, pl in ipairs(Players:GetPlayers()) do
-		task.spawn(function()
-			if pl.Character then
-				self:_characterAdded(pl)
-			end
-			pl.CharacterAdded:Connect(function()
-				self:_characterAdded(pl)
-			end)
+	for _, pl in Players:GetPlayers() do
+		task.defer(function()
+			self._characterAdded(pl)
 		end)
 	end
 end
