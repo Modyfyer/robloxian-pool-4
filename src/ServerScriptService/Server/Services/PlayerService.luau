@@ -1,7 +1,6 @@
 -- Services
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
 
 -- Packages
 local Knit = require(ReplicatedStorage.Packages.Knit)
@@ -14,6 +13,15 @@ export type PlayerStat = {
 	Color: Color3,
 }
 
+-- Declarations
+local ADJUSTMENT_VAL: number = 5
+local DISTANCE: number = 5e7
+local DEFAULT_COLOR: Color3 = Color3.new(0.835294, 0.45098, 0.239216)
+local DEFAULT_WALKSPEED: number = 16
+local MAX_OXYGEN: number = 100
+local MAX_WATER: number = 100
+local WATER_LEVEL: number = 28
+
 local PlayerService = Knit.CreateService({
 	Name = "PlayerService",
 	Client = {
@@ -24,12 +32,6 @@ local PlayerService = Knit.CreateService({
 })
 PlayerService.PlayerStats = {} :: { [Player]: PlayerStat }
 PlayerService.PlayerTroves = {}
-
-local DISTANCE: number = 5e7
-local DEFAULT_COLOR: Color3 = Color3.new(0.835294, 0.45098, 0.239216)
-local DEFAULT_WALKSPEED: number = 16
-local MAX_OXYGEN: number = 100
-local MAX_WATER: number = 100
 
 ----- Private Functions -----
 function PlayerService:_equipStats(pl: Player)
@@ -76,11 +78,37 @@ function PlayerService:_drown(pl: Player)
 	pl:SetAttribute("Oxygen", MAX_OXYGEN)
 end
 
+function PlayerService:_adjustStatsWhileUnderwater(pl: Player)
+	local char = pl.Character
+	if not char then
+		return
+	end
+
+	local head = char:WaitForChild("Head")
+	if not head then
+		return
+	end
+	local currentOxygen = self.PlayerStats[pl].Oxygen
+
+	if head.Position.Y < WATER_LEVEL then
+		if currentOxygen > 0 then
+			self:ChangeOxygen(pl, -ADJUSTMENT_VAL)
+		end
+		local currentWater = self.PlayerStats[pl].Water
+		if currentWater < MAX_WATER then
+			self:ChangeWater(pl, ADJUSTMENT_VAL)
+		end
+	elseif head.Position.Y > WATER_LEVEL and currentOxygen < MAX_OXYGEN then
+		self:ChangeOxygen(pl, ADJUSTMENT_VAL)
+	end
+end
+
 function PlayerService:_checkOxygen(pl: Player)
 	local char = pl.Character
 	if not char then
 		return
 	end
+
 	if self.PlayerStats[pl].Oxygen <= 0 then
 		local hum = char:FindFirstChild("Humanoid")
 		hum.WalkSpeed = 0
@@ -89,8 +117,12 @@ function PlayerService:_checkOxygen(pl: Player)
 	end
 end
 
-function PlayerService:_changeOxygen(pl: Player, amt: number)
-	local current = self.PlayerStats[pl].Oxygen or 0
+function PlayerService:GetPlayerStats(player: Player)
+	return self.PlayerStats[player]
+end
+
+function PlayerService:ChangeOxygen(pl: Player, amt: number)
+	local current = self.PlayerStats[pl].Oxygen
 	local newVal = current + amt
 	if newVal > MAX_OXYGEN then
 		newVal = MAX_OXYGEN
@@ -101,8 +133,8 @@ function PlayerService:_changeOxygen(pl: Player, amt: number)
 	pl:SetAttribute("Oxygen", newVal)
 end
 
-function PlayerService:_changeWater(pl: Player, amt: number)
-	local current = self.PlayerStats[pl].Water or 0
+function PlayerService:ChangeWater(pl: Player, amt: number)
+	local current = self.PlayerStats[pl].Water
 	local newVal = current + amt
 	if newVal > MAX_WATER then
 		newVal = MAX_WATER
@@ -141,20 +173,16 @@ function PlayerService:_playerAdded(player: Player)
 	self.PlayerTroves[player]:Connect(player.CharacterAdded, function()
 		self:_characterAdded(player)
 	end)
-	self.PlayerTroves[player]:Connect(RunService.RenderStepped, function()
-		self:_checkOxygen(player)
+	local task = task.defer(function()
+		while task.wait(1) do
+			self:_checkOxygen(player)
+			self:_adjustStatsWhileUnderwater(player)
+		end
 	end)
+	self.PlayerTroves[player]:Add(task)
 end
 
 ----- Client Methods -----
-function PlayerService.Client:ChangeOxygen(pl: Player, amt: number)
-	self.Server:_changeOxygen(pl, amt)
-end
-
-function PlayerService.Client:ChangeWater(pl: Player, amt: number)
-	self.Server:_changeWater(pl, amt)
-end
-
 function PlayerService.Client:UpdateColor(pl: Player, color: Color3)
 	self.Server:_updateColor(pl, color)
 end
@@ -168,6 +196,9 @@ function PlayerService:KnitStart()
 	Players.PlayerRemoving:Connect(function(pl: Player)
 		if self.PlayerTroves[pl] then
 			self.PlayerTroves[pl]:Destroy()
+		end
+		if self.PlayerStats[pl] then
+			self.PlayerStats[pl] = nil
 		end
 	end)
 end

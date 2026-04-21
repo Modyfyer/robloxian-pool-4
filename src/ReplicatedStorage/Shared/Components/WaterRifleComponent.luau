@@ -1,12 +1,17 @@
+-- Services
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
 
+-- Packages
 local Component = require(ReplicatedStorage.Packages.Component)
-local Signal = require(ReplicatedStorage.Packages.Signal)
+local Knit = require(ReplicatedStorage.Packages.Knit)
 local Trove = require(ReplicatedStorage.Packages.Trove)
 
+-- Declarations
 local CURSOR_IMAGE: string = "rbxasset://textures/cursors/CrossMouseIcon.png"
+
+local ToolService = Knit.GetService("ToolService")
 
 local WaterRifleComponent = Component.new({
 	Tag = "WaterRifleComponent",
@@ -21,7 +26,6 @@ function WaterRifleComponent:Construct()
 	end
 
 	self.Handle = self.Instance:WaitForChild("Handle")
-	self.ShootEvent = Signal.new()
 end
 
 function WaterRifleComponent:Start()
@@ -30,23 +34,13 @@ function WaterRifleComponent:Start()
 	elseif RunService:IsClient() then
 		self:StartClient()
 	end
-
-	self.ShootEvent:Connect(function(part: BasePart, loc: CFrame)
-		self:OnServerShoot(part, loc)
-	end)
 end
 
 function WaterRifleComponent:StartServer()
 	-- Server-side shoot handling
 end
 
-function WaterRifleComponent:OnServerShoot(part: BasePart, loc: CFrame)
-	local player = self:GetPlayerFromPart(part)
-	if player then
-		local watLev = player:GetAttribute("Water")
-		watLev -= 1
-	end
-
+function WaterRifleComponent:RifleFired(part: BasePart, loc: CFrame)
 	local atB = Instance.new("Attachment")
 	atB.Position = part.CFrame:ToObjectSpace(loc).Position
 	atB.Parent = part
@@ -56,60 +50,39 @@ function WaterRifleComponent:OnServerShoot(part: BasePart, loc: CFrame)
 	beam.Attachment1 = atB
 	sound:Play()
 
-	-- TODO: use PlayerService
-	-- if self:GetPlayerFromPart(part) ~= nil then
-	-- 	local dedPlayer = self:GetPlayerFromPart(part)
-	-- 	local oxy = dedPlayer.Character:FindFirstChild("Oxygen")
-
-	-- 	if oxy ~= nil then
-	-- 		oxy.Value = oxy.Value - 5
-	-- 	end
-	-- end
-
 	task.wait(0.2)
 	atB:Destroy()
 end
 
-function WaterRifleComponent:GetPlayerFromPart(part: BasePart): Player?
-	local player: Player? = nil
-
-	local partParent = part.Parent
-	if partParent.ClassName == "Accessory" or partParent.ClassName == "Hat" then
-		if partParent.Parent ~= workspace then
-			player = Players:GetPlayerFromCharacter(partParent.Parent)
-		end
-	elseif partParent.ClassName == "Model" and Players:GetPlayerFromCharacter(part.Parent) then
-		player = Players:GetPlayerFromCharacter(part.Parent)
-	end
-
-	return player
-end
-
 function WaterRifleComponent:StartClient()
-	local LocalPlayer = Players.LocalPlayer
-	local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-	local hrp = Character:WaitForChild("HumanoidRootPart")
+	local LocalPlayer: Player = Players.LocalPlayer
+	local Character: Model = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+	local hrp: BasePart = Character:WaitForChild("HumanoidRootPart") :: BasePart
 	local Mouse: Mouse = LocalPlayer:GetMouse()
-	local Water = LocalPlayer:GetAttribute("Water")
 
-	self.Instance.Equipped:Connect(function()
+	self._trove:Connect(self.Instance.Equipped, function()
 		Mouse.Icon = CURSOR_IMAGE
 	end)
 
-	self.Instance.Unequipped:Connect(function()
+	self._trove:Connect(self.Instance.Unequipped, function()
 		Mouse.Icon = ""
 	end)
 
 	local debounce: boolean = false
 
 	local function onActivated()
-		if debounce == false and Water >= 1 then
+		if debounce then
+			return
+		end
+		local Water = LocalPlayer:GetAttribute("Water")
+		if Water > 0 then
 			debounce = true
-			while debounce and Water >= 1 do
+			while debounce and Water > 0 do
 				task.wait(0.2)
-				if (Mouse.Target ~= nil) and ((hrp.Position - Mouse.Hit.Position).Magnitude < 30) and Water >= 1 then
-					self.ShootEvent:Fire(Mouse.Target, Mouse.Hit)
-					Water -= 1
+				if (Mouse.Target ~= nil) and ((hrp.Position - Mouse.Hit.Position).Magnitude < 30) then
+					self:RifleFired(Mouse.Target, Mouse.Hit)
+					ToolService:WaterFired(Mouse.Target)
+					Water = LocalPlayer:GetAttribute("Water")
 				end
 			end
 		end
@@ -123,9 +96,6 @@ function WaterRifleComponent:StartClient()
 
 	self._trove:Connect(self.Instance.Activated, onActivated)
 	self._trove:Connect(self.Instance.Deactivated, onDeactivated)
-	-- self._trove:Connect(Water.Changed, function()
-	-- 	-- Water value changed
-	-- end)
 end
 
 function WaterRifleComponent:Stop()

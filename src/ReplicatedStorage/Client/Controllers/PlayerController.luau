@@ -1,4 +1,5 @@
 -- Services
+local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -7,14 +8,10 @@ local UserInputService = game:GetService("UserInputService")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 -- Declarations
-local ADJUSTMENT_VAL: number = 5
-local MAX_VAL: number = 100
-local WATER_LEVEL: number = 28
-
 local cam = workspace.CurrentCamera
-local blur = game.Lighting:WaitForChild("RunBlur")
-local running = false
-local hum
+local blur: BlurEffect = Lighting:WaitForChild("RunBlur")
+local running: boolean = false
+local hum = nil
 
 local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
 
@@ -30,66 +27,37 @@ local PlayerController = Knit.CreateController({
 function PlayerController:KnitInit() end
 
 function PlayerController:KnitStart()
-	local PlayerService = Knit.GetService("PlayerService")
-	local pl = Knit.Player
-	self.currentTask = nil
-
 	UserInputService.InputBegan:Connect(function(input)
-		if running == false and hum then
-			if input.KeyCode == Enum.KeyCode.LeftShift then
-				blurOff:Pause()
-				blurOn:Play()
-				tweenOff:Pause()
-				tweenOn:Play()
-				hum.WalkSpeed = 45
-				running = true
-			end
+		if running then
+			return
+		end
+		if input.KeyCode == Enum.KeyCode.LeftShift and hum then
+			blurOff:Pause()
+			blurOn:Play()
+			tweenOff:Pause()
+			tweenOn:Play()
+			hum.WalkSpeed = 45
+			running = true
 		end
 	end)
 
 	UserInputService.InputEnded:Connect(function(input)
-		if running == true and hum then
-			if input.KeyCode == Enum.KeyCode.LeftShift then
-				blurOn:Pause()
-				blurOff:Play()
-				tweenOn:Pause()
-				tweenOff:Play()
-				hum.WalkSpeed = 16
-				running = false
-			end
+		if not running then
+			return
+		end
+		if input.KeyCode == Enum.KeyCode.LeftShift and hum then
+			blurOn:Pause()
+			blurOff:Play()
+			tweenOn:Pause()
+			tweenOff:Play()
+			hum.WalkSpeed = 16
+			running = false
 		end
 	end)
 
-	local function setupCharacter(ch)
-		if self.currentTask then
-			task.cancel(self.currentTask)
-		end
-
-		local head = ch:WaitForChild("Head")
+	Knit.Player.CharacterAdded:Connect(function(ch)
 		hum = ch:WaitForChild("Humanoid")
-
-		self.currentTask = task.spawn(function()
-			while task.wait(1) do
-				local oxy = pl:GetAttribute("Oxygen") or MAX_VAL
-				local water = pl:GetAttribute("Water") or MAX_VAL
-				if head.Position.Y < WATER_LEVEL then
-					if oxy > 0 then
-						PlayerService:ChangeOxygen(-ADJUSTMENT_VAL)
-					end
-					if water < MAX_VAL then
-						PlayerService:ChangeWater(ADJUSTMENT_VAL)
-					end
-				elseif head.Position.Y > WATER_LEVEL and oxy < MAX_VAL then
-					PlayerService:ChangeOxygen(ADJUSTMENT_VAL)
-				end
-			end
-		end)
-	end
-
-	pl.CharacterAdded:Connect(setupCharacter)
-	if pl.Character then
-		setupCharacter(pl.Character)
-	end
+	end)
 end
 
 return PlayerController

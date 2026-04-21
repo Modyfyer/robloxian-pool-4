@@ -1,6 +1,13 @@
+-- Services
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- Packages
 local Knit = require(ReplicatedStorage.Packages.Knit)
+local Trove = require(ReplicatedStorage.Packages.Trove)
+
+-- Declarations
+local PlayerService
 
 local ToolService = Knit.CreateService({
 	Name = "ToolService",
@@ -9,6 +16,7 @@ local ToolService = Knit.CreateService({
 		PlaceFloaty = Knit.CreateSignal(),
 	},
 })
+ToolService._trove = Trove.new()
 
 function ToolService:KnitInit()
 	local toolsFolder = ReplicatedStorage:WaitForChild("Tools")
@@ -27,14 +35,16 @@ function ToolService:_placeFloaty(player: Player)
 	local existingFloaty = char:FindFirstChild("Floaty")
 	if existingFloaty then
 		local floatyKind = player:GetAttribute("FloatyType")
-		if floatyKind then
-			local floatyModel = self._floatyFolder:FindFirstChild(floatyKind)
-			if floatyModel then
-				local floatyClone = floatyModel:Clone()
-				floatyClone.Name = "Floaty"
-				floatyClone.Parent = char
-				floatyClone:SetPrimaryPartCFrame(char.HumanoidRootPart.CFrame * CFrame.new(0, 0, -8))
-			end
+		if not floatyKind then
+			return
+		end
+
+		local floatyModel = self._floatyFolder:FindFirstChild(floatyKind)
+		if floatyModel then
+			local floatyClone = floatyModel:Clone()
+			floatyClone.Name = "Floaty"
+			floatyClone.Parent = char
+			floatyClone:SetPrimaryPartCFrame(char.HumanoidRootPart.CFrame * CFrame.new(0, 0, -8))
 		end
 	else
 		existingFloaty:Destroy()
@@ -100,6 +110,30 @@ function ToolService:_placeTowel(player: Player)
 	end
 end
 
+function ToolService:_getPlayerFromPart(part: BasePart): Player?
+	local player: Player? = nil
+
+	local partParent = part.Parent
+	if partParent.ClassName == "Accessory" or partParent.ClassName == "Hat" then
+		if partParent.Parent ~= workspace then
+			player = Players:GetPlayerFromCharacter(partParent.Parent)
+		end
+	elseif partParent.ClassName == "Model" and Players:GetPlayerFromCharacter(part.Parent) then
+		player = Players:GetPlayerFromCharacter(part.Parent)
+	end
+
+	return player
+end
+
+function ToolService:_fireWater(player: Player, part: BasePart)
+	PlayerService:ChangeWater(player, -1)
+
+	local foundPlayer: Player? = self:_getPlayerFromPart(part)
+	if foundPlayer ~= nil then
+		PlayerService:ChangeOxygen(foundPlayer, -5)
+	end
+end
+
 function ToolService.Client:PlaceTowel(player: Player)
 	ToolService:_placeTowel(player)
 end
@@ -108,10 +142,16 @@ function ToolService.Client:PlaceFloaty(player: Player)
 	ToolService:_placeFloaty(player)
 end
 
+function ToolService.Client:WaterFired(player: Player, part: BasePart)
+	ToolService:_fireWater(player, part)
+end
+
 function ToolService:KnitStart()
+	PlayerService = Knit.GetService("PlayerService")
+
 	self:RegisterTowelTemplates()
 
-	Players.PlayerAdded:Connect(function(player)
+	self._trove:Connect(Players.PlayerAdded, function(player)
 		local FloatyTypeValue = Instance.new("StringValue")
 		FloatyTypeValue.Name = "FloatyType"
 		FloatyTypeValue.Value = "Default"
