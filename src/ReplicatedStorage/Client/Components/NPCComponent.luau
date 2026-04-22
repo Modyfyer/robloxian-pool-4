@@ -23,7 +23,6 @@ function NPCComponent:Construct()
 
 	self._proximityPrompt = self.Instance:WaitForChild("ProximityPrompt")
 	self._dialog = self.Instance:WaitForChild("Dialog")
-	self._talkPart = self.Instance:WaitForChild("TalkPart")
 
 	self._interactionCooldown = false
 end
@@ -47,7 +46,7 @@ function NPCComponent:Start()
 		if self._interactionCooldown then
 			return
 		end
-
+		self._talkPart = self.Instance:WaitForChild("TalkPart")
 		local currentNPCPos = self.Instance.HumanoidRootPart.CFrame
 		local newPos = Vector3.new(hrp.Position.X, currentNPCPos.Position.Y, hrp.Position.Z)
 		local focusTween = TweenService:Create(

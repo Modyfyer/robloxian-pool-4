@@ -64,11 +64,8 @@ function NPCSpotComponent:Start()
 			dia.Parent = playerModel
 			playerModel.HumanoidRootPart.CFrame = self.Instance.CFrame + Vector3.new(0, 3.2, 0)
 
-			playerModel:AddTag("NPCComponent")
-
 			return playerModel
 		end)
-		:andThenCall(Promise.delay, 2)
 		:andThen(function(playerModel)
 			if not self._isWalker then
 				playerModel.HumanoidRootPart.Anchored = true
@@ -93,6 +90,8 @@ function NPCSpotComponent:Start()
 			tpWeld.Part1 = talkPart
 			tpWeld.C0 = CFrame.new(0, 1.5, 0)
 			tpWeld.Parent = talkPart
+
+			playerModel:AddTag("NPCComponent")
 
 			self._trove:Add(playerModel)
 		end)

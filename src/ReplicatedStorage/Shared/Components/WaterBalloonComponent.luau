@@ -1,15 +1,16 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
+-- Services
 local Debris = game:GetService("Debris")
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
+-- Packages
 local Component = require(ReplicatedStorage.Packages.Component)
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local Promise = require(ReplicatedStorage.Packages.Promise)
-local Signal = require(ReplicatedStorage.Packages.Signal)
 local Trove = require(ReplicatedStorage.Packages.Trove)
 
-local PlayerService
+local ToolService
 
 local ADJUSTMENT_VAL: number = 20
 
@@ -27,20 +28,15 @@ function WaterBalloonComponent:Construct()
 	end
 
 	self.Handle = self.Instance:WaitForChild("Handle")
-	self.BalloonEvent = Signal.new()
 end
 
 function WaterBalloonComponent:Start()
-	PlayerService = Knit.GetService("PlayerService")
+	ToolService = Knit.GetService("ToolService")
 	if RunService:IsServer() then
 		self:StartServer()
 	elseif RunService:IsClient() then
 		self:StartClient()
 	end
-
-	self.BalloonEvent:Connect(function(target: Vector3)
-		self:FireBalloon(target)
-	end)
 end
 
 function WaterBalloonComponent:StartServer() end
@@ -100,14 +96,7 @@ function WaterBalloonComponent:BalloonHit(balloon: BasePart)
 			snd:Play()
 			balloon:Destroy()
 
-			-- TODO: use PlayerService
-			-- local plTarg = Players:GetPlayerFromCharacter(p.Parent)
-			-- if plTarg then
-			-- 	local oxygen = plTarg:GetAttribute("Oxygen")
-			-- 	if oxygen then
-			-- 		oxygen -= ADJUSTMENT_VAL
-			-- 	end
-			-- end
+			ToolService:WaterFired(p.Parent)
 
 			self._fireTrove:Clean()
 		end
@@ -143,8 +132,8 @@ function WaterBalloonComponent:StartClient()
 		if waterAmount >= ADJUSTMENT_VAL and debounce and not thrown then
 			holdAnim:Stop()
 			throwAnim:Play()
-			self.BalloonEvent:Fire(Mouse.Hit.Position)
-			PlayerService:ChangeWater(-ADJUSTMENT_VAL)
+			self:FireBalloon(Mouse.Hit.Position)
+
 			thrown = true
 			task.wait(5)
 			debounce = false
