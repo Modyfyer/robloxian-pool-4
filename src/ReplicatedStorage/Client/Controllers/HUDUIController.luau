@@ -115,20 +115,36 @@ function HUDUIController:KnitStart()
 		self._tooltip.Visible = false
 	end
 
+	local function hideAllMenusExcept(myInstance)
+		for _, v in self._menuInstances do
+			if v ~= myInstance then
+				v:Hide()
+			end
+		end
+	end
+
+	self._menuInstances = {}
+
 	MenuVisibilityComponent:WaitForInstance(self._avatarMenu):andThen(function(myInstance)
+		table.insert(self._menuInstances, myInstance)
 		self._trove:Connect(self._avatarButton.Activated, function()
+			hideAllMenusExcept(myInstance)
 			myInstance:ToggleVisibility()
 		end)
 	end)
 
 	MenuVisibilityComponent:WaitForInstance(self._emotesMenu):andThen(function(myInstance)
+		table.insert(self._menuInstances, myInstance)
 		self._trove:Connect(self._emotesButton.Activated, function()
+			hideAllMenusExcept(myInstance)
 			myInstance:ToggleVisibility()
 		end)
 	end)
 
 	MenuVisibilityComponent:WaitForInstance(self._settingsMenu):andThen(function(myInstance)
+		table.insert(self._menuInstances, myInstance)
 		self._trove:Connect(self._settingsButton.Activated, function()
+			hideAllMenusExcept(myInstance)
 			myInstance:ToggleVisibility()
 			if not myInstance.MenuVisible then
 				ColorPickerUIController:Hide()
@@ -140,7 +156,9 @@ function HUDUIController:KnitStart()
 	end)
 
 	MenuVisibilityComponent:WaitForInstance(self._shopsMenu):andThen(function(myInstance)
+		table.insert(self._menuInstances, myInstance)
 		self._trove:Connect(self._shopsButton.Activated, function()
+			hideAllMenusExcept(myInstance)
 			myInstance:ToggleVisibility()
 		end)
 	end)
