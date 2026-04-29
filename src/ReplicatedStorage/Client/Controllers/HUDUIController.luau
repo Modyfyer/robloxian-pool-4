@@ -9,15 +9,17 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local Promise = require(ReplicatedStorage.Packages.Promise)
 local Trove = require(ReplicatedStorage.Packages.Trove)
 
+-- Data
+local ItemsData = require(ReplicatedStorage.Data.ItemsData)
+
 -- Declarations
 local PlayerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
 local drownTweenInfo: TweenInfo = TweenInfo.new(3, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
 local lifeguardButtonTweenInfo: TweenInfo = TweenInfo.new(8, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, -1)
 local barTweenInfo: TweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 
-local OFFSET = 50
+local OFFSET: number = 50
 local DEFAULT_WALKSPEED: number = 16
-local LIFEGUARD_GAMEPASS_ID = 703084245
 local MAX_OXYGEN: number = 100
 local MAX_WATER: number = 100
 
@@ -176,7 +178,7 @@ function HUDUIController:KnitStart()
 	self._trove:Connect(self._emotesButton.MouseLeave, hideTooltip)
 
 	self._trove:Connect(self._lifeguardButton.Activated, function()
-		MarketplaceService:PromptGamePassPurchase(Knit.Player, LIFEGUARD_GAMEPASS_ID)
+		MarketplaceService:PromptGamePassPurchase(Knit.Player, ItemsData.LifeguardGamepassID)
 	end)
 	self._lifeguardSpinTween:Play()
 

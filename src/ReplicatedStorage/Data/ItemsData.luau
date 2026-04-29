@@ -6,6 +6,8 @@ type DevProduct = {
 
 local ItemsData = {}
 
+ItemsData.LifeguardGamepassID = 703084245
+
 ItemsData.DevProducts = {
 	{ Amount = 1, DeveloperProductId = 1555280575, ProductName = "CabanaRental24h" },
 } :: { DevProduct }
