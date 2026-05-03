@@ -32,70 +32,16 @@ local HUDUIController = Knit.CreateController({
 })
 HUDUIController._trove = Trove.new()
 
-function HUDUIController:_connectAnimationHandlers()
-	--Character declarations
-	-- local character = Knit.Player.Character
-	-- local hrp = character:WaitForChild("HumanoidRootPart")
-	-- local humanoid = character:WaitForChild("Humanoid")
-
-	--local debounce: boolean = false
-
-	--Animations--
-	-- local function cannonballAnimation(anim: Animation, action: Enum.KeyCode)
-	-- 	if not debounce then
-	-- 		if humanoid.Sit == false then
-	-- 			debounce = true
-	-- 			local animTrack = humanoid:LoadAnimation(anim)
-	-- 			local force = Instance.new("VectorForce")
-
-	-- 			force.Parent = hrp
-	-- 			force.Force = Vector3.new(0, 4500, -1200)
-	-- 			force.ApplyAtCenterOfMass = true
-	-- 			force.Attachment0 = hrp:FindFirstChildWhichIsA("Attachment")
-
-	-- 			animTrack:Play()
-	-- 			humanoid.Sit = true
-
-	-- 			--actionUI.UIStroke.Enabled = true
-	-- 			task.wait(.5)
-	-- 			force:Destroy()
-	-- 			task.wait(3)
-	-- 			debounce = false
-
-	-- 			--actionUI.UIStroke.Enabled = false
-	-- 		end
-	-- 	end
-	-- end
-
-	--Input handler--
-	-- local function onInputBegan(input)
-	-- 	if input.UserInputType ~= Enum.UserInputType.Keyboard then
-	-- 		return
-	-- 	end
-	-- 	--local keycode: string = input.KeyCode.Name
-
-	-- 	-- if not self.actionSelected then
-	-- 	-- 	for _, action: Frame in pairs(actionKeys) do
-	-- 	-- 		if action:GetAttribute("Keybind") == keycode then
-	-- 	-- 			--Find the animation that matches the keybind
-	-- 	-- 			for _, anim: Animation in pairs(self._actionsAnimations:GetChildren()) do
-	-- 	-- 				local keybind: string? = anim:GetAttribute("Keybind")
-	-- 	-- 				if keybind == keycode then
-	-- 	-- 					if keybind == "X" then
-	-- 	-- 						cannonballAnimation(anim, action)
-	-- 	-- 					elseif keybind == "C" then
-	-- 	-- 						diveAnimation(anim)
-	-- 	-- 					end
-	-- 	-- 				end
-	-- 	-- 			end
-	-- 	-- 		end
-	-- 	-- 	end
-	-- 	-- end
-	-- end
-
-	-- self._trove:Connect(UserInputService.InputBegan, function(input)
-	-- 	onInputBegan(input)
-	-- end)
+function HUDUIController:SetActionFrameSelection(keycode: string, highlighted: boolean)
+	local actionFrames = self._actionsFrame:GetChildren()
+	for _, actionFrame in actionFrames do
+		if not actionFrame:IsA("Frame") then
+			continue
+		end
+		if actionFrame:GetAttribute("Keybind") == keycode then
+			actionFrame.UIStroke.Enabled = highlighted
+		end
+	end
 end
 
 function HUDUIController:KnitStart()
@@ -271,7 +217,7 @@ function HUDUIController:KnitInit()
 	self._progressBars = self._mainFrame:WaitForChild("ProgressBars") :: Frame
 	self._tooltip = self._mainFrame:WaitForChild("ButtonTooltip") :: Frame
 
-	self._actionsAnimations = self._actionsMenu:WaitForChild("Animations") :: Folder
+	self._actionsFrame = self._actionsMenu:WaitForChild("MainFrame"):WaitForChild("Actions") :: ScrollingFrame
 	self._oxygenBar =
 		self._progressBars:WaitForChild("OxygenMeter"):WaitForChild("BG"):WaitForChild("Amount") :: ImageLabel
 	self._oxygenVal = Knit.Player:GetAttribute("Oxygen")
