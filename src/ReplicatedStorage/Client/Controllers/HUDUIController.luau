@@ -17,6 +17,7 @@ local PlayerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
 local drownTweenInfo: TweenInfo = TweenInfo.new(3, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
 local lifeguardButtonTweenInfo: TweenInfo = TweenInfo.new(8, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, -1)
 local barTweenInfo: TweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+local actionsMenuTweenInfo: TweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
 
 local OFFSET: number = 50
 local DEFAULT_WALKSPEED: number = 16
@@ -140,6 +141,31 @@ function HUDUIController:KnitStart()
 	self._trove:Connect(self._shopsButton.MouseMoved, setTooltipPosition)
 	self._trove:Connect(self._shopsButton.MouseLeave, hideTooltip)
 
+	local startPosition = UDim2.fromScale(-1, self._actionsMainFrame.Position.Y.Scale)
+	local actionsMenuTweenOpen = TweenService:Create(
+		self._actionsMainFrame,
+		actionsMenuTweenInfo,
+		{ Position = UDim2.fromScale(self._actionsMainFrame.Position.X.Scale, self._actionsMainFrame.Position.Y.Scale) }
+	)
+	local actionsMenuTweenClose = TweenService:Create(
+		self._actionsMainFrame,
+		actionsMenuTweenInfo,
+		{ Position = UDim2.fromScale(-1, self._actionsMainFrame.Position.Y.Scale) }
+	)
+	self._actionsMainFrame.Position = startPosition
+
+	self._trove:Connect(self._actionsOpenButton.Activated, function()
+		self._actionsMainFrame.Visible = true
+		self._actionsOpenButton.Visible = false
+		actionsMenuTweenOpen:Play()
+	end)
+	self._trove:Connect(self._actionsCloseButton.Activated, function()
+		actionsMenuTweenClose:Play()
+		actionsMenuTweenClose.Completed:Wait()
+		self._actionsMainFrame.Visible = false
+		self._actionsOpenButton.Visible = true
+	end)
+
 	local function onOxygenValueChanged()
 		self._oxygenVal = Knit.Player:GetAttribute("Oxygen")
 
@@ -217,7 +243,12 @@ function HUDUIController:KnitInit()
 	self._progressBars = self._mainFrame:WaitForChild("ProgressBars") :: Frame
 	self._tooltip = self._mainFrame:WaitForChild("ButtonTooltip") :: Frame
 
-	self._actionsFrame = self._actionsMenu:WaitForChild("MainFrame"):WaitForChild("Actions") :: ScrollingFrame
+	self._actionsMainFrame = self._actionsMenu:WaitForChild("MainFrame") :: ImageLabel
+	self._actionsOpenButton = self._actionsMenu:WaitForChild("ButtonOpen") :: ImageButton
+
+	self._actionsFrame = self._actionsMainFrame:WaitForChild("Actions") :: Frame
+	self._actionsCloseButton = self._actionsMainFrame:WaitForChild("ButtonClose") :: ImageButton
+
 	self._oxygenBar =
 		self._progressBars:WaitForChild("OxygenMeter"):WaitForChild("BG"):WaitForChild("Amount") :: ImageLabel
 	self._oxygenVal = Knit.Player:GetAttribute("Oxygen")
