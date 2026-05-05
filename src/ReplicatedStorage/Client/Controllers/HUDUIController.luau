@@ -20,12 +20,12 @@ local barTweenInfo: TweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.E
 local actionsMenuTweenInfo: TweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
 
 local OFFSET: number = 50
-local DEFAULT_WALKSPEED: number = 16
 local MAX_OXYGEN: number = 100
 local MAX_WATER: number = 100
 
 local MenuVisibilityComponent = require(ReplicatedStorage.Client.Components.MenuVisibilityComponent)
 
+local AnimationController
 local ColorPickerUIController
 
 local HUDUIController = Knit.CreateController({
@@ -46,6 +46,7 @@ function HUDUIController:SetActionFrameSelection(keycode: string, highlighted: b
 end
 
 function HUDUIController:KnitStart()
+	AnimationController = Knit.GetController("AnimationController")
 	ColorPickerUIController = Knit.GetController("ColorPickerUIController")
 
 	local function showTooltip(x: number, y: number, text: string)
@@ -124,6 +125,11 @@ function HUDUIController:KnitStart()
 	self._trove:Connect(self._emotesButton.MouseMoved, setTooltipPosition)
 	self._trove:Connect(self._emotesButton.MouseLeave, hideTooltip)
 
+	self._trove:Connect(self._lifeguardButton.MouseEnter, function(x, y)
+		showTooltip(x, y, "Lifeguard Pass")
+	end)
+	self._trove:Connect(self._lifeguardButton.MouseMoved, setTooltipPosition)
+	self._trove:Connect(self._lifeguardButton.MouseLeave, hideTooltip)
 	self._trove:Connect(self._lifeguardButton.Activated, function()
 		MarketplaceService:PromptGamePassPurchase(Knit.Player, ItemsData.LifeguardGamepassID)
 	end)
@@ -180,30 +186,7 @@ function HUDUIController:KnitStart()
 			end)
 
 		if self._oxygenVal <= 0 then
-			local character = Knit.Player.Character
-			if not character then
-				return
-			end
-
-			local humanoid = character:WaitForChild("Humanoid")
-			if not humanoid then
-				return
-			end
-			Promise.resolve()
-				:andThenCall(function()
-					self._drownFrame.Visible = true
-				end)
-				:andThenCall(self._drownAnimA.Play, self._drownAnimA)
-				:andThenCall(function()
-					humanoid.WalkSpeed = 0
-				end)
-				:andThenCall(Promise.delay, 4)
-				:andThenCall(self._drownAnimB.Play, self._drownAnimB)
-				:andThenCall(Promise.delay, 3)
-				:finallyCall(function()
-					self._drownFrame.Visible = false
-					humanoid.WalkSpeed = DEFAULT_WALKSPEED
-				end)
+			AnimationController:PlayDrownAnimation()
 		end
 	end
 
@@ -239,7 +222,7 @@ function HUDUIController:KnitInit()
 	self._sidebarRight = self._mainFrame:WaitForChild("SidebarRight") :: Frame
 
 	self._actionsMenu = self._mainFrame:WaitForChild("ActionsMenu") :: Frame
-	self._drownFrame = self._mainFrame:WaitForChild("DrownAnim") :: Frame
+	self.DrownFrame = self._mainFrame:WaitForChild("DrownAnim") :: Frame
 	self._progressBars = self._mainFrame:WaitForChild("ProgressBars") :: Frame
 	self._tooltip = self._mainFrame:WaitForChild("ButtonTooltip") :: Frame
 
@@ -256,8 +239,8 @@ function HUDUIController:KnitInit()
 	self._waterBar =
 		self._progressBars:WaitForChild("WaterMeter"):WaitForChild("BG"):WaitForChild("Amount") :: ImageLabel
 	self._waterVal = Knit.Player:GetAttribute("Water")
-	self._drownAnimA = TweenService:Create(self._drownFrame, drownTweenInfo, { BackgroundTransparency = 0 }) :: Tween
-	self._drownAnimB = TweenService:Create(self._drownFrame, drownTweenInfo, { BackgroundTransparency = 1 }) :: Tween
+	self.DrownAnimA = TweenService:Create(self.DrownFrame, drownTweenInfo, { BackgroundTransparency = 0 }) :: Tween
+	self.DrownAnimB = TweenService:Create(self.DrownFrame, drownTweenInfo, { BackgroundTransparency = 1 }) :: Tween
 
 	self._avatarButton = self._sidebarLeft:WaitForChild("AvatarButton"):WaitForChild("Button") :: GuiButton
 	self._emotesButton = self._sidebarLeft:WaitForChild("EmotesButton"):WaitForChild("Button") :: GuiButton

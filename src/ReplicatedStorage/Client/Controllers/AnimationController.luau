@@ -6,6 +6,7 @@ local UserInputService = game:GetService("UserInputService")
 
 -- Packages
 local Knit = require(ReplicatedStorage.Packages.Knit)
+local Promise = require(ReplicatedStorage.Packages.Promise)
 local Trove = require(ReplicatedStorage.Packages.Trove)
 
 -- Declarations
@@ -14,6 +15,7 @@ local AnimationsFolder = AssetsFolder:WaitForChild("Animations") :: Folder
 
 local FRONT_FLIP_DISTANCE = 8
 local FRONT_FLIP_TIME = 1
+local DEFAULT_WALKSPEED = 16
 
 local HUDUIController
 
@@ -36,6 +38,34 @@ local function getCharacterMass(char): number
 		end
 	end
 	return mass
+end
+
+function AnimationController:PlayDrownAnimation()
+	local character = Knit.Player.Character
+	if not character then
+		return
+	end
+
+	local humanoid = character:FindFirstChild("Humanoid") :: Humanoid?
+	if not humanoid then
+		return
+	end
+
+	Promise.resolve()
+		:andThenCall(function()
+			HUDUIController.DrownFrame.Visible = true
+		end)
+		:andThenCall(HUDUIController.DrownAnimA.Play, HUDUIController.DrownAnimA)
+		:andThenCall(function()
+			humanoid.WalkSpeed = 0
+		end)
+		:andThenCall(Promise.delay, 4)
+		:andThenCall(HUDUIController.DrownAnimB.Play, HUDUIController.DrownAnimB)
+		:andThenCall(Promise.delay, 3)
+		:finallyCall(function()
+			HUDUIController.DrownFrame.Visible = false
+			humanoid.WalkSpeed = DEFAULT_WALKSPEED
+		end)
 end
 
 function AnimationController:KnitStart()
