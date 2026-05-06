@@ -172,11 +172,8 @@ function HUDUIController:KnitStart()
 		self._actionsOpenButton.Visible = true
 	end)
 
-	local function onOxygenValueChanged()
-		self._oxygenVal = Knit.Player:GetAttribute("Oxygen")
-
-		local scaled: number = math.clamp((self._oxygenVal / MAX_OXYGEN), 0, 1)
-		local tween = TweenService:Create(self._oxygenBar, barTweenInfo, { Size = UDim2.fromScale(scaled, 1) })
+	local function playBarTween(bar: GuiObject, scaled: number)
+		local tween = TweenService:Create(bar, barTweenInfo, { Size = UDim2.fromScale(scaled, 1) })
 
 		Promise.resolve()
 			:andThenCall(tween.Play, tween)
@@ -184,6 +181,13 @@ function HUDUIController:KnitStart()
 			:finallyCall(function()
 				tween:Destroy()
 			end)
+	end
+
+	local function onOxygenValueChanged()
+		self._oxygenVal = Knit.Player:GetAttribute("Oxygen")
+
+		local scaled: number = math.clamp((self._oxygenVal / MAX_OXYGEN), 0, 1)
+		playBarTween(self._oxygenBar, scaled)
 
 		if self._oxygenVal <= 0 then
 			AnimationController:PlayDrownAnimation()
@@ -194,14 +198,7 @@ function HUDUIController:KnitStart()
 		self._waterVal = Knit.Player:GetAttribute("Water")
 
 		local scaled: number = math.clamp((self._waterVal / MAX_WATER), 0, 1)
-		local tween = TweenService:Create(self._waterBar, barTweenInfo, { Size = UDim2.fromScale(scaled, 1) })
-
-		Promise.resolve()
-			:andThenCall(tween.Play, tween)
-			:andThenCall(Promise.fromEvent, tween.Completed)
-			:finallyCall(function()
-				tween:Destroy()
-			end)
+		playBarTween(self._waterBar, scaled)
 	end
 
 	self._trove:Connect(Knit.Player:GetAttributeChangedSignal("Oxygen"), onOxygenValueChanged)
