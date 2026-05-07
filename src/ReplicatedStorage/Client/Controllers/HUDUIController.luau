@@ -172,6 +172,14 @@ function HUDUIController:KnitStart()
 		self._actionsOpenButton.Visible = true
 	end)
 
+	self._trove:Connect(self._actionsOpenButton.MouseEnter, function(x, y)
+		showTooltip(x + OFFSET, y, "Actions")
+	end)
+	self._trove:Connect(self._actionsOpenButton.MouseMoved, function(x, y)
+		setTooltipPosition(x + OFFSET, y)
+	end)
+	self._trove:Connect(self._actionsOpenButton.MouseLeave, hideTooltip)
+
 	local function playBarTween(bar: GuiObject, scaled: number)
 		local tween = TweenService:Create(bar, barTweenInfo, { Size = UDim2.fromScale(scaled, 1) })
 
