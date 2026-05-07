@@ -1,4 +1,5 @@
 -- Services
+local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
@@ -10,8 +11,13 @@ local Trove = require(ReplicatedStorage.Packages.Trove)
 -- Modules
 local SharedSettings = require(ReplicatedStorage.Data.SharedSettings)
 
+-- Types
+type Settings = SharedSettings.hudSettings
+
 -- Declarations
 local PlayerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
+
+local SETTING_TAG = "Setting"
 
 local SettingsService
 
@@ -19,6 +25,7 @@ local SettingsUIController = Knit.CreateController({
 	Name = "SettingsUIController",
 })
 SettingsUIController._trove = Trove.new()
+SettingsUIController._settings = nil :: Settings?
 
 function SettingsUIController:_clearSettingsFrame()
 	for _, v in pairs(self._settingsContainer:GetChildren()) do
@@ -63,8 +70,11 @@ function SettingsUIController:_createSettingsFrames()
 		local settingName = settingFrame:GetAttribute("SettingName") :: string
 		table.insert(clicked, index, false)
 
-		if settingName and self._settings[settingName] then
-			amount.Text = self._settings[settingName]
+		local settingAmount = self._settings[settingName]
+		if settingName and settingAmount then
+			amount.Text = settingAmount
+			local xVal = math.clamp(settingAmount / 100, 0, 1)
+			slider.Position = UDim2.fromScale(xVal, 0.5)
 		end
 
 		local function setAll(bool: boolean)
@@ -79,7 +89,11 @@ function SettingsUIController:_createSettingsFrames()
 		end)
 
 		self._trove:Connect(UserInputService.InputEnded, function(input)
-			if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			if
+				input.UserInputType == Enum.UserInputType.MouseButton1
+				or input.UserInputType == Enum.UserInputType.Touch
+				or input.UserInputType == Enum.UserInputType.Gamepad1
+			then
 				clicked[index] = false
 			end
 		end)
@@ -91,15 +105,15 @@ function SettingsUIController:_createSettingsFrames()
 		end)
 	end
 
-	for settingName, _ in pairs(SharedSettings.DefaultHUDSettings) do
-		for index, settingFrame in pairs(self._settingsContainer:GetChildren()) do
-			if settingFrame:IsA("Frame") and settingFrame:GetAttribute("SettingName") == settingName then
-				settingFrame.Visible = true
-				settingFrame.SettingName.Text = settingFrame:GetAttribute("DisplayName") or settingName
-				if settingFrame:GetAttribute("SettingType") == "Slider" then
-					activateSlider(settingFrame, index)
-				end
-			end
+	self._settingsFrames = CollectionService:GetTagged(SETTING_TAG) :: { Frame }
+	for index, settingFrame in pairs(self._settingsFrames) do
+		if not settingFrame:IsA("Frame") then
+			continue
+		end
+		settingFrame.Visible = true
+		settingFrame.SettingName.Text = settingFrame:GetAttribute("DisplayName")
+		if settingFrame:GetAttribute("SettingType") == "Slider" then
+			activateSlider(settingFrame, index)
 		end
 	end
 end
@@ -111,21 +125,22 @@ end
 
 function SettingsUIController:_saveSettings()
 	local settings = SharedSettings.DefaultHUDSettings
+
 	if self._settings ~= nil then
 		settings = self._settings
 	end
-	SettingsService:SaveHUDSettings(settings)
+	SettingsService:SaveSettings(settings)
 end
 
 function SettingsUIController:KnitInit()
 	self._isMobile = UserInputService.TouchEnabled
-	self._settings = {}
 
 	self._screenGui = PlayerGui:WaitForChild("SettingsGui") :: ScreenGui
 
 	self._mainFrame = self._screenGui:WaitForChild("MainFrame") :: Frame
 
 	self._background = self._mainFrame:WaitForChild("BG") :: Frame
+	self._closeButton = self._mainFrame:WaitForChild("CloseButton") :: GuiButton
 
 	self._settingsContainer = self._background:WaitForChild("ScrollingFrame") :: ScrollingFrame
 end
@@ -133,9 +148,13 @@ end
 function SettingsUIController:KnitStart()
 	SettingsService = Knit.GetService("SettingsService")
 
-	SettingsService.HUDSettingsLoaded:Connect(function(settings)
+	SettingsService.HUDSettingsLoaded:Connect(function(settings: Settings)
 		self._settings = settings
 		self:_loadSettings()
+	end)
+
+	self._trove:Connect(self._closeButton.Activated, function()
+		self:_saveSettings()
 	end)
 end
 
