@@ -55,7 +55,7 @@ function SettingsUIController:_createSettingsFrames()
 		local sliderVal: number = roundedOffsetClamped / roundedAbsSize
 		local scaledVal: number = math.clamp((sliderVal * maxVal), 0, 100)
 		local scaledValInt: number = math.modf(scaledVal)
-		local formattedText: string = tostring(scaledValInt)
+		local formattedText: string = `{tostring(scaledValInt)}%`
 		amount.Text = formattedText
 
 		if settingName and self._settings[settingName] then
@@ -72,7 +72,7 @@ function SettingsUIController:_createSettingsFrames()
 
 		local settingAmount = self._settings[settingName]
 		if settingName and settingAmount then
-			amount.Text = settingAmount
+			amount.Text = `{settingAmount}%`
 			local xVal = math.clamp(settingAmount / 100, 0, 1)
 			slider.Position = UDim2.fromScale(xVal, 0.5)
 		end
