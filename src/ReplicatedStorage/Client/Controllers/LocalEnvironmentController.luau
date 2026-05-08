@@ -1,15 +1,22 @@
+-- Services
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
-
 local SoundService = game:GetService("SoundService")
 
+-- Packages
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local Trove = require(ReplicatedStorage.Packages.Trove)
 
+-- Declarations
 local ASSETS_FOLDER = ReplicatedStorage:WaitForChild("Assets") :: Folder
+
+local RAIN_SOUND = "Rain"
+
 local minOrbitRadius = 1
 local maxOrbitRadius = 6
+
+local SoundController
 
 local LocalEnvironmentController = Knit.CreateController({
 	Name = "LocalEnvironmentController",
@@ -29,7 +36,6 @@ end
 
 local function renderRain(self)
 	local rainPart = self._rainPart
-	local rainSound = self._rainSound
 	local isRaining = self._isRaining
 	local ch = self._ch
 	local cam = self._cam
@@ -49,15 +55,12 @@ local function renderRain(self)
 	if (isRaining.Value == true) and not raycastResult then
 		rainPart.Rain.Enabled = true
 
-		if rainSound.IsPaused == true then
-			rainSound:Play()
-		end
+		SoundController:PlaySound(RAIN_SOUND)
 	else
 		rainPart.Rain.Enabled = false
 		rainPart.Rain:Clear()
-		if rainSound.IsPaused == false then
-			rainSound:Stop()
-		end
+
+		SoundController:StopSound(RAIN_SOUND)
 	end
 end
 
@@ -79,6 +82,8 @@ function LocalEnvironmentController:_updateUnderwater()
 end
 
 function LocalEnvironmentController:KnitStart()
+	SoundController = Knit.GetController("SoundController")
+
 	for _ = 1, 4 do
 		self:_spawnButterfly(self._spawn1)
 		self:_spawnButterfly(self._spawn2)
@@ -91,15 +96,14 @@ function LocalEnvironmentController:KnitStart()
 
 		self._rainPart.Parent = self._cam
 
-		local renderConnect = RunService.RenderStepped:Connect(function()
+		self._trove:Connect(RunService.RenderStepped, function()
 			renderRain(self)
 		end)
-		self._trove:Add(renderConnect)
 
-		self._hum.Died:Connect(function()
-			renderConnect:Disconnect()
+		self._trove:Connect(self._hum.Died, function()
 			self._rainPart:Destroy()
-			self._rainSound:Stop()
+			SoundController:StopSound(RAIN_SOUND)
+			self._trove:Clean()
 		end)
 	end
 
@@ -109,10 +113,9 @@ function LocalEnvironmentController:KnitStart()
 	end
 
 	-- Underwater effects
-	local underwaterConnect = RunService.RenderStepped:Connect(function()
+	RunService.RenderStepped:Connect(function()
 		self:_updateUnderwater()
 	end)
-	self._trove:Add(underwaterConnect)
 end
 
 function LocalEnvironmentController:KnitInit()
@@ -123,7 +126,6 @@ function LocalEnvironmentController:KnitInit()
 
 	ASSETS_FOLDER.Mountains:Clone().Parent = workspace
 
-	self._rainSound = ASSETS_FOLDER:WaitForChild("Sounds"):WaitForChild("Rain")
 	self._rainPart = ASSETS_FOLDER:WaitForChild("RainPart"):Clone()
 	self._isRaining = ReplicatedStorage:WaitForChild("IsRaining")
 
