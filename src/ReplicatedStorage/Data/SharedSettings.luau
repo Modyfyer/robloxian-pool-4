@@ -8,7 +8,7 @@ export type allowedFriends = "All" | "Friends" | "None"
 
 export type channel = "News" | "Weather" | "Kittens"
 
-export type settingType = "OnOff" | "Slider" | "TextEntry"
+export type settingType = "Toggle" | "Slider" | "TextEntry" | "Button"
 
 export type cabanaSettings = {
 	accentColors: colorRGB,
@@ -21,6 +21,7 @@ export type hudSettings = {
 	musicVolume: number,
 	sfxVolume: number,
 	uiVolume: number,
+	accessoryColor: colorRGB,
 }
 
 local module = {}
@@ -40,12 +41,18 @@ local hSettings: hudSettings = {
 	musicVolume = 0,
 	sfxVolume = 0,
 	uiVolume = 0,
+	accessoryColor = {
+		red = 255,
+		green = 255,
+		blue = 255,
+	},
 }
 
 local hudSettingsDisplayInfo: { [string]: settingType } = {
 	musicVolume = "Slider",
 	sfxVolume = "Slider",
 	uiVolume = "Slider",
+	accessoryColor = "Button",
 }
 
 module.DefaultCabanaSettings = cSettings
