@@ -6,7 +6,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 -- Modules
 local DataTypes = require(ServerScriptService.Data.DataTypes)
 local Knit = require(ReplicatedStorage.Packages.Knit)
-local ProfileService = require(ServerScriptService.Data.ProfileService)
+local ProfileStore = require(ServerScriptService.ServerPackages.ProfileStore)
 local Signal = require(ReplicatedStorage.Packages.Signal)
 
 -- Declarations
@@ -22,41 +22,41 @@ local DataService = Knit.CreateService({
 })
 
 local Profiles: { [Player]: DataTypes.DataTemplate } = {}
+local PlayerStore = ProfileStore.New(DataTypes.PlayerDataStoreName, DataTypes.ProfileTemplate)
+
 ----- Private Functions -----
 function DataService:_onLoadedProfile(player: Player, profile)
 	self.ProfileLoaded:Fire(player, profile.Data)
 end
 
 function DataService:_loadPlayerData(player: Player)
-	local profile = nil
-
-	if ProfileService.ServiceLocked then -- Server is shutting down
+	if ProfileStore.IsClosing then -- Server is shutting down
 		player:Kick()
+		return
 	end
 
-	local ProfileStore = ProfileService.GetProfileStore(self.PlayerDataStoreName, self.Template)
+	local profile = PlayerStore:StartSessionAsync(self.PlayerDataKey .. player.UserId, {
+		Cancel = function()
+			return player:IsDescendantOf(Players) == false
+		end,
+	})
 
-	local success, err = pcall(function()
-		profile = ProfileStore:LoadProfileAsync(self.PlayerDataKey .. player.UserId)
-	end)
-
-	if success and profile and profile.Data then
+	if profile ~= nil then
 		profile:AddUserId(player.UserId)
 		profile:Reconcile()
-		profile:ListenToRelease(function()
+		profile.OnSessionEnd:Connect(function()
 			Profiles[player] = nil
 			player:Kick()
 		end)
 		if player:IsDescendantOf(Players) then
 			Profiles[player] = profile
 			self:_onLoadedProfile(player, profile)
-		--onLoadedProfile(player, profile)
 		else
-			profile:Release()
+			profile:EndSession()
 		end
 	else
-		player:Kick(`Error loading profile: {tostring(err)}`)
-		warn("Unable to load profile for", player.Name, ":", tostring(err))
+		player:Kick("Error loading profile")
+		warn("Unable to load profile for", player.Name)
 	end
 end
 
@@ -65,7 +65,7 @@ function DataService:_savePlayerData(player: Player)
 	if profile ~= nil then
 		print(`Saving data for {player.UserId}`)
 		print(profile.Data)
-		profile:Release()
+		profile:EndSession()
 	else
 		warn("Unable to find profile for", player.UserId)
 	end
@@ -90,43 +90,40 @@ end
 
 function DataService:GetKey(player: Player, key: string): any
 	local data = self:GetProfileData(player)
-	if data then
-		local tokens = string.split(key, ".")
-		local pos = data
-		for i, t in tokens do
-			if pos[t] ~= nil then
-				if i == #tokens then
-					return pos[t]
-				end
-				pos = pos[t]
+	assert(data, `Data not found for {player.UserId}`)
+
+	local tokens = string.split(key, ".")
+	local pos = data
+	for i, t in tokens do
+		if pos[t] ~= nil then
+			if i == #tokens then
+				return pos[t]
 			end
+			pos = pos[t]
 		end
-		error("Unable to find key " .. key)
 	end
+	error("Unable to find key " .. key)
 	return nil
 end
 
-function DataService:SetKey(player: Player, key: string, value: any): boolean
+function DataService:SetKey(player: Player, key: string, value: any): boolean?
 	local data = self:GetProfileData(player)
-	if data then
-		local tokens = string.split(key, ".")
-		local pos = data
-		for i, t in tokens do
-			if pos[t] ~= nil then
-				if i == #tokens then
-					if typeof(value) == typeof(pos[t]) then
-						pos[t] = value
-						return true
-					else
-						warn("Set key types do not match!")
-						return false
-					end
+	assert(data, `Data not found for {player.UserId}`)
+	local tokens = string.split(key, ".")
+	local pos = data
+	for i, t in tokens do
+		if pos[t] ~= nil then
+			if i == #tokens then
+				if typeof(value) == typeof(pos[t]) then
+					pos[t] = value
+					return true
+				else
+					warn("Set key types do not match!")
+					return false
 				end
-				pos = pos[t]
 			end
+			pos = pos[t]
 		end
-	else
-		warn("Data not found")
 	end
 	return false
 end
@@ -135,6 +132,10 @@ end
 function DataService:KnitStart()
 	Players.PlayerAdded:Connect(function(player: Player)
 		self:_loadPlayerData(player)
+	end)
+
+	Players.PlayerRemoving:Connect(function(player: Player)
+		self:_savePlayerData(player)
 	end)
 end
 

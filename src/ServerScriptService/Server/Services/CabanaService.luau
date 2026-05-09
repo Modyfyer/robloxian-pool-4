@@ -85,8 +85,7 @@ function CabanaService.Client:RequestCabanaRental(player: Player, cabana: Instan
 end
 
 function CabanaService.Client:SaveCabanaSettings(player: Player, settings: SharedSettings.cabanaSettings)
-	local saved = DataService:SetKey(player, "cabanaSettings", settings)
-	warn("Data saved for", player.Name, ":", saved)
+	DataService:SetKey(player, "cabanaSettings", settings)
 end
 
 function CabanaService:KnitStart()
