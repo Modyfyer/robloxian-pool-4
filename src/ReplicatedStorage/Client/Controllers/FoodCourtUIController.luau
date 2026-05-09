@@ -1,16 +1,17 @@
---Services
+-- Services
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- Packages
---local Component = require(ReplicatedStorage.Packages.Component)
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local Trove = require(ReplicatedStorage.Packages.Trove)
 
 -- Declarations
 local PlayerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
 local ASSETS_FOLDER: Folder = ReplicatedStorage:WaitForChild("Assets")
+
+local FoodOrderService
 
 local FoodCourtUIController = Knit.CreateController({
 	Name = "FoodCourtUIController",
@@ -32,19 +33,18 @@ function FoodCourtUIController:_playerHasTool(plr, toolName): boolean
 	return false
 end
 
-function FoodCourtUIController:_doOrderFood(button: GuiButton, tool: Tool)
-	local event: RemoteEvent = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("OrderFood")
+function FoodCourtUIController:_orderFood(button: GuiButton, tool: Tool)
 	local deb: boolean = false
-	self._trove:Connect(button.MouseButton1Click, function()
+	self._trove:Connect(button.Activated, function()
 		if deb then
 			return
 		end
 
 		deb = true
 		if not self:_playerHasTool(Knit.Player, tool.Name) then
-			event:FireServer(tool)
+			FoodOrderService:OrderFood(tool.Name)
 		end
-		task.wait(3)
+		task.wait(1.5)
 		deb = false
 	end)
 end
@@ -56,10 +56,11 @@ function FoodCourtUIController:_addButton(tool: Tool, parent: GuiObject)
 	button.ItemName.Text = tool.Name
 	button.Visible = true
 
-	self:_doOrderFood(button, tool)
+	self:_orderFood(button, tool)
 end
 
 function FoodCourtUIController:KnitStart()
+	FoodOrderService = Knit.GetService("FoodOrderService")
 	local drinksFolder: Folder = ASSETS_FOLDER:WaitForChild("Drinks") :: Folder
 	local snacksFolder: Folder = ASSETS_FOLDER:WaitForChild("Foods") :: Folder
 	for _, v in pairs(snacksFolder:GetChildren()) do
@@ -77,7 +78,6 @@ end
 
 function FoodCourtUIController:KnitInit()
 	self._screenGui = PlayerGui:WaitForChild("OrderFoodGui") :: ScreenGui
-
 	self._mainFrame = self._screenGui:WaitForChild("MainFrame") :: ImageLabel
 
 	self._drinksFrame = self._mainFrame:WaitForChild("DrinksBG"):WaitForChild("ScrollingFrame") :: ScrollingFrame

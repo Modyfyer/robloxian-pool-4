@@ -11,7 +11,6 @@ local ASSETS_FOLDER: Folder = ReplicatedStorage:WaitForChild("Assets")
 
 local EatComponent = Component.new({
 	Tag = "EatComponent",
-	Ancestors = { workspace },
 })
 
 function EatComponent:Construct()
