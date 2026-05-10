@@ -17,8 +17,7 @@ local DataService = nil
 
 ----- Public Functions -----
 function SettingsService:SaveSettings(player: Player, settings: SharedSettings.hudSettings)
-	local saved = DataService:SetKey(player, "settings", settings)
-	warn("Data saved for", player.Name, ":", saved)
+	DataService:SetKey(player, "settings", settings)
 end
 
 ----- Client Functions -----
