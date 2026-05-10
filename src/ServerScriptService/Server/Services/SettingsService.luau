@@ -20,9 +20,8 @@ local SettingsService = Knit.CreateService({
 SettingsService.PlayerSettings = {} :: { [Player]: Settings }
 
 ----- Public Functions -----
-function SettingsService:SaveSettings(player: Player, settings: Settings)
-	local saved = DataService:SetKey(player, "settings", settings)
-	warn("Data saved for", player.Name, ":", saved)
+function SettingsService:SaveSettings(player: Player, settings: SharedSettings.hudSettings)
+	DataService:SetKey(player, "settings", settings)
 end
 
 ----- Client Functions -----
