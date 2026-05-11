@@ -13,12 +13,12 @@ local MENU_TWEEN_INFO: TweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enu
 local MenuVisibilityComponent = Component.new({
 	Tag = "MenuVisibilityComponent",
 })
-MenuVisibilityComponent._debounce = false
-MenuVisibilityComponent.MenuVisible = false
 MenuVisibilityComponent.MenuClosed = Signal.new()
 
 function MenuVisibilityComponent:Construct()
 	self._trove = Trove.new()
+	self._debounce = false
+	self.MenuVisible = false
 
 	self._mainFrame = self.Instance:WaitForChild("MainFrame")
 
