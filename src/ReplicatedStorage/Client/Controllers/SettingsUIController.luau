@@ -1,4 +1,5 @@
 -- Services
+local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
@@ -10,15 +11,22 @@ local Trove = require(ReplicatedStorage.Packages.Trove)
 -- Modules
 local SharedSettings = require(ReplicatedStorage.Data.SharedSettings)
 
+-- Types
+type Settings = SharedSettings.hudSettings
+
 -- Declarations
 local PlayerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
 
+local SETTING_TAG = "Setting"
+
 local SettingsService
+local ColorPickerUIController
 
 local SettingsUIController = Knit.CreateController({
 	Name = "SettingsUIController",
 })
 SettingsUIController._trove = Trove.new()
+SettingsUIController._settings = nil :: Settings?
 
 function SettingsUIController:_clearSettingsFrame()
 	for _, v in pairs(self._settingsContainer:GetChildren()) do
@@ -48,7 +56,7 @@ function SettingsUIController:_createSettingsFrames()
 		local sliderVal: number = roundedOffsetClamped / roundedAbsSize
 		local scaledVal: number = math.clamp((sliderVal * maxVal), 0, 100)
 		local scaledValInt: number = math.modf(scaledVal)
-		local formattedText: string = tostring(scaledValInt)
+		local formattedText: string = `{tostring(scaledValInt)}%`
 		amount.Text = formattedText
 
 		if settingName and self._settings[settingName] then
@@ -63,8 +71,11 @@ function SettingsUIController:_createSettingsFrames()
 		local settingName = settingFrame:GetAttribute("SettingName") :: string
 		table.insert(clicked, index, false)
 
-		if settingName and self._settings[settingName] then
-			amount.Text = self._settings[settingName]
+		local settingAmount = self._settings[settingName]
+		if settingName and settingAmount then
+			amount.Text = `{settingAmount}%`
+			local xVal = math.clamp(settingAmount / 100, 0, 1)
+			slider.Position = UDim2.fromScale(xVal, 0.5)
 		end
 
 		local function setAll(bool: boolean)
@@ -73,69 +84,103 @@ function SettingsUIController:_createSettingsFrames()
 			end
 		end
 
-		self._trove:Connect(slider.MouseButton1Down, function()
+		self._settingsTrove:Connect(slider.MouseButton1Down, function()
 			setAll(false)
 			clicked[index] = true
 		end)
 
-		self._trove:Connect(UserInputService.InputEnded, function(input)
-			if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		self._settingsTrove:Connect(UserInputService.InputEnded, function(input)
+			if
+				input.UserInputType == Enum.UserInputType.MouseButton1
+				or input.UserInputType == Enum.UserInputType.Touch
+				or input.UserInputType == Enum.UserInputType.Gamepad1
+			then
 				clicked[index] = false
 			end
 		end)
 
-		self._trove:Connect(mouse.Move, function()
+		self._settingsTrove:Connect(mouse.Move, function()
 			if clicked[index] then
 				updateSlider(slider, amount, bar, settingName)
 			end
 		end)
 	end
 
-	for settingName, _ in pairs(SharedSettings.DefaultHUDSettings) do
-		for index, settingFrame in pairs(self._settingsContainer:GetChildren()) do
-			if settingFrame:IsA("Frame") and settingFrame:GetAttribute("SettingName") == settingName then
-				settingFrame.Visible = true
-				settingFrame.SettingName.Text = settingFrame:GetAttribute("DisplayName") or settingName
-				if settingFrame:GetAttribute("SettingType") == "Slider" then
-					activateSlider(settingFrame, index)
-				end
+	local function activateButton(settingFrame: Frame)
+		local button: GuiButton = settingFrame:WaitForChild("Button") :: GuiButton
+		local settingName = settingFrame:GetAttribute("SettingName") :: string
+
+		self._settingsTrove:Connect(button.Activated, function()
+			if settingName == "accessoryColor" then
+				ColorPickerUIController:Show()
 			end
+		end)
+	end
+
+	self._settingsFrames = CollectionService:GetTagged(SETTING_TAG) :: { Frame }
+	for index, settingFrame in pairs(self._settingsFrames) do
+		if not settingFrame:IsA("Frame") then
+			continue
+		end
+		settingFrame.Visible = true
+		settingFrame.SettingName.Text = settingFrame:GetAttribute("DisplayName")
+		if settingFrame:GetAttribute("SettingType") == "Slider" then
+			activateSlider(settingFrame, index)
+		elseif settingFrame:GetAttribute("SettingType") == "Button" then
+			activateButton(settingFrame)
 		end
 	end
 end
 
 function SettingsUIController:_loadSettings()
+	if self._settingsTrove then
+		self._settingsTrove:Destroy()
+	end
+	self._settingsTrove = Trove.new()
 	self:_clearSettingsFrame()
 	self:_createSettingsFrames()
 end
 
 function SettingsUIController:_saveSettings()
 	local settings = SharedSettings.DefaultHUDSettings
+
 	if self._settings ~= nil then
 		settings = self._settings
 	end
-	SettingsService:SaveHUDSettings(settings)
+	SettingsService:SaveSettings(settings)
 end
 
 function SettingsUIController:KnitInit()
 	self._isMobile = UserInputService.TouchEnabled
-	self._settings = {}
 
 	self._screenGui = PlayerGui:WaitForChild("SettingsGui") :: ScreenGui
 
 	self._mainFrame = self._screenGui:WaitForChild("MainFrame") :: Frame
 
 	self._background = self._mainFrame:WaitForChild("BG") :: Frame
+	self._closeButton = self._mainFrame:WaitForChild("CloseButton") :: GuiButton
 
 	self._settingsContainer = self._background:WaitForChild("ScrollingFrame") :: ScrollingFrame
 end
 
 function SettingsUIController:KnitStart()
 	SettingsService = Knit.GetService("SettingsService")
+	ColorPickerUIController = Knit.GetController("ColorPickerUIController")
 
-	SettingsService.HUDSettingsLoaded:Connect(function(settings)
+	SettingsService.HUDSettingsLoaded:Connect(function(settings: Settings)
 		self._settings = settings
 		self:_loadSettings()
+	end)
+
+	local saving = false
+	self._trove:Connect(self._closeButton.Activated, function()
+		if saving then
+			return
+		end
+		saving = true
+		self:_saveSettings()
+		task.wait(0.5)
+		saving = false
 	end)
 end
 

@@ -19,7 +19,6 @@ local lifeguardButtonTweenInfo: TweenInfo = TweenInfo.new(8, Enum.EasingStyle.Li
 local barTweenInfo: TweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 local actionsMenuTweenInfo: TweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
 
-local OFFSET: number = 50
 local MAX_OXYGEN: number = 100
 local MAX_WATER: number = 100
 
@@ -48,22 +47,6 @@ end
 function HUDUIController:KnitStart()
 	AnimationController = Knit.GetController("AnimationController")
 	ColorPickerUIController = Knit.GetController("ColorPickerUIController")
-
-	local function showTooltip(x: number, y: number, text: string)
-		self._tooltip.Position = UDim2.new(0, x + OFFSET, 0, y + OFFSET)
-		self._tooltip.Visible = true
-		self._tooltip.Tooltip.Text = text
-	end
-
-	local function setTooltipPosition(x: number, y: number)
-		self._tooltip.Position = UDim2.new(0, x, 0, y)
-	end
-
-	local function hideTooltip()
-		self._tooltip.Position = UDim2.new(0.5, 0, 0.5, 0)
-		self._tooltip.Tooltip.Text = ""
-		self._tooltip.Visible = false
-	end
 
 	local function hideAllMenusExcept(myInstance)
 		for _, v in self._menuInstances do
@@ -113,39 +96,10 @@ function HUDUIController:KnitStart()
 		end)
 	end)
 
-	self._trove:Connect(self._avatarButton.MouseEnter, function(x, y)
-		showTooltip(x, y, "Avatar")
-	end)
-	self._trove:Connect(self._avatarButton.MouseMoved, setTooltipPosition)
-	self._trove:Connect(self._avatarButton.MouseLeave, hideTooltip)
-
-	self._trove:Connect(self._emotesButton.MouseEnter, function(x, y)
-		showTooltip(x, y, "Emotes")
-	end)
-	self._trove:Connect(self._emotesButton.MouseMoved, setTooltipPosition)
-	self._trove:Connect(self._emotesButton.MouseLeave, hideTooltip)
-
-	self._trove:Connect(self._lifeguardButton.MouseEnter, function(x, y)
-		showTooltip(x, y, "Lifeguard Pass")
-	end)
-	self._trove:Connect(self._lifeguardButton.MouseMoved, setTooltipPosition)
-	self._trove:Connect(self._lifeguardButton.MouseLeave, hideTooltip)
 	self._trove:Connect(self._lifeguardButton.Activated, function()
 		MarketplaceService:PromptGamePassPurchase(Knit.Player, ItemsData.LifeguardGamepassID)
 	end)
 	self._lifeguardSpinTween:Play()
-
-	self._trove:Connect(self._settingsButton.MouseEnter, function(x, y)
-		showTooltip(x, y, "Settings")
-	end)
-	self._trove:Connect(self._settingsButton.MouseMoved, setTooltipPosition)
-	self._trove:Connect(self._settingsButton.MouseLeave, hideTooltip)
-
-	self._trove:Connect(self._shopsButton.MouseEnter, function(x, y)
-		showTooltip(x, y, "Shops")
-	end)
-	self._trove:Connect(self._shopsButton.MouseMoved, setTooltipPosition)
-	self._trove:Connect(self._shopsButton.MouseLeave, hideTooltip)
 
 	local startPosition = UDim2.fromScale(-1, self._actionsMainFrame.Position.Y.Scale)
 	local actionsMenuTweenOpen = TweenService:Create(

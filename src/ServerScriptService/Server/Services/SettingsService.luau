@@ -5,15 +5,19 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local SharedSettings = require(ReplicatedStorage.Data.SharedSettings)
 
+-- Types
+type Settings = SharedSettings.hudSettings
+
 -- Declarations
+local DataService = nil
+
 local SettingsService = Knit.CreateService({
 	Name = "SettingsService",
 	Client = {
 		HUDSettingsLoaded = Knit.CreateSignal(),
 	},
 })
-
-local DataService = nil
+SettingsService.PlayerSettings = {} :: { [Player]: Settings }
 
 ----- Public Functions -----
 function SettingsService:SaveSettings(player: Player, settings: SharedSettings.hudSettings)
@@ -21,7 +25,7 @@ function SettingsService:SaveSettings(player: Player, settings: SharedSettings.h
 end
 
 ----- Client Functions -----
-function SettingsService.Client:SaveSettings(player: Player, settings: SharedSettings.hudSettings)
+function SettingsService.Client:SaveSettings(player: Player, settings: Settings)
 	self.Server:SaveSettings(player, settings)
 end
 
@@ -32,6 +36,7 @@ function SettingsService:KnitStart()
 	DataService = Knit.GetService("DataService")
 	DataService.ProfileLoaded:Connect(function(player: Player, data)
 		self.Client.HUDSettingsLoaded:Fire(player, data.settings)
+		self.PlayerSettings[player] = data.settings
 	end)
 end
 

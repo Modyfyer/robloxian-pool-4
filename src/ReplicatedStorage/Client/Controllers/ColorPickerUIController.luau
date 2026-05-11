@@ -1,6 +1,7 @@
 -- Services
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
 -- Packages
@@ -9,6 +10,8 @@ local Trove = require(ReplicatedStorage.Packages.Trove)
 
 -- Declarations
 local PlayerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
+local showTweenInfo: TweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+local hideTweenInfo: TweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
 
 local PlayerService
 
@@ -18,7 +21,38 @@ local ColorPickerUIController = Knit.CreateController({
 ColorPickerUIController._trove = Trove.new()
 
 function ColorPickerUIController:Hide()
-	self._frame.Visible = false
+	if not self._frame.Visible then
+		return
+	end
+	if self._hideTrove then
+		self._hideTrove:Destroy()
+	end
+	self._hideTrove = self._trove:Extend()
+
+	local tween = TweenService:Create(self._uiScale, hideTweenInfo, { Scale = 0 })
+	self._hideTrove:Add(tween)
+	self._hideTrove:Connect(tween.Completed, function()
+		self._frame.Visible = false
+		self._hideTrove:Remove(tween)
+	end)
+	tween:Play()
+end
+
+function ColorPickerUIController:Show()
+	if self._showTrove then
+		self._showTrove:Destroy()
+	end
+	self._showTrove = self._trove:Extend()
+
+	self._uiScale.Scale = 0
+	self._frame.Visible = true
+
+	local tween = TweenService:Create(self._uiScale, showTweenInfo, { Scale = 1 })
+	self._showTrove:Add(tween)
+	self._showTrove:Connect(tween.Completed, function()
+		self._showTrove:Remove(tween)
+	end)
+	tween:Play()
 end
 
 function ColorPickerUIController:KnitStart()
@@ -79,20 +113,23 @@ function ColorPickerUIController:KnitStart()
 		end
 	end)
 
-	self._trove:Connect(self._toggle.MouseButton1Click, function()
-		self._frame.Visible = not self._frame.Visible
+	self._trove:Connect(self._saveButton.Activated, function()
+		self:Hide()
 	end)
 end
 
 function ColorPickerUIController:KnitInit()
 	local colorPickerGui = PlayerGui:WaitForChild("ColorPickerGui") :: ScreenGui
-	self._toggle =
-		PlayerGui:WaitForChild("SettingsGui"):WaitForChild("MainFrame"):WaitForChild("ColorPickerButton") :: GuiButton
 
 	self._frame = colorPickerGui:WaitForChild("Frame") :: Frame
 
+	self._saveButton = self._frame:WaitForChild("SaveButton") :: GuiButton
+
 	self._rgb = self._frame:WaitForChild("RGB") :: Frame
 	self._preview = self._frame:WaitForChild("Preview") :: Frame
+
+	self._uiScale = self._frame:FindFirstChildOfClass("UIScale") or Instance.new("UIScale")
+	self._uiScale.Parent = self._frame
 
 	self._selectedColor = Color3.fromHSV(1, 1, 1)
 	self._colorData = { 1, 1, 1 }
