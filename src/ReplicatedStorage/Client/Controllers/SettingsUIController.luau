@@ -172,8 +172,15 @@ function SettingsUIController:KnitStart()
 		self:_loadSettings()
 	end)
 
+	local saving = false
 	self._trove:Connect(self._closeButton.Activated, function()
+		if saving then
+			return
+		end
+		saving = true
 		self:_saveSettings()
+		task.wait(2)
+		saving = false
 	end)
 end
 
