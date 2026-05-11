@@ -20,6 +20,7 @@ local PlayerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
 local SETTING_TAG = "Setting"
 
 local SettingsService
+local ColorPickerUIController
 
 local SettingsUIController = Knit.CreateController({
 	Name = "SettingsUIController",
@@ -105,6 +106,17 @@ function SettingsUIController:_createSettingsFrames()
 		end)
 	end
 
+	local function activateButton(settingFrame: Frame)
+		local button: GuiButton = settingFrame:WaitForChild("Button") :: GuiButton
+		local settingName = settingFrame:GetAttribute("SettingName") :: string
+
+		self._settingsTrove:Connect(button.Activated, function()
+			if settingName == "accessoryColor" then
+				ColorPickerUIController:Show()
+			end
+		end)
+	end
+
 	self._settingsFrames = CollectionService:GetTagged(SETTING_TAG) :: { Frame }
 	for index, settingFrame in pairs(self._settingsFrames) do
 		if not settingFrame:IsA("Frame") then
@@ -114,6 +126,8 @@ function SettingsUIController:_createSettingsFrames()
 		settingFrame.SettingName.Text = settingFrame:GetAttribute("DisplayName")
 		if settingFrame:GetAttribute("SettingType") == "Slider" then
 			activateSlider(settingFrame, index)
+		elseif settingFrame:GetAttribute("SettingType") == "Button" then
+			activateButton(settingFrame)
 		end
 	end
 end
@@ -151,6 +165,7 @@ end
 
 function SettingsUIController:KnitStart()
 	SettingsService = Knit.GetService("SettingsService")
+	ColorPickerUIController = Knit.GetController("ColorPickerUIController")
 
 	SettingsService.HUDSettingsLoaded:Connect(function(settings: Settings)
 		self._settings = settings
