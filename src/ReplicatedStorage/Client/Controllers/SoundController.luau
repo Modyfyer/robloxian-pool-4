@@ -30,9 +30,7 @@ function SoundController:PlaySound(soundName: string, volume: number?)
 
 	local sound = self.SoundsByName[soundName]
 	sound.Volume = volume or DEFAULT_VOLUME
-	sound.Looped = true
 
-	sound:Stop()
 	sound:Play()
 
 	return Promise.fromEvent(sound.Ended)

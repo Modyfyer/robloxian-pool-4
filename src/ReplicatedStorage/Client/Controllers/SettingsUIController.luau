@@ -179,7 +179,7 @@ function SettingsUIController:KnitStart()
 		end
 		saving = true
 		self:_saveSettings()
-		task.wait(2)
+		task.wait(0.5)
 		saving = false
 	end)
 end

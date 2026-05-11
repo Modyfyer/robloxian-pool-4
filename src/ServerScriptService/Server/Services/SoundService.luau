@@ -12,7 +12,7 @@ local SOUNDGROUPS_FOLDER = ASSETS_FOLDER:WaitForChild("SoundGroups") :: Folder
 
 local SoundService = Knit.CreateService({
 	Name = "SoundService",
-	Client = { PlaySoundFor = Knit:CreateSignal() },
+	Client = { PlaySoundFor = Knit.CreateSignal() },
 })
 
 function SoundService:_setSoundGroup(container: Instance, soundGroup: SoundGroup)
