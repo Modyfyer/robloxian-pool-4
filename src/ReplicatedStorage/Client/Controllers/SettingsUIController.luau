@@ -83,12 +83,12 @@ function SettingsUIController:_createSettingsFrames()
 			end
 		end
 
-		self._trove:Connect(slider.MouseButton1Down, function()
+		self._settingsTrove:Connect(slider.MouseButton1Down, function()
 			setAll(false)
 			clicked[index] = true
 		end)
 
-		self._trove:Connect(UserInputService.InputEnded, function(input)
+		self._settingsTrove:Connect(UserInputService.InputEnded, function(input)
 			if
 				input.UserInputType == Enum.UserInputType.MouseButton1
 				or input.UserInputType == Enum.UserInputType.Touch
@@ -98,7 +98,7 @@ function SettingsUIController:_createSettingsFrames()
 			end
 		end)
 
-		self._trove:Connect(mouse.Move, function()
+		self._settingsTrove:Connect(mouse.Move, function()
 			if clicked[index] then
 				updateSlider(slider, amount, bar, settingName)
 			end
@@ -119,6 +119,10 @@ function SettingsUIController:_createSettingsFrames()
 end
 
 function SettingsUIController:_loadSettings()
+	if self._settingsTrove then
+		self._settingsTrove:Destroy()
+	end
+	self._settingsTrove = Trove.new()
 	self:_clearSettingsFrame()
 	self:_createSettingsFrames()
 end
