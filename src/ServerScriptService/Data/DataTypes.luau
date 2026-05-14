@@ -23,7 +23,12 @@ export type DataTemplate = {
 	inventory: {
 		actions: {},
 		emotes: {},
-		outfits: {},
+		outfits: {
+			Floaties: { string },
+			Hats: { string },
+			Pants: { string },
+			Swimsuits: { string },
+		},
 		tools: {},
 	},
 	daysLoggedIn: number,
@@ -42,7 +47,12 @@ local ProfileTemplate: DataTemplate = {
 	inventory = {
 		actions = {},
 		emotes = {},
-		outfits = {},
+		outfits = {
+			Floaties = {},
+			Hats = {},
+			Pants = {},
+			Swimsuits = {},
+		},
 		tools = {},
 	},
 	daysLoggedIn = 0,
